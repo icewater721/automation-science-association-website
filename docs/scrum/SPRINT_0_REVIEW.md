@@ -161,4 +161,13 @@ git branch --show-current
 
 ## 当前结论
 
-Sprint 0 的工程产出已完成。Product Owner 完成本页的学习回顾和知识检查后，即可正式关闭 Sprint 0。
+Sprint 0 的工程产出和学习回顾均已完成，Sprint 正式关闭。
+
+Product Owner 已能够识别：
+
+- Astro 用于组织源码并生成静态网站。
+- `src/` 存放应当修改的源码。
+- `dist/` 是工具生成的构建产物，不应直接修改。
+- 当前网站只是开发占位页，正式主页属于 Sprint 1。
+
+关闭日期：2026-08-16。

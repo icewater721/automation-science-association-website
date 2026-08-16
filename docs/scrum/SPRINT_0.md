@@ -6,7 +6,7 @@
 
 ## 状态
 
-工程产出已完成，等待 Product Owner 完成学习回顾后关闭。
+已完成并关闭。Product Owner 已完成 Sprint 0 学习回顾与基础知识检查。
 
 ## Definition of Done
 
@@ -35,4 +35,4 @@
 - [x] 初始化代码工程
 - [x] 建立类型检查与生产构建基线
 - [x] 完成 Sprint Review 与 Retrospective 文档
-- [ ] Product Owner 完成 Sprint 0 学习回顾与知识检查
+- [x] Product Owner 完成 Sprint 0 学习回顾与知识检查
