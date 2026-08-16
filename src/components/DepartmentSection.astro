@@ -1,0 +1,178 @@
+---
+import { departments } from '../data/departments';
+---
+
+<section
+  class="departments section-shell"
+  id="departments"
+  aria-labelledby="departments-title"
+>
+  <div class="section-heading">
+    <p><span>02</span> Organization / Departments</p>
+    <h2 id="departments-title">三个部门，一条完整的科创支持链路</h2>
+  </div>
+
+  <div class="department-grid">
+    {
+      departments.map((department) => (
+        <article class="department-card">
+          <div class="card-index" aria-hidden="true">
+            {department.code}
+          </div>
+          <p class="card-label">{department.englishName}</p>
+          <h3>{department.name}</h3>
+          <p class="card-summary">{department.summary}</p>
+          <ul>
+            {department.responsibilities.map((responsibility) => (
+              <li>{responsibility}</li>
+            ))}
+          </ul>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .section-shell {
+    width: min(76rem, calc(100% - 2rem));
+    margin-inline: auto;
+    padding-block: clamp(4rem, 9vw, 7.5rem);
+  }
+
+  .section-heading {
+    display: grid;
+    max-width: 52rem;
+    gap: 1rem;
+    margin-bottom: clamp(2rem, 5vw, 3.75rem);
+  }
+
+  .section-heading p,
+  .card-label {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .section-heading p span {
+    margin-right: 0.75rem;
+    color: var(--color-accent);
+  }
+
+  h2 {
+    max-width: 16ch;
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    line-height: 1.03;
+    letter-spacing: -0.05em;
+  }
+
+  .department-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    padding: 1px;
+    background: var(--color-border);
+  }
+
+  .department-card {
+    position: relative;
+    min-height: 27rem;
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    overflow: hidden;
+    background: var(--color-page);
+    transition:
+      background-color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .department-card::after {
+    position: absolute;
+    right: -2.25rem;
+    bottom: -2.25rem;
+    width: 5rem;
+    height: 5rem;
+    background: var(--color-accent);
+    content: '';
+    transform: rotate(45deg);
+  }
+
+  .department-card:hover {
+    z-index: 1;
+    background: var(--color-surface);
+    transform: translateY(-0.35rem);
+  }
+
+  .card-index {
+    margin-bottom: clamp(3rem, 7vw, 6rem);
+    color: color-mix(in srgb, var(--color-text) 12%, transparent);
+    font-size: clamp(4rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 0.7;
+    letter-spacing: -0.08em;
+  }
+
+  .card-label {
+    color: var(--color-accent);
+  }
+
+  h3 {
+    margin-block: 0.45rem 1rem;
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    letter-spacing: -0.04em;
+  }
+
+  .card-summary {
+    min-height: 4.5rem;
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.7;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.65rem;
+    margin: 1.75rem 0 0;
+    padding: 1.25rem 0 0;
+    border-top: 1px solid var(--color-border);
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    gap: 0.65rem;
+    font-size: 0.9rem;
+  }
+
+  li::before {
+    color: var(--color-accent);
+    content: '/';
+  }
+
+  @media (max-width: 52rem) {
+    .department-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .department-card {
+      min-height: auto;
+    }
+
+    .card-index {
+      margin-bottom: 2.5rem;
+    }
+
+    .card-summary {
+      min-height: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .department-card {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,45 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div>
+    <p class="footer-brand">人工智能与自动化学院学生科协</p>
+    <p>Automation Science Association</p>
+  </div>
+  <p>&copy; {currentYear} ASAW</p>
+</footer>
+
+<style>
+  .site-footer {
+    display: flex;
+    width: min(76rem, calc(100% - 2rem));
+    min-height: 9rem;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-inline: auto;
+    padding-block: 2.5rem;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .site-footer p {
+    margin: 0.35rem 0 0;
+  }
+
+  .footer-brand {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  @media (max-width: 38rem) {
+    .site-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>
