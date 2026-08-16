@@ -31,7 +31,8 @@
       ><span class="swatch swatch-dark" aria-hidden="true"></span>深色</button
     >
     <button type="button" role="menuitemradio" data-theme-option="ark"
-      ><span class="swatch swatch-ark" aria-hidden="true"></span>舟式</button
+      ><span class="swatch swatch-ark" aria-hidden="true"
+      ></span>明日方舟风格</button
     >
   </div>
 </div>
@@ -42,7 +43,7 @@
   const themeNames: Record<Theme, string> = {
     light: '浅色',
     dark: '深色',
-    ark: '舟式',
+    ark: '明日方舟风格',
   };
 
   const setupThemePicker = () => {
@@ -164,7 +165,7 @@
     z-index: 30;
     top: calc(100% + 0.55rem);
     right: 0;
-    width: 8rem;
+    width: 11rem;
     padding: 0.35rem;
     border: 1px solid var(--color-border);
     border-radius: 0.65rem;

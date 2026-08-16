@@ -7,7 +7,7 @@
 
     <div class="action-grid">
       <article>
-        <span class="panel-code" aria-hidden="true">03-A / JOIN</span>
+        <span class="panel-code" aria-hidden="true">02-A / JOIN</span>
         <h3>加入我们</h3>
         <p>参与项目服务、赛事组织和内容运维，在实践中积累经验、认识伙伴。</p>
         <div class="panel-status">
@@ -17,7 +17,7 @@
       </article>
 
       <article id="contact">
-        <span class="panel-code" aria-hidden="true">03-B / CONTACT</span>
+        <span class="panel-code" aria-hidden="true">02-B / CONTACT</span>
         <h3>联系我们</h3>
         <p>赛事、大创、双创系统或科协活动相关问题，可通过官方答疑渠道咨询。</p>
         <div class="panel-links">
@@ -145,10 +145,12 @@
 
   :global(:root[data-theme='ark']) .section-heading p::before {
     margin-right: 0.55rem;
-    content: '03 /';
+    content: '02 /';
   }
 
   :global(:root[data-theme='ark']) article {
+    position: relative;
+    border-left: 0.3rem solid var(--color-accent);
     clip-path: polygon(
       0 0,
       calc(100% - 1.25rem) 0,
@@ -156,6 +158,20 @@
       100% 100%,
       0 100%
     );
+  }
+
+  :global(:root[data-theme='ark']) article::after {
+    position: absolute;
+    top: 0;
+    right: 1.4rem;
+    width: 5rem;
+    height: 0.35rem;
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--color-accent) 0 0.45rem,
+      transparent 0.45rem 0.9rem
+    );
+    content: '';
   }
 
   :global(:root[data-theme='ark']) .panel-code {

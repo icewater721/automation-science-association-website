@@ -24,10 +24,10 @@ export const searchEntries: SearchEntry[] = [
     keywords: ['文档', '资料', '帮助'],
   },
   {
-    title: '关于学院学生科协',
-    description: '联系学生科技创新群体，围绕竞赛、科创项目和学生服务开展工作。',
+    title: '学生科协及其部门介绍',
+    description: '学院学生科协以及科创部、赛事部和运维部的工作介绍。',
     category: '科协简介',
-    url: '/#about',
+    url: '/#departments',
     keywords: ['科协', '组织', '竞赛牵引', '项目驱动', '平台支撑'],
   },
   {
