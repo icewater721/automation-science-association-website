@@ -1,4 +1,4 @@
-<section class="join-contact" id="join" aria-labelledby="join-title">
+<section class="join-contact" id="services" aria-labelledby="join-title">
   <div class="join-inner">
     <div class="section-heading">
       <p>加入与联系</p>
@@ -137,10 +137,32 @@
   }
 
   :global(:root[data-theme='ark']) .join-contact {
-    background-image:
-      linear-gradient(var(--color-border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
-    background-size: 4rem 4rem;
+    background-color: var(--color-page);
+    background-image: var(--ark-grid-image);
+    background-position: center top;
+    background-size: var(--ark-grid-size) var(--ark-grid-size);
+  }
+
+  :global(:root[data-theme='ark']) .join-contact::before {
+    display: block;
+    width: min(76rem, calc(100% - 2rem));
+    height: 0.45rem;
+    margin: calc(clamp(3.5rem, 7vw, 5.5rem) * -1) auto clamp(3rem, 6vw, 4.5rem);
+    background: var(--ark-hazard-stripe);
+    content: '';
+  }
+
+  :global(:root[data-theme='ark']) .section-heading::after {
+    display: block;
+    width: min(18rem, 70%);
+    height: 0.35rem;
+    margin-top: 1.5rem;
+    background: linear-gradient(
+      90deg,
+      var(--color-text) 0 72%,
+      var(--color-accent) 72%
+    );
+    content: '';
   }
 
   :global(:root[data-theme='ark']) .section-heading p::before {

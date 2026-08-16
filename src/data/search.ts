@@ -55,7 +55,7 @@ export const searchEntries: SearchEntry[] = [
     title: '加入我们',
     description: '学院学生科协招新与参与方式。',
     category: '加入科协',
-    url: '/#join',
+    url: '/#services',
     keywords: ['招新', '加入', '成员', '科协干事'],
   },
   {

@@ -166,6 +166,8 @@
     top: calc(100% + 0.55rem);
     right: 0;
     width: 11rem;
+    display: grid;
+    gap: 0.35rem;
     padding: 0.35rem;
     border: 1px solid var(--color-border);
     border-radius: 0.65rem;
@@ -182,7 +184,7 @@
     align-items: center;
     gap: 0.65rem;
     padding: 0.55rem 0.6rem;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: 0.4rem;
     background: transparent;
     color: inherit;
@@ -192,6 +194,36 @@
   }
   .theme-menu button[aria-checked='true'] {
     font-weight: 700;
+  }
+
+  .theme-menu button[data-theme-option='light'] {
+    border-color: #d6d6d6;
+    background: #ffffff;
+    color: #111111;
+  }
+
+  .theme-menu button[data-theme-option='dark'] {
+    border-color: #3d3d3d;
+    border-radius: 999px;
+    background: #050505;
+    color: #ffffff;
+  }
+
+  .theme-menu button[data-theme-option='ark'] {
+    border-color: #18a9ff;
+    border-left-width: 0.3rem;
+    border-radius: 0;
+    background:
+      linear-gradient(90deg, transparent 0 76%, rgb(24 169 255 / 16%) 76%),
+      #101418;
+    color: #ffffff;
+    clip-path: polygon(
+      0 0,
+      calc(100% - 0.7rem) 0,
+      100% 0.7rem,
+      100% 100%,
+      0 100%
+    );
   }
   .theme-menu button[aria-checked='true']::after {
     margin-left: auto;
@@ -218,6 +250,32 @@
   :global(:root[data-theme='ark']) .theme-trigger,
   :global(:root[data-theme='ark']) .theme-menu {
     border-radius: 0;
+  }
+
+  :global(:root[data-theme='light']) .theme-trigger {
+    border-radius: 999px;
+    background: #ffffff;
+  }
+
+  :global(:root[data-theme='dark']) .theme-trigger {
+    border-radius: 0.35rem;
+    background: #050505;
+  }
+
+  :global(:root[data-theme='ark']) .theme-trigger {
+    border-left: 0.25rem solid var(--color-accent);
+    background: linear-gradient(
+      105deg,
+      #0e1216 0 78%,
+      rgb(24 169 255 / 18%) 78%
+    );
+    clip-path: polygon(
+      0 0,
+      calc(100% - 0.65rem) 0,
+      100% 0.65rem,
+      100% 100%,
+      0 100%
+    );
   }
 
   @media (max-width: 30rem) {

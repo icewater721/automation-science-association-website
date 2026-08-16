@@ -32,6 +32,22 @@
   --color-nav: #050607;
   --color-nav-text: #ffffff;
   --color-accent: #18a9ff;
+  --ark-grid-size: 3rem;
+  --ark-grid-image:
+    linear-gradient(
+      color-mix(in srgb, var(--color-border) 68%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-border) 68%, transparent) 1px,
+      transparent 1px
+    );
+  --ark-hazard-stripe: repeating-linear-gradient(
+    -45deg,
+    var(--color-accent) 0 0.55rem,
+    transparent 0.55rem 1.1rem
+  );
 }
 
 :root[data-theme='light'] {
