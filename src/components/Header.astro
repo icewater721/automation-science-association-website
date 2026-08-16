@@ -1,0 +1,65 @@
+---
+import SiteSearch from './SiteSearch.astro';
+import ThemeToggle from './ThemeToggle.astro';
+---
+
+<header class="site-header">
+  <a class="home-link" href="/" aria-label="返回主页">
+    <img src="/images/brand/asaw-logo.png" alt="" width="48" height="48" />
+  </a>
+
+  <div class="header-actions">
+    <ThemeToggle />
+    <SiteSearch />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    min-height: 4.5rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem clamp(1rem, 4vw, 3.5rem);
+    background: var(--color-nav);
+    color: var(--color-nav-text);
+  }
+
+  .home-link {
+    display: block;
+    flex: 0 0 auto;
+    border-radius: 999px;
+  }
+
+  .home-link img {
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid color-mix(in srgb, var(--color-nav-text) 18%, transparent);
+    border-radius: 999px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  @media (max-width: 36rem) {
+    .site-header {
+      min-height: 4rem;
+      padding: 0.6rem 0.75rem;
+    }
+
+    .home-link img {
+      width: 2.65rem;
+      height: 2.65rem;
+    }
+
+    .header-actions {
+      gap: 0.45rem;
+    }
+  }
+</style>

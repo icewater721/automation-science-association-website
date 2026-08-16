@@ -11,6 +11,18 @@ html {
   background: var(--color-page);
 }
 
+html,
+body {
+  min-height: 100%;
+}
+
+html[data-theme='light'],
+html[data-theme='dark'] {
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -33,7 +45,8 @@ img {
 }
 
 button,
-a {
+a,
+input {
   color: inherit;
 }
 

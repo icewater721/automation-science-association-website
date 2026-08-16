@@ -15,7 +15,7 @@
 ## Sprint Backlog
 
 - [ ] 建立主页内容模型与示例内容
-- [ ] 实现 Header、ThemeToggle 与移动导航
+- [ ] 实现 Header、ThemeToggle、全站搜索与移动导航
 - [ ] 实现品牌首屏与主要行动入口
 - [ ] 实现新闻、通知和活动区块
 - [ ] 实现科协简介与部门概览

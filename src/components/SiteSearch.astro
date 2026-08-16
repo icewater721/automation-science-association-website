@@ -1,0 +1,284 @@
+<div class="site-search" data-search-root>
+  <form class="search-form" role="search" data-search-form>
+    <label class="visually-hidden" for="site-search-input">搜索全站内容</label>
+    <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="6.5"></circle>
+      <path d="m16 16 4 4"></path>
+    </svg>
+    <input
+      id="site-search-input"
+      type="search"
+      name="q"
+      placeholder="搜索全站"
+      autocomplete="off"
+      aria-controls="site-search-results"
+      aria-expanded="false"
+      data-search-input
+    />
+  </form>
+
+  <div class="search-panel" id="site-search-results" hidden data-search-panel>
+    <p class="search-status" aria-live="polite" data-search-status></p>
+    <ul class="search-results" data-search-results></ul>
+  </div>
+</div>
+
+<script>
+  interface SearchEntry {
+    title: string;
+    description: string;
+    category: string;
+    url: string;
+    keywords: string[];
+  }
+
+  const setupSearch = () => {
+    const root = document.querySelector<HTMLElement>('[data-search-root]');
+    if (!root || root.dataset.ready === 'true') return;
+    root.dataset.ready = 'true';
+
+    const form = root.querySelector<HTMLFormElement>('[data-search-form]');
+    const input = root.querySelector<HTMLInputElement>('[data-search-input]');
+    const panel = root.querySelector<HTMLElement>('[data-search-panel]');
+    const status = root.querySelector<HTMLElement>('[data-search-status]');
+    const results = root.querySelector<HTMLUListElement>(
+      '[data-search-results]',
+    );
+    if (!form || !input || !panel || !status || !results) return;
+
+    let index: SearchEntry[] | null = null;
+    let timer: number | undefined;
+
+    const loadIndex = async () => {
+      if (index) return index;
+      const response = await fetch('/search-index.json');
+      if (!response.ok) throw new Error('无法加载搜索索引');
+      index = (await response.json()) as SearchEntry[];
+      return index;
+    };
+
+    const closePanel = () => {
+      panel.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+    };
+
+    const openPanel = () => {
+      panel.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+    };
+
+    const renderResults = (entries: SearchEntry[], query: string) => {
+      results.replaceChildren();
+      openPanel();
+
+      if (entries.length === 0) {
+        status.textContent = `没有找到与“${query}”相关的内容`;
+        return;
+      }
+
+      status.textContent = `找到 ${entries.length} 条相关内容`;
+      for (const entry of entries) {
+        const item = document.createElement('li');
+        const link = document.createElement('a');
+        const category = document.createElement('span');
+        const title = document.createElement('strong');
+        const description = document.createElement('span');
+
+        link.href = entry.url;
+        category.className = 'result-category';
+        category.textContent = entry.category;
+        title.textContent = entry.title;
+        description.className = 'result-description';
+        description.textContent = entry.description;
+        link.append(category, title, description);
+        item.append(link);
+        results.append(item);
+      }
+    };
+
+    const search = async () => {
+      const query = input.value.trim().toLocaleLowerCase('zh-CN');
+      if (!query) {
+        closePanel();
+        return;
+      }
+
+      status.textContent = '正在搜索…';
+      results.replaceChildren();
+      openPanel();
+
+      try {
+        const entries = await loadIndex();
+        const matches = entries
+          .map((entry) => {
+            const title = entry.title.toLocaleLowerCase('zh-CN');
+            const category = entry.category.toLocaleLowerCase('zh-CN');
+            const description = entry.description.toLocaleLowerCase('zh-CN');
+            const keywords = entry.keywords
+              .join(' ')
+              .toLocaleLowerCase('zh-CN');
+            const score =
+              (title.includes(query) ? 4 : 0) +
+              (category.includes(query) ? 2 : 0) +
+              (description.includes(query) ? 1 : 0) +
+              (keywords.includes(query) ? 1 : 0);
+            return { entry, score };
+          })
+          .filter(({ score }) => score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 6)
+          .map(({ entry }) => entry);
+
+        renderResults(matches, input.value.trim());
+      } catch {
+        results.replaceChildren();
+        status.textContent = '搜索暂时不可用，请稍后重试。';
+      }
+    };
+
+    input.addEventListener('input', () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(search, 160);
+    });
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closePanel();
+        input.blur();
+      }
+    });
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      search();
+    });
+    document.addEventListener('pointerdown', (event) => {
+      if (!root.contains(event.target as Node)) closePanel();
+    });
+  };
+
+  setupSearch();
+  document.addEventListener('astro:page-load', setupSearch);
+</script>
+
+<style>
+  .site-search {
+    position: relative;
+    width: min(18rem, 42vw);
+  }
+
+  .search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 0.8rem;
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 1.8;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    height: 2.5rem;
+    padding: 0 0.85rem 0 2.35rem;
+    border: 1px solid color-mix(in srgb, var(--color-nav-text) 28%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-nav-text) 8%, transparent);
+    color: var(--color-nav-text);
+    font: inherit;
+  }
+
+  input::placeholder {
+    color: color-mix(in srgb, var(--color-nav-text) 66%, transparent);
+  }
+
+  input:focus {
+    border-color: var(--color-accent);
+    outline: none;
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--color-accent) 36%, transparent);
+  }
+
+  .search-panel {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 0.7rem);
+    right: 0;
+    width: min(26rem, calc(100vw - 2rem));
+    padding: 0.65rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.85rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 18%);
+  }
+
+  .search-panel[hidden] {
+    display: none;
+  }
+
+  .search-status {
+    margin: 0;
+    padding: 0.5rem 0.6rem;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+  }
+
+  .search-results {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .search-results a {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.7rem;
+    border-radius: 0.6rem;
+    text-decoration: none;
+  }
+
+  .search-results a:hover,
+  .search-results a:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--color-accent) 10%,
+      var(--color-surface)
+    );
+  }
+
+  .result-category {
+    color: var(--color-accent);
+    font-size: 0.75rem;
+  }
+
+  .result-description {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 36rem) {
+    .site-search {
+      width: min(13rem, 55vw);
+    }
+  }
+</style>

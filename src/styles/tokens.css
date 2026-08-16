@@ -12,6 +12,7 @@
 }
 
 :root[data-theme='dark'] {
+  color-scheme: dark;
   --color-page: #101010;
   --color-surface: #181818;
   --color-text: #f7f7f4;
@@ -19,4 +20,8 @@
   --color-border: #383836;
   --color-nav: #f7f7f4;
   --color-nav-text: #111111;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
 }

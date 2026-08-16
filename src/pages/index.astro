@@ -6,7 +6,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   title="武汉科技大学人工智能与自动化学院科协"
   description="武汉科技大学人工智能与自动化学院科学技术协会门户网站"
 >
-  <main class="project-start">
+  <main class="project-start" id="main-content">
     <img
       src="/images/brand/asaw-logo.png"
       alt="学院科协 Logo"
@@ -15,14 +15,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     />
     <p>Automation Science Association Website</p>
     <h1>项目初始化完成</h1>
-    <p>主页组件将在 Sprint 1 中按照已确认的信息架构逐步实现。</p>
+    <p>导航栏、颜色模式和全站搜索正在 Sprint 1 中逐步实现。</p>
   </main>
 </BaseLayout>
 
 <style>
   .project-start {
     display: grid;
-    min-height: 100vh;
+    min-height: calc(100vh - 4.5rem);
     place-content: center;
     justify-items: center;
     padding: 2rem;

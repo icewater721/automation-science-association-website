@@ -10,7 +10,8 @@
 | 编程语言   | TypeScript（严格模式）               | 为组件属性和内容字段提供类型检查     |
 | 样式       | 原生 CSS + 语义化设计变量            | 实现黑白双主题、反色导航和响应式布局 |
 | 内容       | Astro Content Collections + Markdown | 管理新闻、通知、活动等结构化内容     |
-| 客户端脚本 | 少量原生 TypeScript                  | 主题切换、移动导航等必要交互         |
+| 客户端脚本 | 少量原生 TypeScript                  | 主题切换、全站搜索、移动导航等交互   |
+| 搜索       | 构建时 JSON 索引 + 原生 TypeScript   | 在无后端与数据库时实现小型全站搜索   |
 | 包管理     | pnpm                                 | 管理依赖和开发命令                   |
 | 代码质量   | Astro Check、ESLint、Prettier        | 类型、语法和格式检查                 |
 | 浏览器测试 | Playwright                           | 验证主页、响应式布局和主题切换       |
