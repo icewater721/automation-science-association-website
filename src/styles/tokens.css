@@ -1,0 +1,22 @@
+:root {
+  color-scheme: light dark;
+
+  --color-page: #f7f7f4;
+  --color-surface: #ffffff;
+  --color-text: #111111;
+  --color-text-muted: #626262;
+  --color-border: #d7d7d2;
+  --color-nav: #111111;
+  --color-nav-text: #ffffff;
+  --color-accent: #168ce8;
+}
+
+:root[data-theme='dark'] {
+  --color-page: #101010;
+  --color-surface: #181818;
+  --color-text: #f7f7f4;
+  --color-text-muted: #a9a9a4;
+  --color-border: #383836;
+  --color-nav: #f7f7f4;
+  --color-nav-text: #111111;
+}

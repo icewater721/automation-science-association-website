@@ -1,0 +1,5 @@
+allowBuilds:
+  esbuild: true
+
+overrides:
+  vscode-languageserver-protocol: 3.17.5
