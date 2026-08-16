@@ -15,6 +15,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       id="about"
       aria-labelledby="about-title"
     >
+      <div class="ark-meta" aria-hidden="true">
+        <span>ASAW / HOME</span><span>SYS.ONLINE</span>
+      </div>
       <div class="about-copy">
         <p class="section-label">关于科协</p>
         <h1 id="about-title">服务同学的学生科创组织</h1>
@@ -39,15 +42,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .section-shell {
     width: min(76rem, calc(100% - 2rem));
     margin-inline: auto;
-    padding-block: clamp(4.5rem, 10vw, 8rem);
+    padding-block: clamp(3.5rem, 7vw, 5.5rem);
   }
 
   .about {
     display: grid;
     grid-template-columns: minmax(0, 1.45fr) minmax(15rem, 0.55fr);
-    gap: clamp(3rem, 8vw, 8rem);
+    gap: clamp(2.5rem, 6vw, 6rem);
     align-items: end;
-    min-height: min(38rem, calc(100vh - 4.5rem));
+  }
+
+  .ark-meta {
+    display: none;
   }
 
   .section-label {
@@ -61,7 +67,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   h1 {
     max-width: 12ch;
     margin-block: 1rem 1.5rem;
-    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-size: clamp(2.7rem, 5vw, 4.7rem);
     line-height: 1.04;
     letter-spacing: -0.055em;
   }
@@ -86,11 +92,51 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 650;
   }
 
+  :global(:root[data-theme='ark']) .about {
+    position: relative;
+    background-image:
+      linear-gradient(var(--color-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+    background-size: 3rem 3rem;
+    background-position: right top;
+  }
+
+  :global(:root[data-theme='ark']) .about::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 5rem;
+    height: 0.25rem;
+    background: var(--color-accent);
+    content: '';
+  }
+
+  :global(:root[data-theme='ark']) .ark-meta {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+  }
+
+  :global(:root[data-theme='ark']) .section-label::before {
+    margin-right: 0.55rem;
+    content: '01 /';
+  }
+
   @media (max-width: 48rem) {
     .about {
       grid-template-columns: 1fr;
       gap: 2.5rem;
       min-height: auto;
+    }
+
+    :global(:root[data-theme='ark']) .ark-meta {
+      grid-column: 1;
     }
   }
 </style>

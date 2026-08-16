@@ -22,6 +22,18 @@
   --color-nav-text: #ffffff;
 }
 
+:root[data-theme='ark'] {
+  color-scheme: dark;
+  --color-page: #080a0c;
+  --color-surface: #11151a;
+  --color-text: #f4f6f8;
+  --color-text-muted: #a4adb5;
+  --color-border: #343b42;
+  --color-nav: #050607;
+  --color-nav-text: #ffffff;
+  --color-accent: #18a9ff;
+}
+
 :root[data-theme='light'] {
   color-scheme: light;
 }

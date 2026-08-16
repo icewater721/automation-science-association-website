@@ -23,7 +23,12 @@ const { title, description } = Astro.props;
       const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light';
-      document.documentElement.dataset.theme = savedTheme ?? systemTheme;
+      const availableThemes = ['light', 'dark', 'ark'];
+      document.documentElement.dataset.theme = availableThemes.includes(
+        savedTheme,
+      )
+        ? savedTheme
+        : systemTheme;
     </script>
   </head>
   <body>

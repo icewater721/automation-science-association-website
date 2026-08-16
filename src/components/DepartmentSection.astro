@@ -17,6 +17,9 @@ import { departments } from '../data/departments';
       {
         departments.map((department) => (
           <article class="department-card">
+            <span class="card-code" aria-hidden="true">
+              {department.code}
+            </span>
             <h3>{department.name}</h3>
             <p class="card-summary">{department.summary}</p>
             <ul aria-label={`${department.name}主要工作`}>
@@ -40,12 +43,12 @@ import { departments } from '../data/departments';
   .section-shell {
     width: min(76rem, calc(100% - 2rem));
     margin-inline: auto;
-    padding-block: clamp(4rem, 9vw, 7rem);
+    padding-block: clamp(3.5rem, 7vw, 5.5rem);
   }
 
   .section-heading {
     max-width: 44rem;
-    margin-bottom: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
   }
 
   .section-heading p {
@@ -58,7 +61,7 @@ import { departments } from '../data/departments';
 
   h2 {
     margin: 0;
-    font-size: clamp(2rem, 4vw, 3.6rem);
+    font-size: clamp(2rem, 3.5vw, 3.15rem);
     line-height: 1.1;
     letter-spacing: -0.045em;
   }
@@ -70,9 +73,14 @@ import { departments } from '../data/departments';
   }
 
   .department-card {
+    position: relative;
     padding: clamp(1.4rem, 3vw, 2.25rem);
     border: 1px solid var(--color-border);
     background: var(--color-page);
+  }
+
+  .card-code {
+    display: none;
   }
 
   h3 {
@@ -103,6 +111,52 @@ import { departments } from '../data/departments';
     border: 1px solid var(--color-border);
     color: var(--color-text-muted);
     font-size: 0.82rem;
+  }
+
+  :global(:root[data-theme='ark']) .departments {
+    background-image: linear-gradient(
+      135deg,
+      transparent 0 82%,
+      color-mix(in srgb, var(--color-accent) 9%, var(--color-surface)) 82%
+    );
+  }
+
+  :global(:root[data-theme='ark']) .section-heading p::before {
+    margin-right: 0.55rem;
+    content: '02 /';
+  }
+
+  :global(:root[data-theme='ark']) .department-card {
+    padding-top: 4.5rem;
+    clip-path: polygon(
+      0 0,
+      calc(100% - 1.25rem) 0,
+      100% 1.25rem,
+      100% 100%,
+      0 100%
+    );
+  }
+
+  :global(:root[data-theme='ark']) .card-code {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.5rem;
+    display: block;
+    color: var(--color-accent);
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  :global(:root[data-theme='ark']) .card-code::after {
+    margin-left: 0.55rem;
+    color: var(--color-text-muted);
+    content: 'DEPT';
+  }
+
+  :global(:root[data-theme='ark']) li {
+    border-radius: 0;
   }
 
   @media (max-width: 52rem) {

@@ -1,100 +1,227 @@
-<button
-  class="theme-toggle"
-  type="button"
-  aria-label="切换为深色模式"
-  title="切换颜色模式"
->
-  <svg
-    class="theme-icon theme-icon--sun"
-    aria-hidden="true"
-    viewBox="0 0 24 24"
+<div class="theme-picker" data-theme-picker>
+  <button
+    class="theme-trigger"
+    type="button"
+    aria-label="选择颜色模式"
+    aria-haspopup="menu"
+    aria-expanded="false"
+    data-theme-trigger
   >
-    <circle cx="12" cy="12" r="4"></circle>
-    <path
-      d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"
-    ></path>
-  </svg>
-  <svg
-    class="theme-icon theme-icon--moon"
-    aria-hidden="true"
-    viewBox="0 0 24 24"
+    <svg aria-hidden="true" viewBox="0 0 24 24"
+      ><circle cx="12" cy="12" r="8"></circle><path d="M12 4a8 8 0 0 0 0 16Z"
+      ></path></svg
+    >
+    <span data-theme-label>浅色</span>
+    <svg class="chevron" aria-hidden="true" viewBox="0 0 24 24"
+      ><path d="m8 10 4 4 4-4"></path></svg
+    >
+  </button>
+
+  <div
+    class="theme-menu"
+    role="menu"
+    aria-label="颜色模式"
+    hidden
+    data-theme-menu
   >
-    <path d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5 8.5 8.5 0 1 0 20.5 14.1Z"></path>
-  </svg>
-  <span class="visually-hidden">切换颜色模式</span>
-</button>
+    <button type="button" role="menuitemradio" data-theme-option="light"
+      ><span class="swatch swatch-light" aria-hidden="true"></span>浅色</button
+    >
+    <button type="button" role="menuitemradio" data-theme-option="dark"
+      ><span class="swatch swatch-dark" aria-hidden="true"></span>深色</button
+    >
+    <button type="button" role="menuitemradio" data-theme-option="ark"
+      ><span class="swatch swatch-ark" aria-hidden="true"></span>舟式</button
+    >
+  </div>
+</div>
 
 <script>
-  const setupThemeToggle = () => {
-    const button = document.querySelector<HTMLButtonElement>('.theme-toggle');
+  type Theme = 'light' | 'dark' | 'ark';
 
-    if (!button || button.dataset.ready === 'true') return;
-    button.dataset.ready = 'true';
+  const themeNames: Record<Theme, string> = {
+    light: '浅色',
+    dark: '深色',
+    ark: '舟式',
+  };
 
-    const updateLabel = () => {
-      const isDark = document.documentElement.dataset.theme === 'dark';
-      button.setAttribute(
-        'aria-label',
-        isDark ? '切换为浅色模式' : '切换为深色模式',
-      );
+  const setupThemePicker = () => {
+    const picker = document.querySelector<HTMLElement>('[data-theme-picker]');
+    if (!picker || picker.dataset.ready === 'true') return;
+    picker.dataset.ready = 'true';
+
+    const trigger = picker.querySelector<HTMLButtonElement>(
+      '[data-theme-trigger]',
+    );
+    const menu = picker.querySelector<HTMLElement>('[data-theme-menu]');
+    const label = picker.querySelector<HTMLElement>('[data-theme-label]');
+    const options = Array.from(
+      picker.querySelectorAll<HTMLButtonElement>('[data-theme-option]'),
+    );
+    if (!trigger || !menu || !label) return;
+
+    const closeMenu = () => {
+      menu.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
     };
 
-    updateLabel();
-    button.addEventListener('click', () => {
-      const nextTheme =
-        document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = nextTheme;
-      localStorage.setItem('asaw-theme', nextTheme);
-      updateLabel();
+    const updatePicker = () => {
+      const theme = (document.documentElement.dataset.theme ??
+        'light') as Theme;
+      label.textContent = themeNames[theme];
+      for (const option of options) {
+        option.setAttribute(
+          'aria-checked',
+          String(option.dataset.themeOption === theme),
+        );
+      }
+    };
+
+    updatePicker();
+    trigger.addEventListener('click', () => {
+      const opening = menu.hidden;
+      menu.hidden = !opening;
+      trigger.setAttribute('aria-expanded', String(opening));
+      if (opening) options[0]?.focus();
+    });
+
+    for (const option of options) {
+      option.addEventListener('click', () => {
+        const theme = option.dataset.themeOption as Theme;
+        document.documentElement.dataset.theme = theme;
+        localStorage.setItem('asaw-theme', theme);
+        updatePicker();
+        closeMenu();
+        trigger.focus();
+      });
+    }
+
+    picker.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeMenu();
+        trigger.focus();
+        return;
+      }
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const currentIndex = options.indexOf(
+          document.activeElement as HTMLButtonElement,
+        );
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        const nextIndex =
+          (currentIndex + step + options.length) % options.length;
+        options[nextIndex]?.focus();
+      }
+    });
+    document.addEventListener('pointerdown', (event) => {
+      if (!picker.contains(event.target as Node)) closeMenu();
     });
   };
 
-  setupThemeToggle();
-  document.addEventListener('astro:page-load', setupThemeToggle);
+  setupThemePicker();
+  document.addEventListener('astro:page-load', setupThemePicker);
 </script>
 
 <style>
-  .theme-toggle {
-    display: grid;
-    width: 2.5rem;
-    height: 2.5rem;
+  .theme-picker {
+    position: relative;
     flex: 0 0 auto;
-    padding: 0;
-    place-items: center;
+  }
+  .theme-trigger {
+    display: flex;
+    height: 2.5rem;
+    align-items: center;
+    gap: 0.45rem;
+    padding-inline: 0.7rem;
     border: 1px solid color-mix(in srgb, var(--color-nav-text) 28%, transparent);
-    border-radius: 999px;
+    border-radius: 0.55rem;
     background: transparent;
     color: var(--color-nav-text);
+    font: inherit;
+    font-size: 0.86rem;
     cursor: pointer;
   }
-
-  .theme-toggle:hover {
-    background: color-mix(in srgb, var(--color-nav-text) 12%, transparent);
+  .theme-trigger:hover,
+  .theme-menu button:hover,
+  .theme-menu button:focus-visible {
+    background: color-mix(in srgb, var(--color-nav-text) 10%, transparent);
   }
-
-  .theme-icon {
-    width: 1.15rem;
-    height: 1.15rem;
+  .theme-trigger svg {
+    width: 1rem;
+    height: 1rem;
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-width: 1.8;
+    stroke-width: 1.7;
   }
-
-  :global(:root[data-theme='light']) .theme-icon--sun,
-  :global(:root[data-theme='dark']) .theme-icon--moon {
+  .theme-trigger .chevron {
+    width: 0.8rem;
+  }
+  .theme-menu {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 0.55rem);
+    right: 0;
+    width: 8rem;
+    padding: 0.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.65rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 0.8rem 2rem rgb(0 0 0 / 18%);
+  }
+  .theme-menu[hidden] {
     display: none;
   }
-
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
+  .theme-menu button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.6rem;
     border: 0;
+    border-radius: 0.4rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .theme-menu button[aria-checked='true'] {
+    font-weight: 700;
+  }
+  .theme-menu button[aria-checked='true']::after {
+    margin-left: auto;
+    color: var(--color-accent);
+    content: '✓';
+  }
+  .swatch {
+    width: 0.8rem;
+    height: 0.8rem;
+    flex: 0 0 auto;
+    border: 1px solid #777777;
+    border-radius: 50%;
+  }
+  .swatch-light {
+    background: #ffffff;
+  }
+  .swatch-dark {
+    background: #050505;
+  }
+  .swatch-ark {
+    border-radius: 0;
+    background: linear-gradient(135deg, #101214 0 62%, #18a9ff 62%);
+  }
+  :global(:root[data-theme='ark']) .theme-trigger,
+  :global(:root[data-theme='ark']) .theme-menu {
+    border-radius: 0;
+  }
+
+  @media (max-width: 30rem) {
+    .theme-trigger > span {
+      display: none;
+    }
   }
 </style>
