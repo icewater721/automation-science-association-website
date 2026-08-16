@@ -10,52 +10,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   description="武汉科技大学人工智能与自动化学院学生科学技术协会门户网站"
 >
   <main id="main-content">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-grid" aria-hidden="true"></div>
-      <div class="hero-copy">
-        <p class="hero-kicker">ASAW / WUST / STUDENT ASSOCIATION</p>
-        <h1 id="hero-title">让科创，<br />成为每个人都能抵达的地方</h1>
-        <p class="hero-lead">
-          以赛促学 · 以创促研 ·
-          以服促管。我们连接赛事、项目与学生服务，为每一个想开始科创实践的同学提供入口。
-        </p>
-        <div class="hero-actions">
-          <a class="primary-action" href="#departments"
-            >了解部门 <span aria-hidden="true">↓</span></a
-          >
-          <a class="text-action" href="#join">加入我们</a>
-        </div>
-      </div>
-
-      <div class="hero-mark" aria-hidden="true">
-        <span class="mark-label">SCIENCE / AUTOMATION</span>
-        <img
-          src="/images/brand/asaw-logo.png"
-          alt=""
-          width="420"
-          height="420"
-        />
-        <span class="mark-code">A-01</span>
-      </div>
-    </section>
-
     <section
       class="about section-shell"
       id="about"
       aria-labelledby="about-title"
     >
-      <div class="about-index" aria-hidden="true">01</div>
       <div class="about-copy">
-        <p class="section-label"><span>01</span> About / Association</p>
-        <h2 id="about-title">我们是学院联系学生科技创新群体的桥梁</h2>
+        <p class="section-label">关于科协</p>
+        <h1 id="about-title">服务同学的学生科创组织</h1>
         <p>
-          武汉科技大学人工智能与自动化学院学生科协，围绕竞赛、科创项目和学生服务开展工作，帮助同学建立科学精神、工程思维与团队协作能力。
+          武汉科技大学人工智能与自动化学院学生科协面向全院同学，组织科创赛事、服务创新项目、提供双创支持，帮助同学参与科研实践，提升创新能力。
         </p>
       </div>
-      <div class="about-principles" aria-label="科协工作原则">
-        <span>竞赛牵引</span>
-        <span>项目驱动</span>
-        <span>平台支撑</span>
+      <div class="about-principles" aria-label="科协主要工作">
+        <span>科创项目</span>
+        <span>赛事组织</span>
+        <span>学生服务</span>
       </div>
     </section>
 
@@ -66,279 +36,61 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
-  .hero {
-    position: relative;
-    display: grid;
-    min-height: calc(100vh - 4.5rem);
-    grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
-    align-items: center;
-    gap: clamp(2rem, 6vw, 6rem);
-    padding: clamp(3rem, 7vw, 7rem) max(1rem, calc((100vw - 76rem) / 2));
-    overflow: hidden;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .hero-grid {
-    position: absolute;
-    inset: 0;
-    opacity: 0.35;
-    background-image:
-      linear-gradient(var(--color-border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
-    background-size: 4rem 4rem;
-    mask-image: linear-gradient(to right, black, transparent 80%);
-    pointer-events: none;
-  }
-
-  .hero-copy,
-  .hero-mark {
-    position: relative;
-    z-index: 1;
-  }
-
-  .hero-kicker,
-  .section-label,
-  .mark-label,
-  .mark-code {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .hero-kicker::before {
-    display: inline-block;
-    width: 2.5rem;
-    height: 0.45rem;
-    margin-right: 0.75rem;
-    background: var(--color-accent);
-    content: '';
-  }
-
-  h1 {
-    max-width: 12ch;
-    margin-block: clamp(1.5rem, 3vw, 2.5rem);
-    font-size: clamp(3.25rem, 7.5vw, 7.25rem);
-    line-height: 0.93;
-    letter-spacing: -0.075em;
-  }
-
-  .hero-lead {
-    max-width: 42rem;
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: clamp(1rem, 1.5vw, 1.2rem);
-    line-height: 1.8;
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1.5rem;
-    margin-top: 2.5rem;
-  }
-
-  .primary-action,
-  .text-action {
-    font-weight: 700;
-    text-decoration: none;
-  }
-
-  .primary-action {
-    display: inline-flex;
-    min-width: 11rem;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    padding: 0.9rem 1rem;
-    background: var(--color-text);
-    color: var(--color-page);
-    clip-path: polygon(
-      0 0,
-      calc(100% - 0.8rem) 0,
-      100% 0.8rem,
-      100% 100%,
-      0 100%
-    );
-  }
-
-  .primary-action:hover {
-    background: var(--color-accent);
-    color: #ffffff;
-  }
-
-  .text-action {
-    border-bottom: 1px solid currentColor;
-  }
-
-  .text-action:hover {
-    color: var(--color-accent);
-  }
-
-  .hero-mark {
-    display: grid;
-    justify-items: center;
-    padding: 2rem;
-    border: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-page) 84%, transparent);
-    clip-path: polygon(
-      0 0,
-      calc(100% - 2rem) 0,
-      100% 2rem,
-      100% 100%,
-      2rem 100%,
-      0 calc(100% - 2rem)
-    );
-  }
-
-  .hero-mark::before,
-  .hero-mark::after {
-    position: absolute;
-    background: var(--color-accent);
-    content: '';
-  }
-
-  .hero-mark::before {
-    top: -1px;
-    right: 2rem;
-    width: 4rem;
-    height: 3px;
-  }
-
-  .hero-mark::after {
-    right: -1px;
-    bottom: 2rem;
-    width: 3px;
-    height: 4rem;
-  }
-
-  .hero-mark img {
-    width: min(100%, 26rem);
-    aspect-ratio: 1;
-    margin-block: 1.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 50%;
-  }
-
-  .mark-label {
-    justify-self: start;
-  }
-
-  .mark-code {
-    justify-self: end;
-    color: var(--color-accent);
-  }
-
   .section-shell {
     width: min(76rem, calc(100% - 2rem));
     margin-inline: auto;
-    padding-block: clamp(4rem, 9vw, 7.5rem);
+    padding-block: clamp(4.5rem, 10vw, 8rem);
   }
 
   .about {
     display: grid;
-    grid-template-columns: minmax(8rem, 0.35fr) minmax(0, 1fr);
-    gap: clamp(2rem, 6vw, 6rem);
-    align-items: start;
+    grid-template-columns: minmax(0, 1.45fr) minmax(15rem, 0.55fr);
+    gap: clamp(3rem, 8vw, 8rem);
+    align-items: end;
+    min-height: min(38rem, calc(100vh - 4.5rem));
   }
 
-  .about-index {
-    color: color-mix(in srgb, var(--color-text) 10%, transparent);
-    font-size: clamp(7rem, 18vw, 15rem);
-    font-weight: 800;
-    line-height: 0.75;
-    letter-spacing: -0.1em;
-  }
-
-  .section-label span {
-    margin-right: 0.75rem;
+  .section-label {
+    margin: 0;
     color: var(--color-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
   }
 
-  .about h2 {
-    max-width: 15ch;
-    margin-block: 1.25rem;
-    font-size: clamp(2rem, 5vw, 4.5rem);
-    line-height: 1.03;
-    letter-spacing: -0.05em;
+  h1 {
+    max-width: 12ch;
+    margin-block: 1rem 1.5rem;
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    line-height: 1.04;
+    letter-spacing: -0.055em;
   }
 
   .about-copy > p:last-child {
-    max-width: 47rem;
+    max-width: 45rem;
+    margin: 0;
     color: var(--color-text-muted);
-    font-size: 1.05rem;
-    line-height: 1.85;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    line-height: 1.8;
   }
 
   .about-principles {
     display: grid;
-    grid-column: 2;
-    grid-template-columns: repeat(3, 1fr);
-    margin-top: 1rem;
-    border-block: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-border);
   }
 
   .about-principles span {
-    padding: 1rem;
-    border-right: 1px solid var(--color-border);
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-align: center;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.92rem;
+    font-weight: 650;
   }
 
-  .about-principles span:last-child {
-    border-right: 0;
-  }
-
-  @media (max-width: 58rem) {
-    .hero {
-      grid-template-columns: 1fr;
-    }
-
-    .hero-mark {
-      width: min(28rem, 100%);
-    }
-
+  @media (max-width: 48rem) {
     .about {
       grid-template-columns: 1fr;
-    }
-
-    .about-index {
-      font-size: 7rem;
-    }
-
-    .about-principles {
-      grid-column: 1;
-    }
-  }
-
-  @media (max-width: 34rem) {
-    .hero {
-      padding-top: 3.5rem;
-    }
-
-    h1 {
-      font-size: clamp(2.8rem, 14vw, 4rem);
-    }
-
-    .hero-mark {
-      padding: 1.25rem;
-    }
-
-    .about-principles {
-      grid-template-columns: 1fr;
-    }
-
-    .about-principles span {
-      border-right: 0;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .about-principles span:last-child {
-      border-bottom: 0;
+      gap: 2.5rem;
+      min-height: auto;
     }
   }
 </style>

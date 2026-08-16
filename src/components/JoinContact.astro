@@ -1,29 +1,23 @@
 <section class="join-contact" id="join" aria-labelledby="join-title">
   <div class="join-inner">
     <div class="section-heading">
-      <p><span>03</span> Join / Contact</p>
-      <h2 id="join-title">把你的好奇心，变成下一次行动</h2>
+      <p>加入与联系</p>
+      <h2 id="join-title">和我们一起，把想法做成成果</h2>
     </div>
 
     <div class="action-grid">
       <article>
-        <p class="panel-code">JOIN US / 001</p>
         <h3>加入我们</h3>
-        <p>
-          无论你更关心科创项目、赛事组织还是内容运维，都能在这里找到一个参与和成长的位置。
-        </p>
+        <p>参与项目服务、赛事组织和内容运维，在实践中积累经验、认识伙伴。</p>
         <div class="panel-status">
-          <span class="status-dot"></span>
-          2026 级招新预计于 10 月上旬开展，以学院正式通知为准。
+          <span class="status-dot" aria-hidden="true"></span>2026 级招新预计于
+          10 月上旬开展，以学院正式通知为准。
         </div>
       </article>
 
       <article id="contact">
-        <p class="panel-code">CONTACT / 002</p>
         <h3>联系我们</h3>
-        <p>
-          如需咨询赛事、大创、双创系统或科协活动，可通过即将公布的官方答疑渠道联系我们。
-        </p>
+        <p>赛事、大创、双创系统或科协活动相关问题，可通过官方答疑渠道咨询。</p>
         <div class="panel-links">
           <a href="/docs/">查看文档中心 <span aria-hidden="true">↗</span></a>
           <span class="pending">答疑群 / 邮箱待确认</span>
@@ -35,15 +29,7 @@
 
 <style>
   .join-contact {
-    padding-block: clamp(4rem, 9vw, 7.5rem);
-    background:
-      linear-gradient(
-        135deg,
-        transparent 0 74%,
-        color-mix(in srgb, var(--color-accent) 9%, transparent) 74%
-      ),
-      var(--color-surface);
-    border-block: 1px solid var(--color-border);
+    padding-block: clamp(4rem, 9vw, 7rem);
   }
 
   .join-inner {
@@ -52,37 +38,23 @@
   }
 
   .section-heading {
-    display: grid;
-    max-width: 52rem;
-    gap: 1rem;
-    margin-bottom: clamp(2rem, 5vw, 3.75rem);
+    max-width: 44rem;
+    margin-bottom: clamp(2rem, 5vw, 3.5rem);
   }
 
-  .section-heading p,
-  .panel-code {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .section-heading p span,
-  .panel-code {
+  .section-heading p {
+    margin: 0 0 0.8rem;
     color: var(--color-accent);
-  }
-
-  .section-heading p span {
-    margin-right: 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
   }
 
   h2 {
-    max-width: 14ch;
     margin: 0;
-    font-size: clamp(2rem, 5vw, 4.5rem);
-    line-height: 1.03;
-    letter-spacing: -0.05em;
+    font-size: clamp(2rem, 4vw, 3.6rem);
+    line-height: 1.1;
+    letter-spacing: -0.045em;
   }
 
   .action-grid {
@@ -93,21 +65,21 @@
 
   article {
     display: grid;
-    min-height: 23rem;
+    min-height: 18rem;
     align-content: start;
-    padding: clamp(1.5rem, 4vw, 3rem);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
     border: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-page) 88%, transparent);
+    background: var(--color-surface);
   }
 
   h3 {
-    margin-block: 3.5rem 1rem;
-    font-size: clamp(2rem, 4vw, 3rem);
-    letter-spacing: -0.05em;
+    margin: 0 0 1rem;
+    font-size: clamp(1.65rem, 3vw, 2.3rem);
+    letter-spacing: -0.04em;
   }
 
-  article > p:not(.panel-code) {
-    max-width: 34rem;
+  article > p {
+    max-width: 32rem;
     margin: 0;
     color: var(--color-text-muted);
     line-height: 1.75;
@@ -129,10 +101,11 @@
   }
 
   .status-dot {
-    width: 0.55rem;
-    height: 0.55rem;
+    width: 0.5rem;
+    height: 0.5rem;
     flex: 0 0 auto;
-    margin-top: 0.25rem;
+    margin-top: 0.3rem;
+    border-radius: 50%;
     background: var(--color-accent);
   }
 
