@@ -73,6 +73,8 @@ pnpm build
 
 学习笔记不进入代码仓库，统一保存在 `E:\cs note`。
 
+每个 Sprint 结束时进行一次面向新手的学习回顾，理解本轮成果、关键概念、文件位置和基本操作；具体流程见 `docs/scrum/LEARNING_REVIEW_PROCESS.md`。
+
 ## 开发原则
 
 1. 先写 User Story 和验收标准，再实现功能。

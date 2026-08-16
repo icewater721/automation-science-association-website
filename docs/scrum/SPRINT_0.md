@@ -4,6 +4,10 @@
 
 形成足以支持技术选型和首个开发 Sprint 的需求基线。
 
+## 状态
+
+工程产出已完成，等待 Product Owner 完成学习回顾后关闭。
+
 ## Definition of Done
 
 - 产品定位和项目边界经 Product Owner 确认
@@ -12,6 +16,7 @@
 - 完成首页信息架构和核心用户流程图
 - 完成技术栈决策与架构决策记录
 - 创建可运行、可测试的项目脚手架
+- 完成面向 Product Owner 的 Sprint 学习回顾
 
 ## 当前任务
 
@@ -22,10 +27,12 @@
 - [x] 确认第一版为公开单页且不做登录与管理后台
 - [x] 纳入并检查品牌 Logo
 - [x] 确认浅色/深色主题与反色导航原则
-- [ ] 排定 MVP Backlog 优先级
+- [x] 使用 MoSCoW 排定 MVP Backlog 优先级
 - [x] 绘制主页信息架构和用户流程
 - [x] 编写 MVP 主页验收标准
 - [x] 确认技术栈提案（Astro 静态架构）
 - [x] 完成 MVP 系统架构设计与 ADR
 - [x] 初始化代码工程
 - [x] 建立类型检查与生产构建基线
+- [x] 完成 Sprint Review 与 Retrospective 文档
+- [ ] Product Owner 完成 Sprint 0 学习回顾与知识检查
