@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="文档中心 | 人工智能学院学生科协"
+  description="人工智能学院学生科协文档中心"
+>
+  <main class="docs-placeholder">
+    <p class="eyebrow">文档中心</p>
+    <h1>页面正在准备中</h1>
+    <p>文档的分类、内容和阅读界面将在后续 Sprint 中实现。</p>
+    <a href="/">返回主页</a>
+  </main>
+</BaseLayout>
+
+<style>
+  .docs-placeholder {
+    display: grid;
+    min-height: calc(100vh - 4.5rem);
+    place-content: center;
+    justify-items: start;
+    padding: clamp(2rem, 8vw, 6rem);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  h1 {
+    margin-block: 0.5rem;
+  }
+
+  p {
+    max-width: 36rem;
+    color: var(--color-text-muted);
+  }
+
+  a {
+    margin-top: 1rem;
+    color: var(--color-accent);
+  }
+</style>

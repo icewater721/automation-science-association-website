@@ -16,4 +16,11 @@ export const searchEntries: SearchEntry[] = [
     url: '/',
     keywords: ['科协', '自动化', '人工智能', 'ASAW', '武汉科技大学'],
   },
+  {
+    title: '文档中心',
+    description: '学院学生科协的文档入口，正式内容将在后续 Sprint 中实现。',
+    category: '文档',
+    url: '/docs/',
+    keywords: ['文档', '资料', '帮助'],
+  },
 ];

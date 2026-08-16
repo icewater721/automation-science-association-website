@@ -4,9 +4,13 @@ import ThemeToggle from './ThemeToggle.astro';
 ---
 
 <header class="site-header">
-  <a class="home-link" href="/" aria-label="返回主页">
-    <img src="/images/brand/asaw-logo.png" alt="" width="48" height="48" />
-  </a>
+  <nav class="primary-nav" aria-label="主导航">
+    <a class="home-link" href="/">
+      <img src="/images/brand/asaw-logo.png" alt="" width="48" height="48" />
+      <span class="brand-name">人工智能学院学生科协</span>
+    </a>
+    <a class="docs-link" href="/docs/">文档</a>
+  </nav>
 
   <div class="header-actions">
     <ThemeToggle />
@@ -29,10 +33,25 @@ import ThemeToggle from './ThemeToggle.astro';
     color: var(--color-nav-text);
   }
 
+  .primary-nav,
   .home-link {
-    display: block;
+    display: flex;
+    align-items: center;
+  }
+
+  .primary-nav {
+    min-width: 0;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  .home-link {
     flex: 0 0 auto;
-    border-radius: 999px;
+    gap: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    white-space: nowrap;
   }
 
   .home-link img {
@@ -42,10 +61,29 @@ import ThemeToggle from './ThemeToggle.astro';
     border-radius: 999px;
   }
 
+  .docs-link {
+    padding: 0.55rem 0.7rem;
+    border-radius: 0.45rem;
+    font-size: 0.95rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .home-link:hover .brand-name,
+  .docs-link:hover {
+    color: var(--color-accent);
+  }
+
   .header-actions {
     display: flex;
     align-items: center;
     gap: 0.65rem;
+  }
+
+  @media (max-width: 64rem) {
+    .brand-name {
+      display: none;
+    }
   }
 
   @media (max-width: 36rem) {
