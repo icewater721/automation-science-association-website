@@ -4,6 +4,7 @@ dist/
 .astro/
 .DS_Store
 *.log
+.md
 .env
 .env.*
 !.env.example

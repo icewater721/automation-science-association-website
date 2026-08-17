@@ -18,10 +18,10 @@ export const searchEntries: SearchEntry[] = [
   },
   {
     title: '文档中心',
-    description: '学院学生科协的文档入口，正式内容将在后续 Sprint 中实现。',
+    description: '了解学院学生科协、文档中心及项目反馈方式。',
     category: '文档',
     url: '/docs/',
-    keywords: ['文档', '资料', '帮助'],
+    keywords: ['文档', '资料', '帮助', 'Issue', 'Vibe Coding'],
   },
   {
     title: '服务中心',

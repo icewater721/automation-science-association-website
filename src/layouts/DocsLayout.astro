@@ -1,0 +1,196 @@
+---
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  headings?: MarkdownHeading[];
+}
+
+const { title, description, headings = [] } = Astro.props;
+const visibleHeadings = headings.filter(
+  (heading) => heading.depth === 2 || heading.depth === 3,
+);
+---
+
+<BaseLayout
+  title={`${title} | 人工智能学院学生科协文档`}
+  description={description}
+>
+  <main class="docs-shell">
+    <aside class="docs-navigation" aria-label="文档目录">
+      <p class="navigation-title">文档</p>
+      <nav>
+        <a href="/docs/" aria-current="page">简介</a>
+        <span aria-disabled="true">学习资料 <small>规划中</small></span>
+      </nav>
+    </aside>
+
+    <article class="docs-article">
+      <header>
+        <p class="eyebrow">文档中心</p>
+        <h1>{title}</h1>
+        <p class="description">{description}</p>
+      </header>
+      <div class="docs-content">
+        <slot />
+      </div>
+    </article>
+
+    <aside class="page-outline" aria-label="本页总览">
+      <p>本页总览</p>
+      {
+        visibleHeadings.length > 0 ? (
+          <nav>
+            {visibleHeadings.map((heading) => (
+              <a href={`#${heading.slug}`} data-depth={heading.depth}>
+                {heading.text}
+              </a>
+            ))}
+          </nav>
+        ) : (
+          <span>本页暂无小节</span>
+        )
+      }
+    </aside>
+  </main>
+</BaseLayout>
+
+<style>
+  .docs-shell {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) minmax(0, 46rem) minmax(
+        9rem,
+        12rem
+      );
+    gap: clamp(2rem, 5vw, 4rem);
+    width: min(86rem, calc(100% - 4rem));
+    margin-inline: auto;
+    padding-block: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  .docs-navigation,
+  .page-outline {
+    position: sticky;
+    top: 6.5rem;
+    align-self: start;
+  }
+
+  .navigation-title,
+  .page-outline > p {
+    margin: 0 0 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+  }
+
+  .docs-navigation nav,
+  .page-outline nav {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .docs-navigation a,
+  .docs-navigation span,
+  .page-outline a {
+    padding: 0.55rem 0.7rem;
+    border-left: 2px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
+    text-decoration: none;
+  }
+
+  .docs-navigation a[aria-current='page'] {
+    border-left-color: var(--color-accent);
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  .docs-navigation small {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.68rem;
+  }
+
+  .docs-article {
+    min-width: 0;
+  }
+
+  .docs-article header {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .eyebrow {
+    margin: 0 0 0.65rem;
+    color: var(--color-accent);
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    letter-spacing: -0.045em;
+  }
+
+  .description {
+    max-width: 42rem;
+    margin: 1rem 0 0;
+    color: var(--color-text-muted);
+    line-height: 1.75;
+  }
+
+  .docs-content {
+    padding-top: 1.5rem;
+    font-size: 1rem;
+    line-height: 1.85;
+  }
+
+  .docs-content :global(h2) {
+    margin: 2.6rem 0 0.8rem;
+    font-size: 1.65rem;
+    letter-spacing: -0.025em;
+  }
+
+  .docs-content :global(p),
+  .docs-content :global(ul) {
+    margin-block: 0.9rem;
+  }
+
+  .docs-content :global(a) {
+    color: var(--color-accent);
+  }
+
+  .page-outline a[data-depth='3'] {
+    padding-left: 1.2rem;
+  }
+
+  .page-outline span {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+
+  @media (max-width: 70rem) {
+    .docs-shell {
+      grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr);
+    }
+
+    .page-outline {
+      display: none;
+    }
+  }
+
+  @media (max-width: 46rem) {
+    .docs-shell {
+      grid-template-columns: 1fr;
+      width: min(100% - 2rem, 46rem);
+    }
+
+    .docs-navigation {
+      position: static;
+    }
+  }
+</style>
