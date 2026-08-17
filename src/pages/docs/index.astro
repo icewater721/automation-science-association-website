@@ -8,13 +8,12 @@ if (!intro) {
   throw new Error('文档中心简介不存在。');
 }
 
-const { Content, headings } = await render(intro);
+const { Content } = await render(intro);
 ---
 
 <DocsLayout
   title={intro.data.title}
   description={intro.data.description}
-  headings={headings}
   currentPath="/docs/"
 >
   <Content />

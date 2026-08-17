@@ -17,3 +17,7 @@ draft: false
 ## 当前内容
 
 - [VS Code：从打开文件夹开始](/docs/learning/basic-tools/vscode/)
+- [Git 与 GitHub：保存并协作](/docs/learning/basic-tools/git-github/)
+- [CMake：组织 C/C++ 构建](/docs/learning/basic-tools/cmake/)
+- [容器：获得一致的运行环境](/docs/learning/basic-tools/containers/)
+- [包管理器：安装和记录依赖](/docs/learning/basic-tools/package-managers/)
