@@ -1,13 +1,23 @@
 ---
+import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
 
 interface Props {
   title: string;
   description: string;
+  headings?: MarkdownHeading[];
   currentPath?: string;
 }
 
-const { title, description, currentPath = '/docs/' } = Astro.props;
+const {
+  title,
+  description,
+  headings = [],
+  currentPath = '/docs/',
+} = Astro.props;
+const visibleHeadings = headings.filter(
+  (heading) => heading.depth === 2 || heading.depth === 3,
+);
 const isCurrent = (path: string) => currentPath === path;
 const isLearning = currentPath.startsWith('/docs/learning');
 const isBasicTools = currentPath.startsWith('/docs/learning/basic-tools');
@@ -36,22 +46,9 @@ const basicTools = [
         <details open={isLearning}>
           <summary>学习资料</summary>
           <div class="tree-branch">
-            <a
-              class="tree-link"
-              href="/docs/learning/"
-              aria-current={isCurrent('/docs/learning/') ? 'page' : undefined}
-              >学习资料</a
-            >
             <details open={isBasicTools}>
               <summary>基础工具</summary>
               <div class="tree-branch">
-                <a
-                  class="tree-link"
-                  href="/docs/learning/basic-tools/"
-                  aria-current={isCurrent('/docs/learning/basic-tools/')
-                    ? 'page'
-                    : undefined}>基础工具简介</a
-                >
                 {
                   basicTools.map((tool) => (
                     <a
@@ -80,30 +77,80 @@ const basicTools = [
         <slot />
       </div>
     </article>
+
+    <aside class="page-outline" aria-label="本页跳转">
+      <p>本页跳转</p>
+      {
+        visibleHeadings.length > 0 ? (
+          <nav>
+            {visibleHeadings.map((heading) => (
+              <a href={`#${heading.slug}`} data-depth={heading.depth}>
+                {heading.text}
+              </a>
+            ))}
+          </nav>
+        ) : (
+          <span>本页暂无小节</span>
+        )
+      }
+    </aside>
   </main>
 </BaseLayout>
 
 <style>
   .docs-shell {
     display: grid;
-    grid-template-columns: minmax(11rem, 15rem) minmax(0, 52rem);
+    grid-template-columns: minmax(11rem, 15rem) minmax(0, 48rem) minmax(
+        9rem,
+        12rem
+      );
     gap: clamp(2rem, 5vw, 4rem);
-    width: min(72rem, calc(100% - 4rem));
+    width: min(88rem, calc(100% - 4rem));
     margin-inline: auto;
     padding-block: clamp(2.5rem, 6vw, 5rem);
   }
 
-  .docs-navigation {
+  .docs-navigation,
+  .page-outline {
     position: sticky;
     top: 6.5rem;
     align-self: start;
   }
 
-  .navigation-title {
+  .navigation-title,
+  .page-outline > p {
     margin: 0 0 0.9rem;
     font-size: 0.78rem;
     font-weight: 750;
     letter-spacing: 0.08em;
+  }
+
+  .page-outline nav {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .page-outline a {
+    padding: 0.42rem 0 0.42rem 0.7rem;
+    border-left: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    text-decoration: none;
+  }
+
+  .page-outline a:hover {
+    border-left-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .page-outline a[data-depth='3'] {
+    padding-left: 1.15rem;
+  }
+
+  .page-outline span {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
   }
 
   .document-tree {
@@ -209,6 +256,16 @@ const basicTools = [
 
   .docs-content :global(a) {
     color: var(--color-accent);
+  }
+
+  @media (max-width: 70rem) {
+    .docs-shell {
+      grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr);
+    }
+
+    .page-outline {
+      display: none;
+    }
   }
 
   @media (max-width: 46rem) {
