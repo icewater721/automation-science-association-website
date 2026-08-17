@@ -117,6 +117,21 @@ const basicTools = [
     align-self: start;
   }
 
+  .docs-navigation {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .docs-article {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .page-outline {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
   .navigation-title,
   .page-outline > p {
     margin: 0 0 0.9rem;
@@ -276,6 +291,13 @@ const basicTools = [
 
     .docs-navigation {
       position: static;
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .docs-article {
+      grid-column: 1;
+      grid-row: auto;
     }
   }
 </style>
