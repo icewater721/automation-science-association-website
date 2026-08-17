@@ -1,28 +1,35 @@
+---
+import { joinContactContent } from '../data/site';
+---
+
 <section class="join-contact" id="services" aria-labelledby="join-title">
   <div class="join-inner">
     <div class="section-heading">
       <p>加入与联系</p>
-      <h2 id="join-title">和我们一起，把想法做成成果</h2>
+      <h2 id="join-title">{joinContactContent.heading}</h2>
     </div>
 
     <div class="action-grid">
       <article>
         <span class="panel-code" aria-hidden="true">02-A / JOIN</span>
         <h3>加入我们</h3>
-        <p>参与项目服务、赛事组织和内容运维，在实践中积累经验、认识伙伴。</p>
+        <p>{joinContactContent.join.description}</p>
         <div class="panel-status">
-          <span class="status-dot" aria-hidden="true"></span>2026 级招新预计于
-          10 月上旬开展，以学院正式通知为准。
+          <span class="status-dot" aria-hidden="true"></span>{
+            joinContactContent.join.status
+          }
         </div>
       </article>
 
       <article id="contact">
         <span class="panel-code" aria-hidden="true">02-B / CONTACT</span>
         <h3>联系我们</h3>
-        <p>赛事、大创、双创系统或科协活动相关问题，可通过官方答疑渠道咨询。</p>
+        <p>{joinContactContent.contact.description}</p>
         <div class="panel-links">
           <a href="/docs/">查看文档中心 <span aria-hidden="true">↗</span></a>
-          <span class="pending">答疑群 / 邮箱待确认</span>
+          <a href={`mailto:${joinContactContent.contact.email}`}
+            >{joinContactContent.contact.email}</a
+          >
         </div>
       </article>
     </div>
@@ -35,7 +42,7 @@
   }
 
   .join-inner {
-    width: min(76rem, calc(100% - 2rem));
+    width: min(64rem, calc(100% - clamp(3rem, 10vw, 8rem)));
     margin-inline: auto;
   }
 
@@ -132,10 +139,6 @@
     color: var(--color-accent);
   }
 
-  .pending {
-    color: var(--color-text-muted);
-  }
-
   :global(:root[data-theme='ark']) .join-contact {
     background-color: var(--color-page);
     background-image: var(--ark-grid-image);
@@ -145,7 +148,7 @@
 
   :global(:root[data-theme='ark']) .join-contact::before {
     display: block;
-    width: min(76rem, calc(100% - 2rem));
+    width: min(64rem, calc(100% - clamp(3rem, 10vw, 8rem)));
     height: 0.45rem;
     margin: calc(clamp(3.5rem, 7vw, 5.5rem) * -1) auto clamp(3rem, 6vw, 4.5rem);
     background: var(--ark-hazard-stripe);
@@ -207,6 +210,11 @@
   }
 
   @media (max-width: 46rem) {
+    .join-inner,
+    :global(:root[data-theme='ark']) .join-contact::before {
+      width: min(100% - 2rem, 64rem);
+    }
+
     .action-grid {
       grid-template-columns: 1fr;
     }

@@ -13,7 +13,7 @@ const currentYear = new Date().getFullYear();
 <style>
   .site-footer {
     display: flex;
-    width: min(76rem, calc(100% - 2rem));
+    width: min(64rem, calc(100% - clamp(3rem, 10vw, 8rem)));
     min-height: 9rem;
     align-items: flex-end;
     justify-content: space-between;
@@ -38,6 +38,7 @@ const currentYear = new Date().getFullYear();
 
   @media (max-width: 38rem) {
     .site-footer {
+      width: min(100% - 2rem, 64rem);
       align-items: flex-start;
       flex-direction: column;
     }

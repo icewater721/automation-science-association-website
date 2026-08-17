@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="服务中心 | 人工智能学院学生科协"
+  description="人工智能学院学生科协服务中心"
+>
+  <main class="services-placeholder">
+    <p class="eyebrow">服务中心</p>
+    <h1>独立服务界面</h1>
+    <p>服务项目、办理流程和常见问题将在后续 Sprint 中逐步实现。</p>
+    <a href="/">返回主页</a>
+  </main>
+</BaseLayout>
+
+<style>
+  .services-placeholder {
+    display: grid;
+    min-height: calc(100vh - 4.5rem);
+    place-content: center;
+    justify-items: start;
+    padding: clamp(2rem, 8vw, 6rem);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  h1 {
+    margin-block: 0.5rem;
+  }
+
+  p {
+    max-width: 36rem;
+    color: var(--color-text-muted);
+  }
+
+  a {
+    margin-top: 1rem;
+    color: var(--color-accent);
+  }
+</style>

@@ -24,6 +24,13 @@ export const searchEntries: SearchEntry[] = [
     keywords: ['文档', '资料', '帮助'],
   },
   {
+    title: '服务中心',
+    description: '学院学生科协的独立服务入口，具体服务将在后续 Sprint 中实现。',
+    category: '服务',
+    url: '/services/',
+    keywords: ['服务', '办事', '帮助', '科协服务'],
+  },
+  {
     title: '学生科协及其部门介绍',
     description: '学院学生科协以及科创部、赛事部和运维部的工作介绍。',
     category: '科协简介',

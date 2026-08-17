@@ -54,11 +54,18 @@ import { departments } from '../data/departments';
               <span class="department-code" aria-hidden="true">
                 {department.code}
               </span>
-              <h2>{department.name}</h2>
-              <p>{department.englishName}</p>
+              <h2>
+                {department.name}
+                <span class="title-separator"> · </span>
+                <span class="english-name">{department.englishName}</span>
+              </h2>
+              <p class="department-summary">
+                <strong>{department.mission}</strong>
+                {department.summary}
+              </p>
             </div>
             <div class="department-detail">
-              <p class="department-summary">{department.summary}</p>
+              <h3>我们做什么：</h3>
               <ul aria-label={`${department.name}主要工作`}>
                 {department.responsibilities.map((responsibility) => (
                   <li>{responsibility}</li>
@@ -135,7 +142,7 @@ import { departments } from '../data/departments';
   }
 
   .section-shell {
-    width: min(72rem, calc(100% - 2rem));
+    width: min(64rem, calc(100% - clamp(3rem, 10vw, 8rem)));
     margin-inline: auto;
     padding-block: clamp(3.5rem, 7vw, 6rem);
   }
@@ -224,10 +231,10 @@ import { departments } from '../data/departments';
   .department-panel {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(10rem, 0.32fr) minmax(0, 1fr);
-    gap: clamp(2rem, 6vw, 6rem);
-    min-height: 14rem;
-    align-content: center;
+    grid-template-columns: minmax(15rem, 0.42fr) minmax(0, 0.58fr);
+    gap: clamp(2.5rem, 7vw, 5.5rem);
+    min-height: 18rem;
+    align-items: start;
     padding-block: clamp(2rem, 5vw, 3.5rem);
     border-bottom: 1px solid var(--color-border);
   }
@@ -242,39 +249,41 @@ import { departments } from '../data/departments';
 
   h2 {
     margin: 0;
-    font-size: clamp(1.7rem, 3vw, 2.35rem);
-    letter-spacing: -0.035em;
+    font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+    letter-spacing: -0.025em;
   }
 
-  .department-name p {
-    margin: 0.45rem 0 0;
-    color: var(--color-text-muted);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  .title-separator {
+    font-weight: 450;
+  }
+
+  .english-name {
+    font-weight: 750;
   }
 
   .department-summary {
+    margin: 1.35rem 0 0;
+    font-size: clamp(1rem, 1.5vw, 1.1rem);
+    line-height: 1.8;
+  }
+
+  .department-detail h3 {
     margin: 0;
     font-size: 1.05rem;
-    line-height: 1.85;
   }
 
   ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem 1.5rem;
-    margin: 1rem 0 0;
-    padding: 0;
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    list-style: none;
+    display: grid;
+    gap: 0.65rem;
+    margin: 1.15rem 0 0;
+    padding-left: 1.35rem;
+    color: var(--color-text);
+    font-size: 1rem;
+    line-height: 1.7;
   }
 
-  li::before {
-    margin-right: 0.5rem;
+  li::marker {
     color: var(--color-accent);
-    content: '—';
   }
 
   :global(:root[data-theme='ark']) .departments {
@@ -384,7 +393,6 @@ import { departments } from '../data/departments';
   }
 
   :global(:root[data-theme='ark']) .department-panel {
-    grid-template-columns: minmax(10rem, 0.34fr) minmax(0, 1fr);
     min-height: 17rem;
     margin-top: 0.8rem;
     padding: clamp(1.6rem, 4vw, 2.5rem);
@@ -425,15 +433,8 @@ import { departments } from '../data/departments';
   }
 
   :global(:root[data-theme='ark']) li {
-    padding: 0.4rem 0.6rem;
-    border: 1px solid var(--color-border);
-    background: var(--color-page);
     font-family: ui-monospace, 'Cascadia Code', monospace;
-    font-size: 0.76rem;
-  }
-
-  :global(:root[data-theme='ark']) li::before {
-    content: '//';
+    font-size: 0.82rem;
   }
 
   :global(:root[data-theme='ark']) .panel-status {
@@ -448,6 +449,10 @@ import { departments } from '../data/departments';
   }
 
   @media (max-width: 42rem) {
+    .section-shell {
+      width: min(100% - 2rem, 64rem);
+    }
+
     .department-tabs {
       justify-content: space-between;
     }
@@ -466,14 +471,14 @@ import { departments } from '../data/departments';
       left: 0.55rem;
     }
 
+    .introduction {
+      font-size: 1rem;
+    }
+
     .department-panel,
     :global(:root[data-theme='ark']) .department-panel {
       grid-template-columns: 1fr;
-      gap: 1.25rem;
-    }
-
-    .introduction {
-      font-size: 1rem;
+      gap: 1.75rem;
     }
 
     :global(:root[data-theme='ark']) .system-bar span:last-child {
