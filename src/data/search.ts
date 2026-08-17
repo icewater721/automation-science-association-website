@@ -24,6 +24,14 @@ export const searchEntries: SearchEntry[] = [
     keywords: ['文档', '资料', '帮助', 'Issue', 'Vibe Coding'],
   },
   {
+    title: 'VS Code：从打开文件夹开始',
+    description:
+      '认识 VS Code 的基本界面，并学习打开项目、查找文件、使用终端和安装扩展。',
+    category: '学习资料',
+    url: '/docs/learning/basic-tools/vscode/',
+    keywords: ['VS Code', '编辑器', '工作区', '扩展', '终端'],
+  },
+  {
     title: '服务中心',
     description: '学院学生科协的独立服务入口，具体服务将在后续 Sprint 中实现。',
     category: '服务',
