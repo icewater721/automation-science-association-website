@@ -2,6 +2,12 @@
 import SiteSearch from './SiteSearch.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { withBase } from '../utils/paths';
+
+const pathname = Astro.url.pathname;
+const docsPath = withBase('/docs/');
+const servicesPath = withBase('/services/');
+const isDocsPage = pathname.startsWith(docsPath);
+const isServicesPage = pathname.startsWith(servicesPath);
 ---
 
 <header class="site-header" data-hidden="false">
@@ -15,13 +21,21 @@ import { withBase } from '../utils/paths';
       />
       <span class="brand-name">人工智能学院学生科协</span>
     </a>
-    <a class="nav-link" href={withBase('/docs/')}>文档</a>
+    <a
+      class:list={['nav-link', { 'nav-link--current': isDocsPage }]}
+      href={docsPath}
+      aria-current={isDocsPage ? 'page' : undefined}>文档</a
+    >
     <span
       class="nav-link nav-link--upcoming"
       aria-disabled="true"
       title="活动区将在后续实现">活动</span
     >
-    <a class="nav-link" href={withBase('/services/')}>服务</a>
+    <a
+      class:list={['nav-link', { 'nav-link--current': isServicesPage }]}
+      href={servicesPath}
+      aria-current={isServicesPage ? 'page' : undefined}>服务</a
+    >
   </nav>
 
   <div class="header-actions">
@@ -96,6 +110,21 @@ import { withBase } from '../utils/paths';
     cursor: not-allowed;
   }
 
+  .nav-link--current {
+    position: relative;
+    color: var(--color-accent);
+  }
+
+  .nav-link--current::after {
+    position: absolute;
+    right: 0.7rem;
+    bottom: 0.2rem;
+    left: 0.7rem;
+    height: 0.13rem;
+    background: currentColor;
+    content: '';
+  }
+
   .home-link:hover .brand-name,
   a.nav-link:hover {
     color: var(--color-accent);
@@ -113,6 +142,21 @@ import { withBase } from '../utils/paths';
 
   :global(:root[data-theme='ark']) .nav-link {
     border-radius: 0;
+  }
+
+  :global(:root[data-theme='ark']) .nav-link--current {
+    background: var(--color-accent);
+    color: #111416;
+    clip-path: polygon(0.4rem 0, 100% 0, calc(100% - 0.4rem) 100%, 0 100%);
+  }
+
+  :global(:root[data-theme='ark']) .nav-link--current::after {
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: 28%;
+    height: 0.2rem;
+    background: var(--ark-warning);
   }
 
   :global(:root[data-theme='ark']) .nav-link--upcoming::after {
