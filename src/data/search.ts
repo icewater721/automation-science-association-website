@@ -12,8 +12,8 @@ export interface SearchEntry {
 // 会在构建时汇入这里，不需要为搜索功能单独维护数据库。
 export const searchEntries: SearchEntry[] = [
   {
-    title: '武汉科技大学人工智能与自动化学院科协',
-    description: '学院科学技术协会门户网站主页。',
+    title: '首页 | 武科大人工智能学院科协',
+    description: '武科大人工智能学院学生科协首页。',
     category: '主页',
     url: withBase(),
     keywords: ['科协', '自动化', '人工智能', 'ASAW', '武汉科技大学'],
