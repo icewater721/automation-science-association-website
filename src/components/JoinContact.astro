@@ -79,8 +79,10 @@ import { withBase } from '../utils/paths';
     display: grid;
     min-height: 16rem;
     align-content: start;
+    overflow: hidden;
     padding: clamp(1.5rem, 4vw, 2.5rem);
     border: 1px solid var(--color-border);
+    border-radius: 1rem;
     background: var(--color-surface);
   }
 
@@ -179,13 +181,8 @@ import { withBase } from '../utils/paths';
   :global(:root[data-theme='ark']) article {
     position: relative;
     border-left: 0.3rem solid var(--color-accent);
-    clip-path: polygon(
-      0 0,
-      calc(100% - 1.25rem) 0,
-      100% 1.25rem,
-      100% 100%,
-      0 100%
-    );
+    border-radius: 1rem;
+    clip-path: none;
   }
 
   :global(:root[data-theme='ark']) article::after {
