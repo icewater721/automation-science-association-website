@@ -1,21 +1,27 @@
 ---
 import SiteSearch from './SiteSearch.astro';
 import ThemeToggle from './ThemeToggle.astro';
+import { withBase } from '../utils/paths';
 ---
 
 <header class="site-header" data-hidden="false">
   <nav class="primary-nav" aria-label="主导航">
-    <a class="home-link" href="/">
-      <img src="/images/brand/asaw-logo.png" alt="" width="48" height="48" />
+    <a class="home-link" href={withBase()}>
+      <img
+        src={withBase('/images/brand/asaw-logo.png')}
+        alt=""
+        width="48"
+        height="48"
+      />
       <span class="brand-name">人工智能学院学生科协</span>
     </a>
-    <a class="nav-link" href="/docs/">文档</a>
+    <a class="nav-link" href={withBase('/docs/')}>文档</a>
     <span
       class="nav-link nav-link--upcoming"
       aria-disabled="true"
       title="活动区将在后续实现">活动</span
     >
-    <a class="nav-link" href="/services/">服务</a>
+    <a class="nav-link" href={withBase('/services/')}>服务</a>
   </nav>
 
   <div class="header-actions">

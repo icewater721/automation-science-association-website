@@ -1,6 +1,7 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
+import { withBase } from '../utils/paths';
 
 interface Props {
   title: string;
@@ -46,7 +47,7 @@ const basicTools = [
       <nav class="document-tree">
         <a
           class="tree-link tree-link--root"
-          href="/docs/"
+          href={withBase('/docs/')}
           aria-current={isCurrent('/docs/') ? 'page' : undefined}>简介</a
         >
         <details open={isLearning}>
@@ -59,7 +60,7 @@ const basicTools = [
                   basicTools.map((tool) => (
                     <a
                       class="tree-link"
-                      href={tool.path}
+                      href={withBase(tool.path)}
                       aria-current={isCurrent(tool.path) ? 'page' : undefined}
                     >
                       {tool.title}

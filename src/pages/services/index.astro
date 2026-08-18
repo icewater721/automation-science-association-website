@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../utils/paths';
 ---
 
 <BaseLayout
@@ -10,7 +11,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <p class="eyebrow">服务中心</p>
     <h1>独立服务界面</h1>
     <p>服务项目、办理流程和常见问题将在后续 Sprint 中逐步实现。</p>
-    <a href="/">返回主页</a>
+    <a href={withBase()}>返回主页</a>
   </main>
 </BaseLayout>
 

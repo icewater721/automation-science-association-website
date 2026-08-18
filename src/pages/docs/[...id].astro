@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render } from 'astro:content';
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import { withBase } from '../../utils/paths';
 
 export const getStaticPaths = (async () => {
   const entries = await getCollection('docs', ({ data }) => !data.draft);
@@ -25,7 +26,7 @@ const entryByRoute = new Map(
 );
 const routeSegments = route.split('/');
 const breadcrumbs = [
-  { title: '文档', href: '/docs/' },
+  { title: '文档', href: withBase('/docs/') },
   ...routeSegments.map((_, index) => {
     const segmentRoute = routeSegments.slice(0, index + 1).join('/');
     const segmentEntry = entryByRoute.get(segmentRoute);
@@ -33,7 +34,7 @@ const breadcrumbs = [
 
     return {
       title: segmentEntry?.data.title ?? routeSegments[index],
-      href: isCurrent ? undefined : `/docs/${segmentRoute}/`,
+      href: isCurrent ? undefined : withBase(`/docs/${segmentRoute}/`),
     };
   }),
 ];
@@ -55,7 +56,7 @@ const navigationItem = (item: (typeof siblingDocuments)[number] | undefined) =>
   item
     ? {
         title: item.data.title,
-        href: `/docs/${item.id.replace(/\/index$/, '')}/`,
+        href: withBase(`/docs/${item.id.replace(/\/index$/, '')}/`),
       }
     : undefined;
 const previous = navigationItem(siblingDocuments[currentIndex - 1]);

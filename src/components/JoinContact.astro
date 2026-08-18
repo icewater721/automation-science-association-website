@@ -1,5 +1,6 @@
 ---
 import { joinContactContent } from '../data/site';
+import { withBase } from '../utils/paths';
 ---
 
 <section class="join-contact" id="services" aria-labelledby="join-title">
@@ -26,7 +27,9 @@ import { joinContactContent } from '../data/site';
         <h3>联系我们</h3>
         <p>{joinContactContent.contact.description}</p>
         <div class="panel-links">
-          <a href="/docs/">查看文档中心 <span aria-hidden="true">↗</span></a>
+          <a href={withBase('/docs/')}
+            >查看文档中心 <span aria-hidden="true">↗</span></a
+          >
           <a href={`mailto:${joinContactContent.contact.email}`}
             >{joinContactContent.contact.email}</a
           >

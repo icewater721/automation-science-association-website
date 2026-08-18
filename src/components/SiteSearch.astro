@@ -1,4 +1,12 @@
-<div class="site-search" data-search-root>
+---
+import { withBase } from '../utils/paths';
+---
+
+<div
+  class="site-search"
+  data-search-root
+  data-search-index-url={withBase('/search-index.json')}
+>
   <form class="search-form" role="search" data-search-form>
     <label class="visually-hidden" for="site-search-input">搜索全站内容</label>
     <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
@@ -51,7 +59,9 @@
 
     const loadIndex = async () => {
       if (index) return index;
-      const response = await fetch('/search-index.json');
+      const response = await fetch(
+        root.dataset.searchIndexUrl ?? '/search-index.json',
+      );
       if (!response.ok) throw new Error('无法加载搜索索引');
       index = (await response.json()) as SearchEntry[];
       return index;
