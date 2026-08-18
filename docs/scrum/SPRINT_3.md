@@ -56,9 +56,9 @@ https://icewater721.github.io/automation-science-association-website/
 - [x] 添加 GitHub Actions 自动构建与部署工作流
 - [x] 在 GitHub 仓库中启用 Pages 的 GitHub Actions 发布源
 - [x] 允许 `sprint-3` 分支部署到 `github-pages` 环境
-- [ ] 推送部署分支并确认自动构建成功
-- [ ] 验收主页、文档、搜索、主题和页面跳转
-- [ ] 记录公开网址和日常更新流程
+- [x] 推送部署分支并确认自动构建成功
+- [x] 验收主页、文档、搜索索引、静态资源和页面跳转
+- [x] 记录公开网址和日常更新流程
 - [x] 讨论是否在本轮购买并绑定正式域名（本轮暂不购买）
 
 ### C. 收尾
