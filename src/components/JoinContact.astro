@@ -147,11 +147,9 @@ import { withBase } from '../utils/paths';
   :global(:root[data-theme='ark']) .join-contact {
     background-color: var(--color-page);
     background-image:
-      linear-gradient(145deg, rgb(126 137 146 / 8%), transparent 44%),
-      radial-gradient(circle at 12% 85%, rgb(216 103 85 / 7%), transparent 28%),
-      var(--ark-grid-image);
-    background-position: center top;
-    background-size: var(--ark-grid-size) var(--ark-grid-size);
+      linear-gradient(145deg, transparent 0 72%, rgb(25 28 31 / 8%) 72% 100%),
+      radial-gradient(circle at 12% 85%, rgb(196 94 77 / 13%), transparent 28%),
+      linear-gradient(20deg, rgb(213 168 43 / 9%) 0 13%, transparent 13%);
   }
 
   :global(:root[data-theme='ark']) .join-contact::before {
@@ -187,8 +185,8 @@ import { withBase } from '../utils/paths';
     border-radius: 1rem;
     background: var(--ark-glass);
     box-shadow:
-      0 1.2rem 2.8rem rgb(0 0 0 / 26%),
-      inset 0 1px rgb(255 255 255 / 7%);
+      0 1.2rem 2.8rem rgb(31 37 41 / 12%),
+      inset 0 1px rgb(255 255 255 / 80%);
     backdrop-filter: blur(14px);
     clip-path: none;
   }

@@ -290,11 +290,14 @@ import { departments } from '../data/departments';
     overflow: hidden;
     background-color: var(--color-page);
     background-image:
-      linear-gradient(135deg, rgb(126 137 146 / 8%), transparent 42%),
-      radial-gradient(circle at 82% 18%, rgb(216 103 85 / 8%), transparent 24%),
-      var(--ark-grid-image);
-    background-position: center top;
-    background-size: var(--ark-grid-size) var(--ark-grid-size);
+      linear-gradient(128deg, rgb(25 28 31 / 9%) 0 18%, transparent 18% 100%),
+      radial-gradient(circle at 82% 18%, rgb(196 94 77 / 15%), transparent 24%),
+      linear-gradient(
+        160deg,
+        transparent 0 67%,
+        rgb(16 155 216 / 10%) 67% 78%,
+        transparent 78%
+      );
   }
 
   :global(:root[data-theme='ark']) .departments::before {
@@ -311,8 +314,8 @@ import { departments } from '../data/departments';
     right: -8rem;
     width: 24rem;
     height: 24rem;
-    border: 1px solid var(--color-border);
-    opacity: 0.36;
+    border: 2rem solid rgb(25 28 31 / 7%);
+    opacity: 0.8;
     content: '';
     transform: rotate(45deg);
     pointer-events: none;
@@ -325,10 +328,11 @@ import { departments } from '../data/departments';
     border-inline: 1px solid var(--color-border);
     background: linear-gradient(
       120deg,
-      rgb(8 10 12 / 92%),
-      rgb(25 30 35 / 72%)
+      rgb(248 247 242 / 90%),
+      rgb(232 231 226 / 66%)
     );
-    backdrop-filter: blur(10px);
+    box-shadow: 1.4rem 0 0 rgb(16 155 216 / 8%);
+    backdrop-filter: blur(8px);
   }
 
   :global(:root[data-theme='ark']) .system-bar {
@@ -350,8 +354,6 @@ import { departments } from '../data/departments';
 
   :global(:root[data-theme='ark']) h1 {
     max-width: 13ch;
-    text-shadow: 0.12rem 0
-      color-mix(in srgb, var(--color-accent) 38%, transparent);
   }
 
   :global(:root[data-theme='ark']) .section-heading {
@@ -365,7 +367,7 @@ import { departments } from '../data/departments';
     margin-top: 1.6rem;
     padding: 0.35rem 2.5rem 0.35rem 0.65rem;
     background: var(--color-text);
-    color: var(--color-page);
+    color: #ffffff;
     font-family: ui-monospace, 'Cascadia Code', monospace;
     font-size: 0.68rem;
     letter-spacing: 0.12em;
@@ -376,7 +378,7 @@ import { departments } from '../data/departments';
     gap: 0.25rem;
     padding: 0.35rem;
     border: 1px solid var(--color-border);
-    background: #020304;
+    background: rgb(248 247 242 / 72%);
   }
 
   :global(:root[data-theme='ark']) .department-tabs button {
@@ -395,8 +397,8 @@ import { departments } from '../data/departments';
   :global(:root[data-theme='ark'])
     .department-tabs
     button[aria-selected='true'] {
-    background: #e7eaec;
-    color: #111416;
+    background: var(--color-text);
+    color: #ffffff;
     box-shadow: inset 0 -0.22rem var(--ark-warning);
   }
 
@@ -410,13 +412,13 @@ import { departments } from '../data/departments';
       linear-gradient(
         115deg,
         var(--ark-glass) 0 68%,
-        rgb(24 169 255 / 10%) 68% 86%,
-        rgb(233 198 74 / 8%) 86%
+        rgb(16 155 216 / 13%) 68% 86%,
+        rgb(213 168 43 / 16%) 86%
       ),
       var(--color-surface);
     box-shadow:
-      0 1.4rem 3rem rgb(0 0 0 / 28%),
-      inset 0 1px rgb(255 255 255 / 7%);
+      0 1.4rem 3rem rgb(31 37 41 / 12%),
+      inset 0 1px rgb(255 255 255 / 80%);
     backdrop-filter: blur(14px);
     clip-path: polygon(
       0 0,
