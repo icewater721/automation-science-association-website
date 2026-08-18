@@ -190,9 +190,9 @@
     height: 2.5rem;
     align-items: center;
     gap: 0.3rem;
-    padding-inline: 0.65rem 0.5rem;
-    border: 1px solid color-mix(in srgb, var(--color-nav-text) 28%, transparent);
-    border-radius: 0.55rem;
+    padding-inline: 0.55rem 0.4rem;
+    border: 0;
+    border-radius: 0;
     background: transparent;
     color: var(--color-nav-text);
     font: inherit;
@@ -278,7 +278,7 @@
 
   .theme-menu button[data-theme-option='light'] {
     background: transparent;
-    color: #111111;
+    color: var(--color-text);
   }
 
   .theme-menu button[data-theme-option='dark'] {
@@ -308,29 +308,16 @@
     border-radius: 0;
   }
 
-  :global(:root[data-theme='light']) .theme-trigger {
-    border-radius: 999px;
-    background: #ffffff;
-  }
-
-  :global(:root[data-theme='dark']) .theme-trigger {
-    border-radius: 0.35rem;
-    background: #050505;
-  }
-
+  :global(:root[data-theme='light']) .theme-trigger,
+  :global(:root[data-theme='dark']) .theme-trigger,
   :global(:root[data-theme='ark']) .theme-trigger {
-    border-left: 0.25rem solid var(--color-accent);
-    background: linear-gradient(
-      105deg,
-      #0e1216 0 78%,
-      rgb(24 169 255 / 18%) 78%
-    );
-    clip-path: polygon(
-      0 0,
-      calc(100% - 0.65rem) 0,
-      100% 0.65rem,
-      100% 100%,
-      0 100%
-    );
+    background: transparent;
+  }
+
+  :global(:root[data-theme='dark']) .theme-menu button img,
+  :global(:root[data-theme='dark']) .current-theme-icon img,
+  :global(:root[data-theme='ark']) .theme-menu button img,
+  :global(:root[data-theme='ark']) .current-theme-icon img {
+    filter: grayscale(1) contrast(1.25) invert(1);
   }
 </style>
