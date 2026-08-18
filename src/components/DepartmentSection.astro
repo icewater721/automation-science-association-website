@@ -515,22 +515,29 @@ import { departments } from '../data/departments';
     display: inline-block;
     max-width: 15ch;
     padding: 0.55rem clamp(1rem, 3vw, 1.6rem) 0.7rem;
-    border: 0.22rem solid #673d27;
-    border-radius: 0.75rem 0.75rem 0.45rem 0.45rem;
-    background: linear-gradient(#b9753f, #8d5736);
-    color: #f8d66e;
-    font-family: 'Microsoft YaHei', 'STKaiti', KaiTi, sans-serif;
-    font-weight: 900;
-    letter-spacing: -0.035em;
+    border: 0.26rem solid #713b24;
+    border-radius: 0.35rem;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 1.45rem,
+        rgb(155 91 45 / 12%) 1.45rem 1.55rem
+      ),
+      linear-gradient(#f5cb83, #eab56b);
+    color: #a9562f;
+    font-family: var(--stardew-display-font);
+    font-weight: 400;
+    letter-spacing: 0.02em;
     text-shadow:
-      0.12rem 0 #633c25,
-      -0.12rem 0 #633c25,
-      0 0.12rem #633c25,
-      0 -0.12rem #633c25,
-      0.18rem 0.2rem 0 #4b2f20;
+      0.1rem 0 #6b3826,
+      -0.1rem 0 #6b3826,
+      0 0.1rem #6b3826,
+      0 -0.1rem #6b3826,
+      0.16rem 0.18rem 0 #7d472d;
     box-shadow:
-      0 0.28rem 0 #633c25,
-      inset 0 0 0 0.15rem #d69a52;
+      0 0 0 0.16rem #b96c3c,
+      0.28rem 0.32rem 0 #633c25,
+      inset 0 0 0 0.17rem #ffe0a2;
   }
 
   :global(:root[data-theme='stardew']) .section-heading h1::before,
@@ -539,8 +546,11 @@ import { departments } from '../data/departments';
     width: 0.38rem;
     height: 0.38rem;
     margin: 0 0.5rem 0.25rem;
-    background: var(--stardew-gold);
-    box-shadow: 0.08rem 0.08rem 0 #633c25;
+    border-radius: 50%;
+    background: #d58b4e;
+    box-shadow:
+      0.08rem 0.08rem 0 #633c25,
+      inset 0.08rem 0.08rem 0 #ffd493;
     content: '';
     transform: rotate(45deg);
   }

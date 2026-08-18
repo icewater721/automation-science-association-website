@@ -254,14 +254,28 @@ import { withBase } from '../utils/paths';
   }
 
   :global(:root[data-theme='stardew']) .section-heading h2 {
-    color: #f5cc5f;
-    font-weight: 900;
+    display: inline-block;
+    padding: 0.55rem clamp(1rem, 3vw, 1.6rem) 0.7rem;
+    border: 0.24rem solid #713b24;
+    border-radius: 0.3rem;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 1.35rem,
+        rgb(155 91 45 / 10%) 1.35rem 1.45rem
+      ),
+      linear-gradient(#f5cb83, #eab56b);
+    color: #6a3525;
+    font-family: var(--stardew-display-font);
+    font-weight: 400;
     text-shadow:
-      0.1rem 0 #633c25,
-      -0.1rem 0 #633c25,
-      0 0.1rem #633c25,
-      0 -0.1rem #633c25,
-      0.16rem 0.18rem 0 #8d5736;
+      0.06rem 0 #ffdda0,
+      0 0.06rem #ffdda0,
+      0.12rem 0.14rem 0 #a76038;
+    box-shadow:
+      0 0 0 0.14rem #b96c3c,
+      0.25rem 0.28rem 0 #633c25,
+      inset 0 0 0 0.15rem #ffe0a2;
   }
 
   :global(:root[data-theme='ark']) article:first-child::before,

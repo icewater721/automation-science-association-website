@@ -1,5 +1,13 @@
 @import './tokens.css';
 
+@font-face {
+  font-family: 'Fusion Pixel SC';
+  src: url('../assets/fonts/fusion-pixel-12px-sc.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
 *,
 *::before,
 *::after {

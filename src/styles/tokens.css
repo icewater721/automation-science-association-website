@@ -74,6 +74,7 @@
   --stardew-gold: #efbd45;
   --stardew-sky: #91cbd2;
   --stardew-shadow: #613d2a;
+  --stardew-display-font: 'Fusion Pixel SC', 'SimSun', monospace;
 }
 
 :root[data-theme='stardew'][data-page='internal'] {
