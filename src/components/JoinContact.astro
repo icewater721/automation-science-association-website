@@ -253,6 +253,29 @@ import { withBase } from '../utils/paths';
     box-shadow: 0.12rem 0.12rem 0 #315436;
   }
 
+  :global(:root[data-theme='stardew']) .section-heading h2 {
+    color: #f5cc5f;
+    font-weight: 900;
+    text-shadow:
+      0.1rem 0 #633c25,
+      -0.1rem 0 #633c25,
+      0 0.1rem #633c25,
+      0 -0.1rem #633c25,
+      0.16rem 0.18rem 0 #8d5736;
+  }
+
+  :global(:root[data-theme='ark']) article:first-child::before,
+  :global(:root[data-theme='ark']) article:nth-child(2)::before {
+    position: absolute;
+    right: 1.25rem;
+    bottom: 1rem;
+    color: var(--ark-alert);
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    content: '/// ASAW';
+  }
+
   @media (max-width: 46rem) {
     .join-inner,
     :global(:root[data-theme='ark']) .join-contact::before {

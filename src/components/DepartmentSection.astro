@@ -511,6 +511,40 @@ import { departments } from '../data/departments';
       inset 0 0 0 0.18rem #e7c276;
   }
 
+  :global(:root[data-theme='stardew']) .section-heading h1 {
+    display: inline-block;
+    max-width: 15ch;
+    padding: 0.55rem clamp(1rem, 3vw, 1.6rem) 0.7rem;
+    border: 0.22rem solid #673d27;
+    border-radius: 0.75rem 0.75rem 0.45rem 0.45rem;
+    background: linear-gradient(#b9753f, #8d5736);
+    color: #f8d66e;
+    font-family: 'Microsoft YaHei', 'STKaiti', KaiTi, sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    text-shadow:
+      0.12rem 0 #633c25,
+      -0.12rem 0 #633c25,
+      0 0.12rem #633c25,
+      0 -0.12rem #633c25,
+      0.18rem 0.2rem 0 #4b2f20;
+    box-shadow:
+      0 0.28rem 0 #633c25,
+      inset 0 0 0 0.15rem #d69a52;
+  }
+
+  :global(:root[data-theme='stardew']) .section-heading h1::before,
+  :global(:root[data-theme='stardew']) .section-heading h1::after {
+    display: inline-block;
+    width: 0.38rem;
+    height: 0.38rem;
+    margin: 0 0.5rem 0.25rem;
+    background: var(--stardew-gold);
+    box-shadow: 0.08rem 0.08rem 0 #633c25;
+    content: '';
+    transform: rotate(45deg);
+  }
+
   :global(:root[data-theme='stardew']) .eyebrow {
     color: var(--stardew-green);
   }
@@ -558,6 +592,35 @@ import { departments } from '../data/departments';
 
   :global(:root[data-theme='stardew']) li::marker {
     color: var(--stardew-green);
+  }
+
+  :global(:root[data-theme='ark']) .department-panel::after {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.8rem;
+    height: 0.28rem;
+    background: linear-gradient(
+      90deg,
+      var(--ark-alert) 0 35%,
+      transparent 35% 48%,
+      var(--ark-warning) 48%
+    );
+    content: '';
+  }
+
+  :global(:root[data-theme='stardew']) .department-panel::before {
+    position: absolute;
+    top: -0.5rem;
+    right: 2rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    background: var(--stardew-gold);
+    box-shadow:
+      0.75rem 0.75rem 0 #d96b45,
+      1.5rem 0 0 var(--stardew-grass);
+    content: '';
+    transform: rotate(45deg);
   }
 
   @media (max-width: 42rem) {
