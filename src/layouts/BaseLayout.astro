@@ -6,14 +6,16 @@ import { withBase } from '../utils/paths';
 interface Props {
   title: string;
   description: string;
+  pageKind?: 'home' | 'docs' | 'internal';
 }
 
-const { title, description } = Astro.props;
+const { title, description, pageKind } = Astro.props;
 const isHomePage = Astro.url.pathname === withBase();
+const resolvedPageKind = pageKind ?? (isHomePage ? 'home' : 'internal');
 ---
 
 <!doctype html>
-<html lang="zh-CN" data-page={isHomePage ? 'home' : 'internal'}>
+<html lang="zh-CN" data-page={resolvedPageKind}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
