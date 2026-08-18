@@ -367,10 +367,14 @@ import { withBase } from '../utils/paths';
     background: transparent;
   }
 
-  :global(:root[data-theme='dark']) .theme-menu button img,
-  :global(:root[data-theme='dark']) .current-theme-icon img,
-  :global(:root[data-theme='ark']) .theme-menu button img,
-  :global(:root[data-theme='ark']) .current-theme-icon img {
+  :global(:root[data-theme='dark']) .theme-menu button img:not(.theme-art-icon),
+  :global(:root[data-theme='dark'])
+    .current-theme-icon
+    img:not(.theme-art-icon),
+  :global(:root[data-theme='ark']) .theme-menu button img:not(.theme-art-icon),
+  :global(:root[data-theme='ark'])
+    .current-theme-icon
+    img:not(.theme-art-icon) {
     filter: grayscale(1) contrast(1.25) invert(1);
   }
 
