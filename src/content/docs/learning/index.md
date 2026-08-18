@@ -5,7 +5,7 @@ kind: category
 audience:
   - 本院学生
 order: 10
-updatedAt: 2026-08-17
+updatedAt: 2026-08-18
 keywords:
   - 学习资料
   - 学习工具

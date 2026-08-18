@@ -7,6 +7,9 @@ interface Props {
   description: string;
   headings?: MarkdownHeading[];
   currentPath?: string;
+  breadcrumbs?: Array<{ title: string; href?: string }>;
+  previous?: { title: string; href: string };
+  next?: { title: string; href: string };
 }
 
 const {
@@ -14,6 +17,9 @@ const {
   description,
   headings = [],
   currentPath = '/docs/',
+  breadcrumbs = [],
+  previous,
+  next,
 } = Astro.props;
 const visibleHeadings = headings.filter(
   (heading) => heading.depth === 2 || heading.depth === 3,
@@ -68,6 +74,18 @@ const basicTools = [
     </aside>
 
     <article class="docs-article">
+      {
+        breadcrumbs.length > 0 && (
+          <nav class="breadcrumbs" aria-label="面包屑导航">
+            {breadcrumbs.map((item, index) => (
+              <span>
+                {index > 0 && <span aria-hidden="true">/</span>}
+                {item.href ? <a href={item.href}>{item.title}</a> : item.title}
+              </span>
+            ))}
+          </nav>
+        )
+      }
       <header>
         <p class="eyebrow">文档中心</p>
         <h1>{title}</h1>
@@ -76,6 +94,26 @@ const basicTools = [
       <div class="docs-content">
         <slot />
       </div>
+      {
+        (previous || next) && (
+          <nav class="article-navigation" aria-label="前后文导航">
+            {previous ? (
+              <a class="article-navigation__previous" href={previous.href}>
+                <span>上一篇</span>
+                <strong>{previous.title}</strong>
+              </a>
+            ) : (
+              <span />
+            )}
+            {next && (
+              <a class="article-navigation__next" href={next.href}>
+                <span>下一篇</span>
+                <strong>{next.title}</strong>
+              </a>
+            )}
+          </nav>
+        )
+      }
     </article>
 
     <aside class="page-outline" aria-label="本页跳转">
@@ -231,6 +269,25 @@ const basicTools = [
     border-bottom: 1px solid var(--color-border);
   }
 
+  .breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+
+  .breadcrumbs span {
+    display: inline-flex;
+    gap: 0.4rem;
+  }
+
+  .breadcrumbs a {
+    color: inherit;
+    text-decoration: none;
+  }
+
   .eyebrow {
     margin: 0 0 0.65rem;
     color: var(--color-accent);
@@ -271,6 +328,41 @@ const basicTools = [
 
   .docs-content :global(a) {
     color: var(--color-accent);
+  }
+
+  .article-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .article-navigation a {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .article-navigation a:hover {
+    border-color: var(--color-accent);
+  }
+
+  .article-navigation span {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+  }
+
+  .article-navigation strong {
+    font-size: 0.9rem;
+  }
+
+  .article-navigation__next {
+    text-align: right;
   }
 
   @media (max-width: 70rem) {

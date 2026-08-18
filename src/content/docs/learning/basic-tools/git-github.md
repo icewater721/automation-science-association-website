@@ -1,5 +1,5 @@
 ---
-title: Git 与 GitHub：保存并协作
+title: Git 与 GitHub
 description: 用 Git 记录代码变化，并通过 GitHub 备份项目和开展协作。
 kind: document
 audience:
@@ -15,7 +15,7 @@ draft: false
 sourceUrl: https://docs.github.com/zh/get-started/start-your-journey/git-and-github-learning-resources
 ---
 
-Git 是版本控制工具，负责记录文件如何变化；GitHub 是托管 Git 仓库和协作项目的网站。两者经常一起使用，但不是同一个东西。
+Git 是版本控制工具，负责记录文件如何变化；GitHub 是托管 Git 仓库和协作项目的网站，两者经常一起使用。
 
 ## 一个最小工作流程
 
