@@ -289,7 +289,10 @@ import { departments } from '../data/departments';
   :global(:root[data-theme='ark']) .departments {
     overflow: hidden;
     background-color: var(--color-page);
-    background-image: var(--ark-grid-image);
+    background-image:
+      linear-gradient(135deg, rgb(126 137 146 / 8%), transparent 42%),
+      radial-gradient(circle at 82% 18%, rgb(216 103 85 / 8%), transparent 24%),
+      var(--ark-grid-image);
     background-position: center top;
     background-size: var(--ark-grid-size) var(--ark-grid-size);
   }
@@ -320,7 +323,12 @@ import { departments } from '../data/departments';
     z-index: 1;
     padding-inline: clamp(1rem, 3vw, 2rem);
     border-inline: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-page) 86%, transparent);
+    background: linear-gradient(
+      120deg,
+      rgb(8 10 12 / 92%),
+      rgb(25 30 35 / 72%)
+    );
+    backdrop-filter: blur(10px);
   }
 
   :global(:root[data-theme='ark']) .system-bar {
@@ -375,7 +383,6 @@ import { departments } from '../data/departments';
     flex: 1;
     padding: 0.75rem 1rem;
     color: var(--color-text-muted);
-    font-family: ui-monospace, 'Cascadia Code', monospace;
     letter-spacing: 0.05em;
     clip-path: polygon(0.55rem 0, 100% 0, calc(100% - 0.55rem) 100%, 0 100%);
   }
@@ -388,8 +395,9 @@ import { departments } from '../data/departments';
   :global(:root[data-theme='ark'])
     .department-tabs
     button[aria-selected='true'] {
-    background: var(--color-text);
-    color: var(--color-page);
+    background: #e7eaec;
+    color: #111416;
+    box-shadow: inset 0 -0.22rem var(--ark-warning);
   }
 
   :global(:root[data-theme='ark']) .department-panel {
@@ -401,10 +409,15 @@ import { departments } from '../data/departments';
     background:
       linear-gradient(
         115deg,
-        color-mix(in srgb, var(--color-surface) 98%, transparent) 0 68%,
-        color-mix(in srgb, var(--color-accent) 8%, var(--color-surface)) 68%
+        var(--ark-glass) 0 68%,
+        rgb(24 169 255 / 10%) 68% 86%,
+        rgb(233 198 74 / 8%) 86%
       ),
       var(--color-surface);
+    box-shadow:
+      0 1.4rem 3rem rgb(0 0 0 / 28%),
+      inset 0 1px rgb(255 255 255 / 7%);
+    backdrop-filter: blur(14px);
     clip-path: polygon(
       0 0,
       calc(100% - 1.4rem) 0,
@@ -417,7 +430,7 @@ import { departments } from '../data/departments';
   :global(:root[data-theme='ark']) .department-code {
     display: block;
     margin-bottom: 1.1rem;
-    color: var(--color-accent);
+    color: var(--ark-warning);
     font-family: ui-monospace, 'Cascadia Code', monospace;
     font-size: 2.6rem;
     font-weight: 800;

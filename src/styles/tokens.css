@@ -32,6 +32,10 @@
   --color-nav: #050607;
   --color-nav-text: #ffffff;
   --color-accent: #18a9ff;
+  --ark-warning: #e9c64a;
+  --ark-alert: #d86755;
+  --ark-steel: #7e8992;
+  --ark-glass: rgb(21 26 31 / 82%);
   --ark-grid-size: 3rem;
   --ark-grid-image:
     linear-gradient(
@@ -45,8 +49,8 @@
     );
   --ark-hazard-stripe: repeating-linear-gradient(
     -45deg,
-    var(--color-accent) 0 0.55rem,
-    transparent 0.55rem 1.1rem
+    var(--ark-warning) 0 0.55rem,
+    #15191d 0.55rem 1.1rem
   );
 }
 
