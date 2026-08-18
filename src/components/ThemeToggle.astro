@@ -26,7 +26,7 @@ import { withBase } from '../utils/paths';
         <path d="M19.8 15.2A8 8 0 0 1 8.8 4.2 8.2 8.2 0 1 0 19.8 15.2Z"></path>
       </svg>
       <img
-        class="theme-art-icon"
+        class="theme-art-icon ark-icon"
         data-current-theme-icon="ark"
         src="https://arknights.wiki.gg/images/c/c8/Rhodes_Island.png"
         alt=""
@@ -83,7 +83,7 @@ import { withBase } from '../utils/paths';
       data-theme-option="ark"
     >
       <img
-        class="theme-art-icon"
+        class="theme-art-icon ark-icon"
         src="https://arknights.wiki.gg/images/c/c8/Rhodes_Island.png"
         alt=""
       />
@@ -340,6 +340,16 @@ import { withBase } from '../utils/paths';
     width: 1.6rem;
     height: 1.6rem;
   }
+
+  .theme-menu button img.ark-icon {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .current-theme-icon img.ark-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
   .theme-menu button[aria-checked='true']::after {
     position: absolute;
     right: 0.15rem;
@@ -367,21 +377,8 @@ import { withBase } from '../utils/paths';
     background: transparent;
   }
 
-  :global(:root[data-theme='dark']) .theme-menu button img:not(.theme-art-icon),
-  :global(:root[data-theme='dark'])
-    .current-theme-icon
-    img:not(.theme-art-icon),
-  :global(:root[data-theme='ark']) .theme-menu button img:not(.theme-art-icon),
-  :global(:root[data-theme='ark'])
-    .current-theme-icon
-    img:not(.theme-art-icon) {
-    filter: grayscale(1) contrast(1.25) invert(1);
-  }
-
-  :global(:root[data-theme='light']) img.theme-art-icon,
-  :global(:root[data-theme='dark']) img.theme-art-icon,
-  :global(:root[data-theme='ark']) img.theme-art-icon,
-  :global(:root[data-theme='stardew']) img.theme-art-icon {
+  .theme-menu button img,
+  .current-theme-icon img {
     filter: none;
   }
 </style>
