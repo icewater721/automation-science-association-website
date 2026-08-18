@@ -54,7 +54,7 @@ https://icewater721.github.io/automation-science-association-website/
 - [x] 调整 Astro 的 `site` 和 `base` 配置
 - [x] 统一内部链接和静态资源路径，使子路径部署正常
 - [x] 添加 GitHub Actions 自动构建与部署工作流
-- [ ] 在 GitHub 仓库中启用 Pages 的 GitHub Actions 发布源
+- [x] 在 GitHub 仓库中启用 Pages 的 GitHub Actions 发布源
 - [ ] 推送部署分支并确认自动构建成功
 - [ ] 验收主页、文档、搜索、主题和页面跳转
 - [ ] 记录公开网址和日常更新流程
