@@ -1,6 +1,6 @@
 # Sprint 2 Review 与学习回顾
 
-> 工程验收、知识检查和 Retrospective 已完成，等待 Product Owner 确认关闭 Sprint 2。
+> Product Owner 已完成验收，Sprint 2 于 2026-08-18 正式关闭。
 
 ## 本轮目标
 
@@ -85,3 +85,5 @@ Product Owner 已能够认识：
 ## 回顾结论
 
 Sprint Goal 已达成。本轮建立了可扩展的文档中心骨架，并用多篇基础工具资料验证了内容模型、路由、导航和搜索流程。剩余问题属于后续自动化、内容建设和移动端验收，不阻塞本轮关闭。
+
+Product Owner 已于 2026-08-18 确认关闭 Sprint 2。
