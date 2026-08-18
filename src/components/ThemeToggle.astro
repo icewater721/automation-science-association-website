@@ -21,10 +21,11 @@
       <svg data-current-theme-icon="dark" viewBox="0 0 24 24">
         <path d="M19.8 15.2A8 8 0 0 1 8.8 4.2 8.2 8.2 0 1 0 19.8 15.2Z"></path>
       </svg>
-      <svg data-current-theme-icon="ark" viewBox="0 0 24 24">
-        <path d="M12 2.8 21 19H3L12 2.8Z"></path>
-        <path d="m8 15.6 4-7.2 4 7.2M6.2 19l2.1-3.8h7.4l2.1 3.8"></path>
-      </svg>
+      <img
+        data-current-theme-icon="ark"
+        src="https://arknights.wiki.gg/images/c/c8/Rhodes_Island.png"
+        alt=""
+      />
     </span>
     <svg class="chevron" aria-hidden="true" viewBox="0 0 24 24"
       ><path d="m8 10 4 4 4-4"></path></svg
@@ -70,10 +71,10 @@
       title="明日方舟风格"
       data-theme-option="ark"
     >
-      <svg aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M12 2.8 21 19H3L12 2.8Z"></path>
-        <path d="m8 15.6 4-7.2 4 7.2M6.2 19l2.1-3.8h7.4l2.1 3.8"></path>
-      </svg>
+      <img
+        src="https://arknights.wiki.gg/images/c/c8/Rhodes_Island.png"
+        alt=""
+      />
     </button>
   </div>
 </div>
@@ -97,7 +98,9 @@
     );
     const menu = picker.querySelector<HTMLElement>('[data-theme-menu]');
     const currentIcons = Array.from(
-      picker.querySelectorAll<SVGElement>('[data-current-theme-icon]'),
+      picker.querySelectorAll<SVGElement | HTMLImageElement>(
+        '[data-current-theme-icon]',
+      ),
     );
     const options = Array.from(
       picker.querySelectorAll<HTMLButtonElement>('[data-theme-option]'),
@@ -216,10 +219,10 @@
     height: 1.1rem;
     place-items: center;
   }
-  .current-theme-icon svg {
+  .current-theme-icon :is(svg, img) {
     display: none;
   }
-  .current-theme-icon svg.is-current {
+  .current-theme-icon :is(svg, img).is-current {
     display: block;
   }
   .theme-trigger .chevron {
@@ -249,8 +252,8 @@
     height: 2.65rem;
     place-items: center;
     padding: 0;
-    border: 1px solid transparent;
-    border-radius: 0.4rem;
+    border: 0;
+    border-radius: 0;
     background: transparent;
     color: inherit;
     font: inherit;
@@ -265,35 +268,27 @@
     stroke-linejoin: round;
     stroke-width: 1.7;
   }
+  .theme-menu button img,
+  .current-theme-icon img {
+    width: 1.65rem;
+    height: 1.65rem;
+    object-fit: contain;
+    filter: grayscale(1) contrast(1.25);
+  }
 
   .theme-menu button[data-theme-option='light'] {
-    border-color: #d6d6d6;
-    background: #ffffff;
+    background: transparent;
     color: #111111;
   }
 
   .theme-menu button[data-theme-option='dark'] {
-    border-color: #3d3d3d;
-    border-radius: 999px;
-    background: #050505;
-    color: #ffffff;
+    background: transparent;
+    color: var(--color-text);
   }
 
   .theme-menu button[data-theme-option='ark'] {
-    border-color: #18a9ff;
-    border-left-width: 0.3rem;
-    border-radius: 0;
-    background:
-      linear-gradient(90deg, transparent 0 76%, rgb(24 169 255 / 16%) 76%),
-      #101418;
-    color: #ffffff;
-    clip-path: polygon(
-      0 0,
-      calc(100% - 0.7rem) 0,
-      100% 0.7rem,
-      100% 100%,
-      0 100%
-    );
+    background: transparent;
+    color: var(--color-text);
   }
   .theme-menu button[aria-checked='true']::after {
     position: absolute;
