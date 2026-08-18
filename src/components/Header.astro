@@ -169,6 +169,35 @@ const isServicesPage = pathname.startsWith(servicesPath);
     transform: rotate(45deg);
   }
 
+  :global(:root[data-theme='stardew']) .site-header {
+    border-bottom: 0.3rem solid var(--stardew-wood);
+    background:
+      linear-gradient(rgb(255 255 255 / 5%), transparent), var(--color-nav);
+    box-shadow: 0 0.25rem 0 #193b2a;
+  }
+
+  :global(:root[data-theme='stardew']) .home-link img {
+    border: 0.15rem solid #f4d278;
+    box-shadow: 0.15rem 0.15rem 0 #193b2a;
+    image-rendering: pixelated;
+  }
+
+  :global(:root[data-theme='stardew']) .nav-link {
+    border-radius: 0.35rem;
+    text-shadow: 0.08rem 0.08rem 0 #193b2a;
+  }
+
+  :global(:root[data-theme='stardew']) .nav-link--current {
+    background: var(--stardew-gold);
+    color: #4b3020;
+    box-shadow: 0.16rem 0.16rem 0 var(--stardew-shadow);
+    text-shadow: none;
+  }
+
+  :global(:root[data-theme='stardew']) .nav-link--current::after {
+    display: none;
+  }
+
   @media (max-width: 64rem) {
     .brand-name {
       display: none;

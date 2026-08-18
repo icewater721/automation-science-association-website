@@ -1,3 +1,7 @@
+---
+import { withBase } from '../utils/paths';
+---
+
 <div class="theme-picker" data-theme-picker>
   <button
     class="theme-trigger"
@@ -24,6 +28,12 @@
       <img
         data-current-theme-icon="ark"
         src="https://arknights.wiki.gg/images/c/c8/Rhodes_Island.png"
+        alt=""
+      />
+      <img
+        class="pixel-icon"
+        data-current-theme-icon="stardew"
+        src={withBase('/images/themes/stardew-chicken.png')}
         alt=""
       />
     </span>
@@ -76,16 +86,30 @@
         alt=""
       />
     </button>
+    <button
+      type="button"
+      role="menuitemradio"
+      aria-label="星露谷风格"
+      title="星露谷风格"
+      data-theme-option="stardew"
+    >
+      <img
+        class="pixel-icon"
+        src={withBase('/images/themes/stardew-chicken.png')}
+        alt=""
+      />
+    </button>
   </div>
 </div>
 
 <script>
-  type Theme = 'light' | 'dark' | 'ark';
+  type Theme = 'light' | 'dark' | 'ark' | 'stardew';
 
   const themeNames: Record<Theme, string> = {
     light: '浅色',
     dark: '深色',
     ark: '明日方舟风格',
+    stardew: '星露谷风格',
   };
 
   const setupThemePicker = () => {
@@ -234,7 +258,7 @@
     top: calc(100% + 0.55rem);
     right: 0;
     display: grid;
-    grid-template-columns: repeat(3, 3.1rem);
+    grid-template-columns: repeat(4, 3.1rem);
     gap: 0.25rem;
     padding: 0.3rem;
     border: 1px solid var(--color-border);
@@ -295,6 +319,27 @@
     background: transparent;
     color: var(--color-text);
   }
+  .theme-menu button[data-theme-option='stardew'] {
+    background: transparent;
+    color: var(--color-text);
+  }
+
+  .theme-menu button img.pixel-icon,
+  .current-theme-icon img.pixel-icon {
+    image-rendering: pixelated;
+  }
+
+  .theme-menu button img.pixel-icon {
+    width: 2.35rem;
+    height: 2.35rem;
+    filter: none;
+  }
+
+  .current-theme-icon img.pixel-icon {
+    width: 1.9rem;
+    height: 1.9rem;
+    filter: none;
+  }
   .theme-menu button[aria-checked='true']::after {
     position: absolute;
     right: 0.15rem;
@@ -309,13 +354,16 @@
     position: relative;
   }
   :global(:root[data-theme='ark']) .theme-trigger,
-  :global(:root[data-theme='ark']) .theme-menu {
+  :global(:root[data-theme='ark']) .theme-menu,
+  :global(:root[data-theme='stardew']) .theme-trigger,
+  :global(:root[data-theme='stardew']) .theme-menu {
     border-radius: 0;
   }
 
   :global(:root[data-theme='light']) .theme-trigger,
   :global(:root[data-theme='dark']) .theme-trigger,
-  :global(:root[data-theme='ark']) .theme-trigger {
+  :global(:root[data-theme='ark']) .theme-trigger,
+  :global(:root[data-theme='stardew']) .theme-trigger {
     background: transparent;
   }
 
@@ -324,5 +372,12 @@
   :global(:root[data-theme='ark']) .theme-menu button img,
   :global(:root[data-theme='ark']) .current-theme-icon img {
     filter: grayscale(1) contrast(1.25) invert(1);
+  }
+
+  :global(:root[data-theme='light']) img.pixel-icon,
+  :global(:root[data-theme='dark']) img.pixel-icon,
+  :global(:root[data-theme='ark']) img.pixel-icon,
+  :global(:root[data-theme='stardew']) img.pixel-icon {
+    filter: none;
   }
 </style>

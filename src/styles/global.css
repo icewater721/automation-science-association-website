@@ -18,7 +18,8 @@ body {
 
 html[data-theme='light'],
 html[data-theme='dark'],
-html[data-theme='ark'] {
+html[data-theme='ark'],
+html[data-theme='stardew'] {
   transition:
     background-color 160ms ease,
     color 160ms ease;

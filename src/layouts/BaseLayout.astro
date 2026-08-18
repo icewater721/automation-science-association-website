@@ -9,10 +9,11 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+const isHomePage = Astro.url.pathname === withBase();
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-page={isHomePage ? 'home' : 'internal'}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -28,7 +29,7 @@ const { title, description } = Astro.props;
       const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light';
-      const availableThemes = ['light', 'dark', 'ark'];
+      const availableThemes = ['light', 'dark', 'ark', 'stardew'];
       document.documentElement.dataset.theme = availableThemes.includes(
         savedTheme,
       )

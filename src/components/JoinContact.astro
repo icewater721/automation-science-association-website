@@ -215,6 +215,44 @@ import { withBase } from '../utils/paths';
     letter-spacing: 0.12em;
   }
 
+  :global(:root[data-theme='stardew']) .join-contact {
+    border-bottom: 0.35rem solid var(--stardew-wood);
+    background:
+      linear-gradient(180deg, rgb(126 182 77 / 25%), transparent 9rem),
+      repeating-linear-gradient(
+        90deg,
+        rgb(141 87 54 / 7%) 0 1px,
+        transparent 1px 3rem
+      ),
+      #ead29a;
+  }
+
+  :global(:root[data-theme='stardew']) .section-heading p {
+    color: var(--stardew-green);
+  }
+
+  :global(:root[data-theme='stardew']) article {
+    border: 0.22rem solid var(--stardew-wood);
+    border-radius: 0.7rem;
+    background: var(--color-surface);
+    box-shadow:
+      0.3rem 0.3rem 0 var(--stardew-shadow),
+      inset 0 0 0 0.16rem #e7c276;
+  }
+
+  :global(:root[data-theme='stardew']) article:nth-child(2) {
+    border-color: #426d43;
+    box-shadow:
+      0.3rem 0.3rem 0 #315436,
+      inset 0 0 0 0.16rem #a9cd6c;
+  }
+
+  :global(:root[data-theme='stardew']) .status-dot {
+    border-radius: 0;
+    background: var(--stardew-grass);
+    box-shadow: 0.12rem 0.12rem 0 #315436;
+  }
+
   @media (max-width: 46rem) {
     .join-inner,
     :global(:root[data-theme='ark']) .join-contact::before {

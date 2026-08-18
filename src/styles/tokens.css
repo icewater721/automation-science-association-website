@@ -57,3 +57,29 @@
 :root[data-theme='light'] {
   color-scheme: light;
 }
+
+:root[data-theme='stardew'] {
+  color-scheme: light;
+  --color-page: #f4e7bd;
+  --color-surface: #fff4cf;
+  --color-text: #3f2c20;
+  --color-text-muted: #705541;
+  --color-border: #a66b3f;
+  --color-nav: #28553c;
+  --color-nav-text: #fff4cf;
+  --color-accent: #d7862c;
+  --stardew-green: #4f8b46;
+  --stardew-grass: #7eb64d;
+  --stardew-wood: #8d5736;
+  --stardew-gold: #efbd45;
+  --stardew-sky: #91cbd2;
+  --stardew-shadow: #613d2a;
+}
+
+:root[data-theme='stardew'][data-page='internal'] {
+  --color-page: #ffffff;
+  --color-surface: #f7f7f7;
+  --color-text: #111111;
+  --color-text-muted: #626262;
+  --color-border: #dedede;
+}
