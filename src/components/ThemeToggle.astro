@@ -341,6 +341,10 @@ import { withBase } from '../utils/paths';
     height: 1.6rem;
   }
 
+  .current-theme-icon img.theme-art-icon {
+    transform: translateY(-0.09rem);
+  }
+
   .theme-menu button img.ark-icon {
     width: 1.8rem;
     height: 1.8rem;
@@ -350,7 +354,7 @@ import { withBase } from '../utils/paths';
   .current-theme-icon img.ark-icon {
     width: 2.15rem;
     height: 2.15rem;
-    border-radius: 0.38rem;
+    border-radius: 0.48rem;
   }
   .theme-menu button[aria-checked='true']::after {
     position: absolute;
@@ -365,16 +369,19 @@ import { withBase } from '../utils/paths';
   .theme-menu button {
     position: relative;
   }
-  :global(:root[data-theme='ark']) .theme-trigger,
   :global(:root[data-theme='ark']) .theme-menu,
   :global(:root[data-theme='stardew']) .theme-trigger,
   :global(:root[data-theme='stardew']) .theme-menu {
     border-radius: 0;
   }
 
+  :global(:root[data-theme='ark']) .theme-trigger {
+    border-radius: 0.5rem;
+    background: rgb(255 255 255 / 7%);
+  }
+
   :global(:root[data-theme='light']) .theme-trigger,
   :global(:root[data-theme='dark']) .theme-trigger,
-  :global(:root[data-theme='ark']) .theme-trigger,
   :global(:root[data-theme='stardew']) .theme-trigger {
     background: transparent;
   }
