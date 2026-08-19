@@ -1,6 +1,7 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
+import { withBase } from '../utils/paths';
 
 interface Props {
   title: string;
@@ -21,7 +22,18 @@ const {
   breadcrumbs = [],
   previous,
   next,
+  currentPath = '/docs/',
 } = Astro.props;
+const documentPath = withBase(currentPath);
+const isLearning = currentPath.startsWith('/docs/learning');
+const isBasicTools = currentPath.startsWith('/docs/learning/basic-tools');
+const basicTools = [
+  { title: 'VS Code', path: '/docs/learning/basic-tools/vscode/' },
+  { title: 'Git 与 GitHub', path: '/docs/learning/basic-tools/git-github/' },
+  { title: 'CMake', path: '/docs/learning/basic-tools/cmake/' },
+  { title: '容器', path: '/docs/learning/basic-tools/containers/' },
+  { title: '包管理器', path: '/docs/learning/basic-tools/package-managers/' },
+];
 const visibleHeadings = headings.filter(
   (heading) => heading.depth === 2 || heading.depth === 3,
 );
@@ -33,6 +45,49 @@ const visibleHeadings = headings.filter(
 >
   <main class="docs-shell">
     <article class="docs-article">
+      <details class="document-browser" open={isLearning}>
+        <summary>
+          <span>浏览文档</span>
+          <small>按层级展开目录</small>
+        </summary>
+        <nav class="document-tree" aria-label="文档目录">
+          <a
+            class="tree-link tree-link--root"
+            href={withBase('/docs/')}
+            aria-current={documentPath === withBase('/docs/')
+              ? 'page'
+              : undefined}
+          >
+            简介
+          </a>
+          <details open={isLearning}>
+            <summary>学习资料</summary>
+            <div class="tree-branch">
+              <details open={isBasicTools}>
+                <summary>基础工具</summary>
+                <div class="tree-branch">
+                  {
+                    basicTools.map((tool) => {
+                      const href = withBase(tool.path);
+                      return (
+                        <a
+                          class="tree-link"
+                          href={href}
+                          aria-current={
+                            documentPath === href ? 'page' : undefined
+                          }
+                        >
+                          {tool.title}
+                        </a>
+                      );
+                    })
+                  }
+                </div>
+              </details>
+            </div>
+          </details>
+        </nav>
+      </details>
       {
         breadcrumbs.length > 0 && (
           <nav class="breadcrumbs" aria-label="面包屑导航">
@@ -159,6 +214,37 @@ const visibleHeadings = headings.filter(
   .document-tree {
     display: grid;
     gap: 0.55rem;
+  }
+
+  .document-browser {
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.65rem;
+    background: var(--color-surface);
+  }
+
+  .document-browser > summary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    list-style-position: inside;
+  }
+
+  .document-browser > summary span {
+    font-size: 0.88rem;
+    font-weight: 750;
+  }
+
+  .document-browser > summary small {
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+  }
+
+  .document-browser > .document-tree {
+    padding: 0 1rem 1rem;
+    border-top: 1px solid var(--color-border);
   }
 
   .document-tree details {

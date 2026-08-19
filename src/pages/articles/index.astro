@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="文章 | 人工智能学院科协"
+  description="科协成员的经验、记录与表达。"
+>
+  <main class="articles-page">
+    <p class="eyebrow">ARTICLES</p>
+    <h1>文章</h1>
+    <p>这里将用于沉淀科协成员的经验、项目记录与自由表达。</p>
+    <div class="empty-state">
+      <strong>文章功能正在搭建</strong>
+      <span>文章结构与发布方式将在后续迭代中确定。</span>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .articles-page {
+    width: min(54rem, calc(100% - 4rem));
+    margin-inline: auto;
+    padding-block: clamp(3rem, 8vw, 7rem);
+  }
+
+  .eyebrow {
+    margin: 0 0 0.7rem;
+    color: var(--color-accent);
+    font-size: 0.75rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    letter-spacing: -0.055em;
+  }
+
+  h1 + p {
+    color: var(--color-text-muted);
+    line-height: 1.8;
+  }
+
+  .empty-state {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 3rem;
+    padding: 1.4rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.7rem;
+  }
+
+  .empty-state span {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+</style>
