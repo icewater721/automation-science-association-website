@@ -34,7 +34,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <style>
   .profile-page {
-    width: min(48rem, 100%);
+    width: min(62rem, calc(100% - 4rem));
     margin-inline: auto;
     padding-bottom: clamp(2rem, 6vw, 5rem);
   }
@@ -42,7 +42,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     border-bottom: 1px solid var(--color-border);
   }
   .cover {
-    height: clamp(7rem, 17vw, 10rem);
+    height: clamp(9rem, 19vw, 12.5rem);
     background:
       radial-gradient(
         circle at 28% 35%,
@@ -56,19 +56,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       );
   }
   .identity-content {
-    padding: 0 1.25rem 1.5rem;
+    padding: 0 1.75rem 2rem;
   }
   .profile-actions {
     display: flex;
-    min-height: 3.35rem;
+    min-height: 4rem;
     align-items: flex-start;
     justify-content: space-between;
   }
   .avatar {
     display: grid;
-    width: 5rem;
-    height: 5rem;
-    margin-top: -2.5rem;
+    width: 5.75rem;
+    height: 5.75rem;
+    margin-top: -2.85rem;
     place-items: center;
     border: 0.25rem solid var(--color-page);
     border-radius: 50%;
@@ -81,7 +81,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     margin-top: 0.7rem;
   }
   .identity-copy {
-    max-width: 34rem;
+    max-width: 42rem;
   }
   .role,
   .profile-section header p {
@@ -96,7 +96,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     font-size: clamp(1.45rem, 3vw, 2rem);
   }
   .signature {
-    margin: 0.5rem 0 0;
+    margin: 0.65rem 0 0;
     color: var(--color-text-muted);
     line-height: 1.65;
   }
@@ -108,8 +108,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     cursor: pointer;
   }
   .profile-section {
-    margin-top: 2.25rem;
-    padding-inline: 1.25rem;
+    margin-top: 3.25rem;
+    padding-inline: 1.75rem;
   }
   h2 {
     margin: 0;
@@ -119,7 +119,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     display: grid;
     gap: 0.45rem;
     margin-top: 1.2rem;
-    padding: 1.4rem;
+    padding: 1.75rem;
     border: 1px solid var(--color-border);
     border-radius: 0.7rem;
   }
@@ -130,6 +130,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   @media (min-width: 48.01rem) {
     .profile-page {
       padding-top: 1.4rem;
+    }
+  }
+
+  @media (max-width: 42rem) {
+    .profile-page {
+      width: 100%;
+    }
+
+    .identity-content,
+    .profile-section {
+      padding-inline: 1rem;
     }
   }
 </style>
