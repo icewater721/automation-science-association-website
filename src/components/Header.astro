@@ -7,6 +7,7 @@ const pathname = Astro.url.pathname;
 const homePath = withBase();
 const docsPath = withBase('/docs/');
 const articlesPath = withBase('/articles/');
+const loginPath = withBase('/login/');
 const isHomePage = pathname === homePath;
 const isDocsPage = pathname.startsWith(docsPath);
 const isArticlesPage = pathname.startsWith(articlesPath);
@@ -22,7 +23,7 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     />
     <span>
       <strong>人工智能与自动化学院科协</strong>
-      <small>AI &amp; AUTOMATION</small>
+      <small><b>WUST</b><span>AI &amp; AUTOMATION</span></small>
     </span>
   </a>
 
@@ -69,7 +70,18 @@ const isArticlesPage = pathname.startsWith(articlesPath);
   <div class="sidebar-tools">
     <div class="tool-row">
       <a
-        class="github-link"
+        class="tool-link login-link"
+        href={loginPath}
+        aria-label="个人登录"
+        title="个人登录"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="3.5"></circle>
+          <path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6"></path>
+        </svg>
+      </a>
+      <a
+        class="tool-link github-link"
         href="https://github.com/icewater721/automation-science-association-website"
         target="_blank"
         rel="noreferrer"
@@ -135,12 +147,23 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     white-space: nowrap;
   }
   .brand small {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
     color: color-mix(in srgb, var(--color-nav-text) 62%, transparent);
     font-family: ui-serif, Georgia, serif;
     font-size: 0.5rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     line-height: 1.35;
+  }
+
+  .brand small b {
+    padding-right: 0.35rem;
+    border-right: 1px solid currentColor;
+    color: var(--color-nav-text);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.48rem;
   }
 
   .primary-nav {
@@ -193,13 +216,14 @@ const isArticlesPage = pathname.startsWith(articlesPath);
   }
 
   .tool-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 2.75rem);
     min-height: 2.75rem;
     align-items: center;
     justify-content: space-between;
   }
 
-  .github-link {
+  .tool-link {
     display: grid;
     width: 2.75rem;
     height: 2.75rem;
@@ -208,14 +232,25 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     color: var(--color-nav-text);
   }
 
-  .github-link:hover {
+  .tool-link:hover {
     background: color-mix(in srgb, var(--color-nav-text) 10%, transparent);
   }
 
-  .github-link svg {
+  .tool-link svg {
     width: 1.45rem;
     height: 1.45rem;
+  }
+
+  .github-link svg {
     fill: currentColor;
+  }
+
+  .login-link svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
   }
 
   @media (max-width: 48rem) {

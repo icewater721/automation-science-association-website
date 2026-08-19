@@ -1,0 +1,127 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="个人页 | 人工智能学院科协" description="科协成员个人空间。">
+  <main class="profile-page">
+    <section class="identity-card">
+      <div class="cover"></div>
+      <div class="identity-content">
+        <div class="avatar" aria-hidden="true">A</div>
+        <div>
+          <p class="role">REGISTERED MEMBER</p>
+          <h1>未设置昵称</h1>
+          <p class="signature">
+            用一句话介绍自己，或者留下你最近正在探索的事情。
+          </p>
+        </div>
+        <button type="button">编辑资料</button>
+      </div>
+    </section>
+
+    <section class="profile-section">
+      <header><p>PUBLICATIONS</p><h2>我发布的文章</h2></header>
+      <div class="empty-state">
+        <strong>还没有文章</strong><span
+          >获得协作者权限并发布文章后，它们会出现在这里。</span>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .profile-page {
+    width: min(70rem, calc(100% - 4rem));
+    margin-inline: auto;
+    padding-block: clamp(2rem, 6vw, 5rem);
+  }
+  .identity-card {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+  }
+  .cover {
+    height: clamp(9rem, 22vw, 16rem);
+    background:
+      radial-gradient(
+        circle at 25% 25%,
+        color-mix(in srgb, var(--color-accent) 45%, transparent),
+        transparent 42%
+      ),
+      linear-gradient(125deg, var(--color-surface), var(--color-page));
+    filter: blur(0.15rem);
+    transform: scale(1.02);
+  }
+  .identity-content {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.25rem;
+    align-items: end;
+    padding: 1.4rem 1.6rem 1.6rem;
+  }
+  .avatar {
+    display: grid;
+    width: 6rem;
+    height: 6rem;
+    margin-top: -4.2rem;
+    place-items: center;
+    border: 0.35rem solid var(--color-page);
+    border-radius: 50%;
+    background: var(--color-text);
+    color: var(--color-page);
+    font-size: 2rem;
+    font-weight: 800;
+  }
+  .role,
+  .profile-section header p {
+    margin: 0 0 0.35rem;
+    color: var(--color-accent);
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.1em;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+  }
+  .signature {
+    margin: 0.5rem 0 0;
+    color: var(--color-text-muted);
+    line-height: 1.65;
+  }
+  button {
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.55rem;
+    background: var(--color-page);
+    cursor: pointer;
+  }
+  .profile-section {
+    margin-top: 3.5rem;
+  }
+  h2 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+  .empty-state {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 1.2rem;
+    padding: 1.4rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.7rem;
+  }
+  .empty-state span {
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
+  }
+  @media (max-width: 42rem) {
+    .identity-content {
+      grid-template-columns: auto 1fr;
+    }
+    .identity-content button {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

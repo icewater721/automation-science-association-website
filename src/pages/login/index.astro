@@ -1,0 +1,143 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../utils/paths';
+---
+
+<BaseLayout
+  title="个人登录 | 人工智能学院科协"
+  description="登录科协个人空间。"
+>
+  <main class="auth-page">
+    <section class="auth-intro">
+      <p class="eyebrow">MEMBER SPACE</p>
+      <h1>个人空间</h1>
+      <p>用邮箱接收一次性验证码，登录后管理个人资料并查看自己发布过的文章。</p>
+      <a href={withBase('/profile/')}>预览个人页</a>
+    </section>
+
+    <section class="auth-card" aria-labelledby="login-title">
+      <div>
+        <p class="step">01 / 邮箱验证</p>
+        <h2 id="login-title">登录或创建账号</h2>
+      </div>
+      <form data-login-form>
+        <label for="email">邮箱</label>
+        <div class="field-row">
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="name@example.com"
+            required
+          />
+          <button type="submit">发送验证码</button>
+        </div>
+        <p class="form-note" data-form-note>首次验证成功后会自动创建账号。</p>
+      </form>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-login-form]');
+  const note = document.querySelector<HTMLElement>('[data-form-note]');
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (note)
+      note.textContent =
+        '登录界面已经就绪；接入 Supabase 后才会真正发送验证码。';
+  });
+</script>
+
+<style>
+  .auth-page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(22rem, 30rem);
+    gap: clamp(3rem, 8vw, 8rem);
+    width: min(72rem, calc(100% - 4rem));
+    min-height: 100vh;
+    align-items: center;
+    margin-inline: auto;
+    padding-block: 4rem;
+  }
+  .eyebrow,
+  .step {
+    color: var(--color-accent);
+    font-size: 0.74rem;
+    font-weight: 750;
+    letter-spacing: 0.1em;
+  }
+  h1 {
+    margin: 0.4rem 0 1rem;
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    letter-spacing: -0.06em;
+  }
+  .auth-intro > p:last-of-type {
+    max-width: 34rem;
+    color: var(--color-text-muted);
+    line-height: 1.8;
+  }
+  .auth-intro a {
+    display: inline-block;
+    margin-top: 1.2rem;
+    color: var(--color-text-muted);
+    font-size: 0.84rem;
+  }
+  .auth-card {
+    display: grid;
+    gap: 2rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    background: var(--color-surface);
+  }
+  h2 {
+    margin: 0.5rem 0 0;
+    font-size: 1.55rem;
+  }
+  form {
+    display: grid;
+    gap: 0.7rem;
+  }
+  label {
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.55rem;
+  }
+  input,
+  button {
+    min-height: 3rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.55rem;
+  }
+  input {
+    min-width: 0;
+    padding: 0 0.9rem;
+    background: var(--color-page);
+  }
+  button {
+    padding-inline: 1rem;
+    border-color: var(--color-text);
+    background: var(--color-text);
+    color: var(--color-page);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .form-note {
+    margin: 0.2rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.76rem;
+    line-height: 1.6;
+  }
+  @media (max-width: 54rem) {
+    .auth-page {
+      grid-template-columns: 1fr;
+      align-content: center;
+    }
+  }
+</style>
