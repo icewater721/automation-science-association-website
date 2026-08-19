@@ -141,11 +141,11 @@ const basicTools = [
 <style>
   .docs-shell {
     display: grid;
-    grid-template-columns: minmax(11rem, 15rem) minmax(0, 48rem) minmax(
+    grid-template-columns: minmax(10rem, 13rem) minmax(0, 44rem) minmax(
         9rem,
-        12rem
+        10rem
       );
-    gap: clamp(2rem, 5vw, 4rem);
+    gap: clamp(1.5rem, 3vw, 3rem);
     width: min(88rem, calc(100% - 4rem));
     margin-inline: auto;
     padding-block: clamp(2.5rem, 6vw, 5rem);
@@ -154,7 +154,7 @@ const basicTools = [
   .docs-navigation,
   .page-outline {
     position: sticky;
-    top: 6.5rem;
+    top: 2rem;
     align-self: start;
   }
 
@@ -363,7 +363,7 @@ const basicTools = [
     text-align: right;
   }
 
-  @media (max-width: 70rem) {
+  @media (max-width: 86rem) {
     .docs-shell {
       grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr);
     }

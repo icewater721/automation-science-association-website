@@ -1,5 +1,9 @@
 @import './tokens.css';
 
+:root {
+  --site-sidebar-width: 16rem;
+}
+
 *,
 *::before,
 *::after {
@@ -26,6 +30,7 @@ html[data-theme='dark'] {
 body {
   margin: 0;
   min-width: 320px;
+  padding-left: var(--site-sidebar-width);
   background: var(--color-page);
   color: var(--color-text);
   font-family:
@@ -37,6 +42,12 @@ body {
     'Segoe UI',
     'Microsoft YaHei',
     sans-serif;
+}
+
+@media (max-width: 48rem) {
+  body {
+    padding-left: 0;
+  }
 }
 
 img {

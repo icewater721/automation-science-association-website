@@ -4,224 +4,177 @@ import ThemeToggle from './ThemeToggle.astro';
 import { withBase } from '../utils/paths';
 
 const pathname = Astro.url.pathname;
+const homePath = withBase();
 const docsPath = withBase('/docs/');
-const servicesPath = withBase('/services/');
+const isHomePage = pathname === homePath;
 const isDocsPage = pathname.startsWith(docsPath);
-const isServicesPage = pathname.startsWith(servicesPath);
 ---
 
-<header class="site-header" data-hidden="false">
+<aside class="site-sidebar">
+  <a class="brand" href={homePath} aria-label="人工智能学院学生科协首页">
+    <img
+      src={withBase('/images/brand/asaw-logo.png')}
+      alt=""
+      width="56"
+      height="56"
+    />
+    <span><strong>人工智能学院</strong><small>学生科协</small></span>
+  </a>
+
   <nav class="primary-nav" aria-label="主导航">
-    <a class="home-link" href={withBase()}>
-      <img
-        src={withBase('/images/brand/asaw-logo.png')}
-        alt=""
-        width="48"
-        height="48"
-      />
-      <span class="brand-name">人工智能学院学生科协</span>
+    <a
+      class:list={['nav-link', { 'nav-link--current': isHomePage }]}
+      href={homePath}
+      aria-current={isHomePage ? 'page' : undefined}
+    >
+      <span aria-hidden="true">01</span>首页
     </a>
     <a
       class:list={['nav-link', { 'nav-link--current': isDocsPage }]}
       href={docsPath}
-      aria-current={isDocsPage ? 'page' : undefined}>文档</a
+      aria-current={isDocsPage ? 'page' : undefined}
     >
-    <span
-      class="nav-link nav-link--upcoming"
-      aria-disabled="true"
-      title="活动区将在后续实现">活动</span
-    >
-    <a
-      class:list={['nav-link', { 'nav-link--current': isServicesPage }]}
-      href={servicesPath}
-      aria-current={isServicesPage ? 'page' : undefined}>服务</a
-    >
+      <span aria-hidden="true">02</span>文档
+    </a>
   </nav>
 
-  <div class="header-actions">
-    <ThemeToggle />
+  <div class="sidebar-tools">
     <SiteSearch />
+    <div class="theme-row"><span>外观</span><ThemeToggle /></div>
   </div>
-</header>
+</aside>
 
 <style>
-  .site-header {
-    position: sticky;
-    top: 0;
+  .site-sidebar {
+    position: fixed;
     z-index: 100;
+    inset: 0 auto 0 0;
     display: flex;
-    min-height: 4.5rem;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-block: 0.75rem;
-    padding-inline: clamp(0.75rem, 2vw, 1.5rem) clamp(1rem, 4vw, 3.5rem);
+    width: var(--site-sidebar-width);
+    flex-direction: column;
+    padding: 1.4rem 1rem 1rem;
+    border-right: 1px solid var(--color-border);
     background: var(--color-nav);
     color: var(--color-nav-text);
-    border-bottom: 1px solid var(--color-border);
-    transition: transform 200ms ease;
-    will-change: transform;
   }
 
-  .site-header[data-hidden='true'] {
-    transform: translateY(-100%);
-  }
-
-  .primary-nav,
-  .home-link {
+  .brand {
     display: flex;
     align-items: center;
+    gap: 0.8rem;
+    padding: 0.45rem;
+    border-radius: 0.65rem;
+    text-decoration: none;
+  }
+
+  .brand:hover,
+  .nav-link:hover {
+    background: color-mix(in srgb, var(--color-nav-text) 6%, transparent);
+  }
+
+  .brand img {
+    width: 3.25rem;
+    height: 3.25rem;
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, var(--color-nav-text) 16%, transparent);
+    border-radius: 50%;
+  }
+
+  .brand span {
+    display: grid;
+    min-width: 0;
+    gap: 0.18rem;
+  }
+
+  .brand strong {
+    font-size: 0.9rem;
+  }
+  .brand small {
+    color: color-mix(in srgb, var(--color-nav-text) 62%, transparent);
+    font-size: 0.78rem;
   }
 
   .primary-nav {
-    min-width: 0;
-    gap: clamp(0.75rem, 2vw, 1.5rem);
-  }
-
-  .home-link {
-    flex: 0 0 auto;
-    gap: 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .home-link img {
-    width: 3rem;
-    height: 3rem;
-    border: 1px solid color-mix(in srgb, var(--color-nav-text) 18%, transparent);
-    border-radius: 999px;
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 2.75rem;
   }
 
   .nav-link {
-    padding: 0.55rem 0.7rem;
-    border-radius: 0.45rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .nav-link--upcoming {
-    color: color-mix(in srgb, var(--color-nav-text) 52%, transparent);
-    cursor: not-allowed;
-  }
-
-  .nav-link--current {
-    position: relative;
-    color: var(--color-accent);
-  }
-
-  .nav-link--current::after {
-    position: absolute;
-    right: 0.7rem;
-    bottom: 0.2rem;
-    left: 0.7rem;
-    height: 0.13rem;
-    background: currentColor;
-    content: '';
-  }
-
-  .home-link:hover .brand-name,
-  a.nav-link:hover {
-    color: var(--color-accent);
-  }
-
-  .header-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
     align-items: center;
-    gap: 0.65rem;
+    padding: 0.72rem 0.8rem;
+    border-radius: 0.55rem;
+    color: color-mix(in srgb, var(--color-nav-text) 68%, transparent);
+    font-size: 0.92rem;
+    font-weight: 650;
+    text-decoration: none;
   }
 
-  @media (max-width: 64rem) {
-    .brand-name {
+  .nav-link > span {
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+  }
+
+  .nav-link:hover {
+    color: var(--color-nav-text);
+  }
+  .nav-link--current,
+  .nav-link--current:hover {
+    background: var(--color-nav-text);
+    color: var(--color-nav);
+  }
+
+  .sidebar-tools {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .theme-row {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 0.75rem;
+    color: color-mix(in srgb, var(--color-nav-text) 64%, transparent);
+    font-size: 0.78rem;
+  }
+
+  @media (max-width: 48rem) {
+    .site-sidebar {
+      position: sticky;
+      width: 100%;
+      min-height: 4.25rem;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.55rem 0.75rem;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .brand span,
+    .sidebar-tools,
+    .nav-link > span {
       display: none;
     }
-  }
-
-  @media (max-width: 36rem) {
-    .site-header {
-      min-height: 4rem;
-      flex-wrap: wrap;
-      padding: 0.6rem 0.75rem;
+    .brand img {
+      width: 2.8rem;
+      height: 2.8rem;
     }
-
-    .primary-nav,
-    .header-actions {
-      width: 100%;
-    }
-
     .primary-nav {
-      justify-content: space-between;
-      gap: 0.25rem;
+      display: flex;
+      gap: 0.2rem;
+      margin: 0 0 0 auto;
     }
-
-    .header-actions :global(.site-search) {
-      width: auto;
-      flex: 1;
-    }
-
-    .home-link img {
-      width: 2.65rem;
-      height: 2.65rem;
-    }
-
-    .header-actions {
-      gap: 0.45rem;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .site-header {
-      transition: none;
+    .nav-link {
+      display: block;
+      padding: 0.6rem 0.8rem;
     }
   }
 </style>
-
-<script>
-  const setupAutoHideHeader = () => {
-    const header = document.querySelector<HTMLElement>('.site-header');
-
-    if (!header || header.dataset.scrollReady === 'true') return;
-
-    header.dataset.scrollReady = 'true';
-    let previousScrollY = window.scrollY;
-    let frameRequested = false;
-
-    const updateHeader = () => {
-      const currentScrollY = window.scrollY;
-      const movement = currentScrollY - previousScrollY;
-
-      if (currentScrollY <= header.offsetHeight) {
-        header.dataset.hidden = 'false';
-      } else if (movement > 4) {
-        header.dataset.hidden = 'true';
-      } else if (movement < -4) {
-        header.dataset.hidden = 'false';
-      }
-
-      previousScrollY = currentScrollY;
-      frameRequested = false;
-    };
-
-    window.addEventListener(
-      'scroll',
-      () => {
-        if (frameRequested) return;
-        frameRequested = true;
-        window.requestAnimationFrame(updateHeader);
-      },
-      { passive: true },
-    );
-
-    header.addEventListener('focusin', () => {
-      header.dataset.hidden = 'false';
-    });
-  };
-
-  setupAutoHideHeader();
-  document.addEventListener('astro:page-load', setupAutoHideHeader);
-</script>
