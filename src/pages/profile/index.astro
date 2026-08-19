@@ -1,25 +1,60 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../utils/paths';
 ---
 
 <BaseLayout title="个人页 | 人工智能学院科协" description="科协成员个人空间。">
-  <main class="profile-page">
+  <main
+    class="profile-page"
+    data-profile-page
+    data-login-url={withBase('/login/')}
+  >
     <section class="identity-card">
-      <div class="cover"></div>
+      <div class="cover" data-cover></div>
       <div class="identity-content">
         <div class="profile-actions">
-          <div class="avatar" aria-hidden="true">A</div>
-          <button type="button">编辑资料</button>
+          <div class="avatar" aria-hidden="true" data-avatar>A</div>
+          <div class="action-buttons">
+            <button type="button" data-edit-profile>编辑资料</button>
+            <button type="button" data-sign-out>退出</button>
+          </div>
         </div>
         <div class="identity-copy">
           <p class="role">REGISTERED MEMBER</p>
-          <h1>未设置昵称</h1>
-          <p class="signature">
+          <h1 data-display-name>正在读取……</h1>
+          <p class="signature" data-bio>
             用一句话介绍自己，或者留下你最近正在探索的事情。
           </p>
         </div>
       </div>
     </section>
+
+    <form class="profile-editor" data-profile-editor hidden>
+      <label>昵称<input name="display_name" maxlength="40" required /></label>
+      <label
+        >个性签名<textarea name="bio" maxlength="160" rows="3"
+        ></textarea></label
+      >
+      <label
+        >头像<input
+          name="avatar"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+        /></label
+      >
+      <label
+        >背景图<input
+          name="background"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+        /></label
+      >
+      <div class="editor-actions">
+        <button type="button" data-cancel-edit>取消</button>
+        <button type="submit">保存</button>
+      </div>
+      <p data-profile-note aria-live="polite"></p>
+    </form>
 
     <section class="profile-section">
       <header><p>PUBLICATIONS</p><h2>我发布的文章</h2></header>
@@ -31,6 +66,131 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </section>
   </main>
 </BaseLayout>
+
+<script>
+  import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+
+  const page = document.querySelector<HTMLElement>('[data-profile-page]');
+  const nameElement = document.querySelector<HTMLElement>(
+    '[data-display-name]',
+  );
+  const bioElement = document.querySelector<HTMLElement>('[data-bio]');
+  const avatarElement = document.querySelector<HTMLElement>('[data-avatar]');
+  const coverElement = document.querySelector<HTMLElement>('[data-cover]');
+  const editor = document.querySelector<HTMLFormElement>(
+    '[data-profile-editor]',
+  );
+  const note = document.querySelector<HTMLElement>('[data-profile-note]');
+  let userId = '';
+
+  const goToLogin = () =>
+    window.location.replace(page?.dataset.loginUrl ?? '/');
+  if (!isSupabaseConfigured || !supabase) goToLogin();
+
+  const { data: sessionData } = (await supabase?.auth.getSession()) ?? {
+    data: { session: null },
+  };
+  if (!sessionData.session) goToLogin();
+  userId = sessionData.session?.user.id ?? '';
+
+  const applyProfile = (profile: Record<string, unknown>) => {
+    const displayName = String(profile.display_name || '未设置昵称');
+    const bio = String(
+      profile.bio || '用一句话介绍自己，或者留下你最近正在探索的事情。',
+    );
+    if (nameElement) nameElement.textContent = displayName;
+    if (bioElement) bioElement.textContent = bio;
+    if (avatarElement) {
+      avatarElement.textContent = displayName.slice(0, 1).toUpperCase();
+      const avatarUrl = String(profile.avatar_url || '');
+      avatarElement.style.backgroundImage = avatarUrl
+        ? `url("${avatarUrl}")`
+        : '';
+    }
+    const backgroundUrl = String(profile.background_url || '');
+    if (coverElement)
+      coverElement.style.backgroundImage = backgroundUrl
+        ? `url("${backgroundUrl}")`
+        : '';
+    if (editor) {
+      const nameInput = editor.elements.namedItem(
+        'display_name',
+      ) as HTMLInputElement;
+      const bioInput = editor.elements.namedItem('bio') as HTMLTextAreaElement;
+      nameInput.value = String(profile.display_name || '');
+      bioInput.value = String(profile.bio || '');
+    }
+  };
+
+  const { data: profile } = (await supabase
+    ?.from('profiles')
+    .select('display_name,bio,avatar_url,background_url,is_collaborator')
+    .eq('user_id', userId)
+    .single()) ?? { data: null };
+  if (profile) applyProfile(profile);
+
+  document
+    .querySelector('[data-edit-profile]')
+    ?.addEventListener('click', () => {
+      if (editor) editor.hidden = false;
+    });
+  document
+    .querySelector('[data-cancel-edit]')
+    ?.addEventListener('click', () => {
+      if (editor) editor.hidden = true;
+    });
+  document
+    .querySelector('[data-sign-out]')
+    ?.addEventListener('click', async () => {
+      await supabase?.auth.signOut();
+      goToLogin();
+    });
+
+  const uploadImage = async (file: File, kind: 'avatar' | 'background') => {
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'webp';
+    const path = `${userId}/${kind}.${extension}`;
+    const { error } = await supabase!.storage
+      .from('profile-images')
+      .upload(path, file, { upsert: true });
+    if (error) throw error;
+    return (
+      supabase!.storage.from('profile-images').getPublicUrl(path).data
+        .publicUrl + `?v=${Date.now()}`
+    );
+  };
+
+  editor?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (note) note.textContent = '正在保存……';
+    try {
+      const formData = new FormData(editor);
+      const updates: Record<string, string> = {
+        display_name: String(formData.get('display_name') ?? '').trim(),
+        bio: String(formData.get('bio') ?? '').trim(),
+        updated_at: new Date().toISOString(),
+      };
+      const avatar = formData.get('avatar');
+      const background = formData.get('background');
+      if (avatar instanceof File && avatar.size)
+        updates.avatar_url = await uploadImage(avatar, 'avatar');
+      if (background instanceof File && background.size)
+        updates.background_url = await uploadImage(background, 'background');
+      const { data, error } = await supabase!
+        .from('profiles')
+        .update(updates)
+        .eq('user_id', userId)
+        .select()
+        .single();
+      if (error) throw error;
+      applyProfile(data);
+      editor.hidden = true;
+    } catch (error) {
+      if (note)
+        note.textContent =
+          error instanceof Error ? error.message : '保存失败。';
+    }
+  });
+</script>
 
 <style>
   .profile-page {
@@ -54,6 +214,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         var(--color-surface),
         color-mix(in srgb, var(--color-surface) 75%, var(--color-page))
       );
+    background-position: center;
+    background-size: cover;
   }
   .identity-content {
     padding: 0 1.75rem 2rem;
@@ -76,9 +238,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     color: var(--color-page);
     font-size: 1.55rem;
     font-weight: 800;
+    background-position: center;
+    background-size: cover;
   }
   .profile-actions button {
     margin-top: 0.7rem;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
   }
   .identity-copy {
     max-width: 42rem;
@@ -126,6 +294,42 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .empty-state span {
     color: var(--color-text-muted);
     font-size: 0.88rem;
+  }
+  .profile-editor {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 1.75rem 0;
+    padding: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.7rem;
+    background: var(--color-surface);
+  }
+  .profile-editor[hidden] {
+    display: none;
+  }
+  .profile-editor label {
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .profile-editor input,
+  .profile-editor textarea {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.45rem;
+    background: var(--color-page);
+  }
+  .editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  [data-profile-note] {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
   }
   @media (min-width: 48.01rem) {
     .profile-page {

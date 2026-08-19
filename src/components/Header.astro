@@ -8,6 +8,7 @@ const homePath = withBase();
 const docsPath = withBase('/docs/');
 const articlesPath = withBase('/articles/');
 const loginPath = withBase('/login/');
+const profilePath = withBase('/profile/');
 const isHomePage = pathname === homePath;
 const isDocsPage = pathname.startsWith(docsPath);
 const isArticlesPage = pathname.startsWith(articlesPath);
@@ -72,6 +73,8 @@ const isArticlesPage = pathname.startsWith(articlesPath);
       <a
         class="tool-link login-link"
         href={loginPath}
+        data-member-link
+        data-profile-url={profilePath}
         aria-label="个人登录"
         title="个人登录"
       >
@@ -98,6 +101,19 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     </div>
   </div>
 </aside>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  const memberLink =
+    document.querySelector<HTMLAnchorElement>('[data-member-link]');
+  const sessionResult = await supabase?.auth.getSession();
+  if (memberLink && sessionResult?.data.session) {
+    memberLink.href = memberLink.dataset.profileUrl ?? memberLink.href;
+    memberLink.ariaLabel = '打开个人页';
+    memberLink.title = '个人页';
+  }
+</script>
 
 <style>
   .site-sidebar {

@@ -20,33 +20,112 @@ import { withBase } from '../../utils/paths';
         <p class="step">01 / 邮箱验证</p>
         <h2 id="login-title">登录或创建账号</h2>
       </div>
-      <form data-login-form>
-        <label for="email">邮箱</label>
-        <div class="field-row">
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autocomplete="email"
-            placeholder="name@example.com"
-            required
-          />
-          <button type="submit">发送验证码</button>
+      <form data-login-form data-profile-url={withBase('/profile/')}>
+        <div data-email-step>
+          <label for="email">邮箱</label>
+          <div class="field-row">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="name@example.com"
+              required
+            />
+            <button type="submit">发送验证码</button>
+          </div>
         </div>
-        <p class="form-note" data-form-note>首次验证成功后会自动创建账号。</p>
+        <div data-code-step hidden>
+          <label for="code">六位验证码</label>
+          <div class="field-row">
+            <input
+              id="code"
+              name="code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              pattern="[0-9]{6}"
+              maxlength="6"
+              placeholder="000000"
+            />
+            <button type="submit">验证并登录</button>
+          </div>
+          <button class="text-button" type="button" data-change-email
+            >更换邮箱</button
+          >
+        </div>
+        <p class="form-note" data-form-note aria-live="polite">
+          首次验证成功后会自动创建账号。
+        </p>
       </form>
     </section>
   </main>
 </BaseLayout>
 
 <script>
+  import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+
   const form = document.querySelector<HTMLFormElement>('[data-login-form]');
   const note = document.querySelector<HTMLElement>('[data-form-note]');
-  form?.addEventListener('submit', (event) => {
+  const emailStep = document.querySelector<HTMLElement>('[data-email-step]');
+  const codeStep = document.querySelector<HTMLElement>('[data-code-step]');
+  const changeEmail = document.querySelector<HTMLButtonElement>(
+    '[data-change-email]',
+  );
+  let waitingForCode = false;
+
+  const setNote = (message: string, error = false) => {
+    if (!note) return;
+    note.textContent = message;
+    note.dataset.error = String(error);
+  };
+
+  const sessionResult = await supabase?.auth.getSession();
+  if (sessionResult?.data.session && form?.dataset.profileUrl) {
+    window.location.replace(form.dataset.profileUrl);
+  }
+
+  changeEmail?.addEventListener('click', () => {
+    waitingForCode = false;
+    if (emailStep) emailStep.hidden = false;
+    if (codeStep) codeStep.hidden = true;
+    setNote('首次验证成功后会自动创建账号。');
+  });
+
+  form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (note)
-      note.textContent =
-        '登录界面已经就绪；接入 Supabase 后才会真正发送验证码。';
+    if (!isSupabaseConfigured || !supabase) {
+      setNote('Supabase 尚未配置，请先填写环境变量。', true);
+      return;
+    }
+
+    const data = new FormData(form);
+    const email = String(data.get('email') ?? '').trim();
+
+    if (!waitingForCode) {
+      setNote('正在发送验证码……');
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: true },
+      });
+      if (error) return setNote(error.message, true);
+
+      waitingForCode = true;
+      if (emailStep) emailStep.hidden = true;
+      if (codeStep) codeStep.hidden = false;
+      setNote(`验证码已发送到 ${email}。`);
+      document.querySelector<HTMLInputElement>('#code')?.focus();
+      return;
+    }
+
+    const token = String(data.get('code') ?? '').trim();
+    setNote('正在验证……');
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
+    });
+    if (error) return setNote(error.message, true);
+    window.location.assign(form.dataset.profileUrl ?? '/');
   });
 </script>
 
@@ -100,6 +179,14 @@ import { withBase } from '../../utils/paths';
     display: grid;
     gap: 0.7rem;
   }
+  [hidden] {
+    display: none !important;
+  }
+  [data-email-step],
+  [data-code-step] {
+    display: grid;
+    gap: 0.7rem;
+  }
   label {
     font-size: 0.82rem;
     font-weight: 700;
@@ -133,6 +220,18 @@ import { withBase } from '../../utils/paths';
     color: var(--color-text-muted);
     font-size: 0.76rem;
     line-height: 1.6;
+  }
+  .form-note[data-error='true'] {
+    color: #c23b3b;
+  }
+  .text-button {
+    width: fit-content;
+    min-height: auto;
+    padding: 0.25rem 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
   }
   @media (max-width: 54rem) {
     .auth-page {
