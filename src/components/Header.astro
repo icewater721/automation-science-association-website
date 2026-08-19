@@ -28,7 +28,10 @@ const basicTools = [
       width="56"
       height="56"
     />
-    <span><strong>人工智能学院</strong><small>学生科协</small></span>
+    <span>
+      <strong>人工智能与自动化学院科协</strong>
+      <small>ARTIFICIAL INTELLIGENCE &amp; AUTOMATION</small>
+    </span>
   </a>
 
   <nav class="primary-nav" aria-label="主导航">
@@ -37,14 +40,22 @@ const basicTools = [
       href={homePath}
       aria-current={isHomePage ? 'page' : undefined}
     >
-      <span aria-hidden="true">01</span>首页
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="m3 11 9-7 9 7"></path>
+        <path d="M5.5 10v10h13V10M9.5 20v-6h5v6"></path>
+      </svg>
+      首页
     </a>
     <a
       class:list={['nav-link', { 'nav-link--current': isDocsPage }]}
       href={docsPath}
       aria-current={isDocsPage ? 'page' : undefined}
     >
-      <span aria-hidden="true">02</span>文档
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M6 3.5h8l4 4V20.5H6Z"></path>
+        <path d="M14 3.5v4h4M9 12h6M9 16h6"></path>
+      </svg>
+      文档
     </a>
   </nav>
 
@@ -86,7 +97,23 @@ const basicTools = [
   }
 
   <div class="sidebar-tools">
-    <div class="theme-row"><ThemeToggle /></div>
+    <div class="tool-row">
+      <a
+        class="github-link"
+        href="https://github.com/icewater721/automation-science-association-website"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="在 GitHub 查看网站仓库"
+        title="GitHub 仓库"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path
+            d="M12 2.7a9.4 9.4 0 0 0-3 18.3c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-4.7 0-1 .4-1.9 1-2.6-.1-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9.2 9.2 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.7.7 1 1.6 1 2.6 0 3.6-2.4 4.4-4.6 4.7.4.3.7.9.7 1.8v2.7c0 .4.2.6.7.5A9.4 9.4 0 0 0 12 2.7Z"
+          ></path>
+        </svg>
+      </a>
+      <ThemeToggle />
+    </div>
   </div>
 </aside>
 
@@ -133,11 +160,17 @@ const basicTools = [
   }
 
   .brand strong {
-    font-size: 0.9rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    white-space: nowrap;
   }
   .brand small {
     color: color-mix(in srgb, var(--color-nav-text) 62%, transparent);
-    font-size: 0.78rem;
+    font-family: ui-serif, Georgia, serif;
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.35;
   }
 
   .primary-nav {
@@ -158,11 +191,14 @@ const basicTools = [
     text-decoration: none;
   }
 
-  .nav-link > span {
-    font-family: ui-monospace, 'Cascadia Code', monospace;
-    font-size: 0.66rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+  .nav-link > svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
   }
 
   .nav-link:hover {
@@ -233,13 +269,30 @@ const basicTools = [
     border-top: 1px solid var(--color-border);
   }
 
-  .theme-row {
+  .tool-row {
     display: flex;
     min-height: 2.75rem;
     align-items: center;
-    justify-content: flex-start;
-    color: color-mix(in srgb, var(--color-nav-text) 64%, transparent);
-    font-size: 0.78rem;
+    justify-content: space-between;
+  }
+
+  .github-link {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 999px;
+    color: var(--color-nav-text);
+  }
+
+  .github-link:hover {
+    background: color-mix(in srgb, var(--color-nav-text) 10%, transparent);
+  }
+
+  .github-link svg {
+    width: 1.45rem;
+    height: 1.45rem;
+    fill: currentColor;
   }
 
   @media (max-width: 48rem) {
@@ -257,7 +310,7 @@ const basicTools = [
     .brand span,
     .sidebar-tools,
     .document-tree,
-    .nav-link > span {
+    .nav-link > svg {
       display: none;
     }
     .brand img {
