@@ -1,5 +1,4 @@
 ---
-import SiteSearch from './SiteSearch.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { withBase } from '../utils/paths';
 
@@ -8,6 +7,17 @@ const homePath = withBase();
 const docsPath = withBase('/docs/');
 const isHomePage = pathname === homePath;
 const isDocsPage = pathname.startsWith(docsPath);
+const isLearning = pathname.startsWith(withBase('/docs/learning'));
+const isBasicTools = pathname.startsWith(
+  withBase('/docs/learning/basic-tools'),
+);
+const basicTools = [
+  { title: 'VS Code', path: '/docs/learning/basic-tools/vscode/' },
+  { title: 'Git 与 GitHub', path: '/docs/learning/basic-tools/git-github/' },
+  { title: 'CMake', path: '/docs/learning/basic-tools/cmake/' },
+  { title: '容器', path: '/docs/learning/basic-tools/containers/' },
+  { title: '包管理器', path: '/docs/learning/basic-tools/package-managers/' },
+];
 ---
 
 <aside class="site-sidebar">
@@ -38,9 +48,45 @@ const isDocsPage = pathname.startsWith(docsPath);
     </a>
   </nav>
 
+  {
+    isDocsPage && (
+      <nav class="document-tree" aria-label="文档目录">
+        <p>文档目录</p>
+        <a
+          class="tree-link"
+          href={docsPath}
+          aria-current={pathname === docsPath ? 'page' : undefined}
+        >
+          简介
+        </a>
+        <details open={isLearning}>
+          <summary>学习资料</summary>
+          <div class="tree-branch">
+            <details open={isBasicTools}>
+              <summary>基础工具</summary>
+              <div class="tree-branch">
+                {basicTools.map((tool) => {
+                  const href = withBase(tool.path);
+                  return (
+                    <a
+                      class="tree-link"
+                      href={href}
+                      aria-current={pathname === href ? 'page' : undefined}
+                    >
+                      {tool.title}
+                    </a>
+                  );
+                })}
+              </div>
+            </details>
+          </div>
+        </details>
+      </nav>
+    )
+  }
+
   <div class="sidebar-tools">
-    <SiteSearch />
-    <div class="theme-row"><span>外观</span><ThemeToggle /></div>
+    <div class="theme-row"><ThemeToggle /></div>
   </div>
 </aside>
 
@@ -128,6 +174,57 @@ const isDocsPage = pathname.startsWith(docsPath);
     color: var(--color-nav);
   }
 
+  .document-tree {
+    display: grid;
+    gap: 0.25rem;
+    min-height: 0;
+    margin-top: 1.75rem;
+    padding-top: 1.1rem;
+    overflow-y: auto;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .document-tree > p {
+    margin: 0 0 0.55rem;
+    padding-inline: 0.75rem;
+    color: color-mix(in srgb, var(--color-nav-text) 48%, transparent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .document-tree summary,
+  .tree-link {
+    padding: 0.48rem 0.7rem;
+    border-radius: 0.4rem;
+    color: color-mix(in srgb, var(--color-nav-text) 68%, transparent);
+    font-size: 0.8rem;
+  }
+
+  .document-tree summary {
+    cursor: pointer;
+  }
+  .tree-link {
+    display: block;
+    text-decoration: none;
+  }
+  .tree-link:hover {
+    color: var(--color-nav-text);
+  }
+  .tree-link[aria-current='page'] {
+    background: color-mix(in srgb, var(--color-nav-text) 8%, transparent);
+    box-shadow: inset 0.16rem 0 var(--color-accent);
+    color: var(--color-nav-text);
+  }
+
+  .tree-branch {
+    display: grid;
+    gap: 0.2rem;
+    margin-left: 0.7rem;
+    padding-left: 0.55rem;
+    border-left: 1px solid var(--color-border);
+  }
+
   .sidebar-tools {
     display: grid;
     gap: 0.8rem;
@@ -140,8 +237,7 @@ const isDocsPage = pathname.startsWith(docsPath);
     display: flex;
     min-height: 2.75rem;
     align-items: center;
-    justify-content: space-between;
-    padding-left: 0.75rem;
+    justify-content: flex-start;
     color: color-mix(in srgb, var(--color-nav-text) 64%, transparent);
     font-size: 0.78rem;
   }
@@ -160,6 +256,7 @@ const isDocsPage = pathname.startsWith(docsPath);
     }
     .brand span,
     .sidebar-tools,
+    .document-tree,
     .nav-link > span {
       display: none;
     }

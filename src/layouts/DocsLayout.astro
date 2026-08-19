@@ -1,7 +1,6 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
-import { withBase } from '../utils/paths';
 
 interface Props {
   title: string;
@@ -19,7 +18,6 @@ const {
   description,
   browserTitle,
   headings = [],
-  currentPath = '/docs/',
   breadcrumbs = [],
   previous,
   next,
@@ -27,16 +25,6 @@ const {
 const visibleHeadings = headings.filter(
   (heading) => heading.depth === 2 || heading.depth === 3,
 );
-const isCurrent = (path: string) => currentPath === path;
-const isLearning = currentPath.startsWith('/docs/learning');
-const isBasicTools = currentPath.startsWith('/docs/learning/basic-tools');
-const basicTools = [
-  { title: 'VS Code', path: '/docs/learning/basic-tools/vscode/' },
-  { title: 'Git 与 GitHub', path: '/docs/learning/basic-tools/git-github/' },
-  { title: 'CMake', path: '/docs/learning/basic-tools/cmake/' },
-  { title: '容器', path: '/docs/learning/basic-tools/containers/' },
-  { title: '包管理器', path: '/docs/learning/basic-tools/package-managers/' },
-];
 ---
 
 <BaseLayout
@@ -44,38 +32,6 @@ const basicTools = [
   description={description}
 >
   <main class="docs-shell">
-    <aside class="docs-navigation" aria-label="文档目录">
-      <p class="navigation-title">文档</p>
-      <nav class="document-tree">
-        <a
-          class="tree-link tree-link--root"
-          href={withBase('/docs/')}
-          aria-current={isCurrent('/docs/') ? 'page' : undefined}>简介</a
-        >
-        <details open={isLearning}>
-          <summary>学习资料</summary>
-          <div class="tree-branch">
-            <details open={isBasicTools}>
-              <summary>基础工具</summary>
-              <div class="tree-branch">
-                {
-                  basicTools.map((tool) => (
-                    <a
-                      class="tree-link"
-                      href={withBase(tool.path)}
-                      aria-current={isCurrent(tool.path) ? 'page' : undefined}
-                    >
-                      {tool.title}
-                    </a>
-                  ))
-                }
-              </div>
-            </details>
-          </div>
-        </details>
-      </nav>
-    </aside>
-
     <article class="docs-article">
       {
         breadcrumbs.length > 0 && (
@@ -141,35 +97,26 @@ const basicTools = [
 <style>
   .docs-shell {
     display: grid;
-    grid-template-columns: minmax(10rem, 13rem) minmax(0, 44rem) minmax(
-        9rem,
-        10rem
-      );
+    grid-template-columns: minmax(0, 48rem) minmax(9rem, 11rem);
     gap: clamp(1.5rem, 3vw, 3rem);
     width: min(88rem, calc(100% - 4rem));
     margin-inline: auto;
     padding-block: clamp(2.5rem, 6vw, 5rem);
   }
 
-  .docs-navigation,
   .page-outline {
     position: sticky;
     top: 2rem;
     align-self: start;
   }
 
-  .docs-navigation {
+  .docs-article {
     grid-column: 1;
     grid-row: 1;
   }
 
-  .docs-article {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
   .page-outline {
-    grid-column: 3;
+    grid-column: 2;
     grid-row: 1;
   }
 
@@ -365,7 +312,8 @@ const basicTools = [
 
   @media (max-width: 86rem) {
     .docs-shell {
-      grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 48rem);
+      justify-content: center;
     }
 
     .page-outline {
@@ -377,12 +325,6 @@ const basicTools = [
     .docs-shell {
       grid-template-columns: 1fr;
       width: min(100% - 2rem, 46rem);
-    }
-
-    .docs-navigation {
-      position: static;
-      grid-column: 1;
-      grid-row: auto;
     }
 
     .docs-article {
