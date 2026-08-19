@@ -42,7 +42,6 @@ const basicTools = [
 <BaseLayout
   title={browserTitle ?? `${title} | 人工智能学院科协文档`}
   description={description}
-  pageKind="docs"
 >
   <main class="docs-shell">
     <aside class="docs-navigation" aria-label="文档目录">
@@ -259,11 +258,6 @@ const basicTools = [
     font-weight: 700;
   }
 
-  :global(:root[data-theme='ark']) .tree-link[aria-current='page'] {
-    box-shadow: inset 0.24rem 0 var(--color-accent);
-    border-radius: 0;
-  }
-
   .docs-article {
     min-width: 0;
   }
@@ -367,171 +361,6 @@ const basicTools = [
 
   .article-navigation__next {
     text-align: right;
-  }
-
-  :global(:root[data-theme='ark']) .docs-shell {
-    position: relative;
-  }
-
-  :global(:root[data-theme='ark']) .docs-shell::before {
-    position: fixed;
-    z-index: -1;
-    inset: 4.75rem 0 0;
-    background:
-      linear-gradient(128deg, rgb(25 28 31 / 7%) 0 18%, transparent 18%),
-      radial-gradient(circle at 85% 12%, rgb(196 94 77 / 12%), transparent 22%),
-      linear-gradient(
-        160deg,
-        transparent 0 72%,
-        rgb(16 155 216 / 9%) 72% 83%,
-        transparent 83%
-      );
-    content: '';
-    pointer-events: none;
-  }
-
-  :global(:root[data-theme='ark']) .docs-navigation,
-  :global(:root[data-theme='ark']) .page-outline {
-    padding: 1rem;
-    border: 1px solid var(--color-border);
-    background: var(--ark-glass);
-    box-shadow: 0.45rem 0.45rem 0 rgb(25 28 31 / 8%);
-    backdrop-filter: blur(8px);
-  }
-
-  :global(:root[data-theme='ark']) .navigation-title,
-  :global(:root[data-theme='ark']) .page-outline > p {
-    padding-bottom: 0.6rem;
-    border-bottom: 0.2rem solid var(--color-text);
-    color: var(--color-accent);
-    font-family: ui-monospace, 'Cascadia Code', monospace;
-  }
-
-  :global(:root[data-theme='ark']) .docs-article header {
-    position: relative;
-    padding: clamp(1.5rem, 4vw, 2.5rem);
-    border: 1px solid var(--color-border);
-    border-left: 0.35rem solid var(--color-accent);
-    background:
-      linear-gradient(
-        115deg,
-        var(--ark-glass) 0 78%,
-        rgb(16 155 216 / 11%) 78%
-      ),
-      var(--color-surface);
-    box-shadow: 0.8rem 0.8rem 0 rgb(25 28 31 / 8%);
-  }
-
-  :global(:root[data-theme='ark']) .docs-article header::after {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 3rem;
-    height: 0.3rem;
-    background: linear-gradient(
-      90deg,
-      var(--ark-alert) 0 35%,
-      transparent 35% 48%,
-      var(--ark-warning) 48%
-    );
-    content: '';
-  }
-
-  :global(:root[data-theme='ark']) .docs-content :global(h2) {
-    padding-left: 0.8rem;
-    border-left: 0.25rem solid var(--color-accent);
-  }
-
-  :global(:root[data-theme='ark']) .article-navigation a {
-    border-left: 0.25rem solid var(--color-accent);
-    background: var(--ark-glass);
-  }
-
-  :global(:root[data-theme='stardew']) .docs-shell {
-    position: relative;
-  }
-
-  :global(:root[data-theme='stardew']) .docs-shell::before {
-    position: fixed;
-    z-index: -1;
-    inset: 4.75rem 0 0;
-    background:
-      linear-gradient(180deg, rgb(145 203 210 / 45%) 0 8rem, transparent 8rem),
-      linear-gradient(135deg, transparent 0 84%, rgb(126 182 77 / 18%) 84%),
-      var(--color-page);
-    content: '';
-    pointer-events: none;
-  }
-
-  :global(:root[data-theme='stardew']) .docs-navigation,
-  :global(:root[data-theme='stardew']) .page-outline {
-    padding: 1rem;
-    border: 0.2rem solid #713b24;
-    border-radius: 0.35rem;
-    background: linear-gradient(#f5cb83, #eab56b);
-    box-shadow:
-      0 0 0 0.12rem #b96c3c,
-      0.22rem 0.25rem 0 #633c25,
-      inset 0 0 0 0.12rem #ffe0a2;
-  }
-
-  :global(:root[data-theme='stardew']) .navigation-title,
-  :global(:root[data-theme='stardew']) .page-outline > p,
-  :global(:root[data-theme='stardew']) .document-tree summary,
-  :global(:root[data-theme='stardew']) .tree-link {
-    font-family: var(--stardew-display-font);
-    font-weight: 400;
-  }
-
-  :global(:root[data-theme='stardew']) .tree-link[aria-current='page'] {
-    border: 0.12rem solid #315d3d;
-    border-radius: 0.15rem;
-    background: linear-gradient(#a8d36a, #79aa4e);
-    box-shadow:
-      0.1rem 0.12rem 0 #315436,
-      inset 0 0 0 0.06rem #dff0a0;
-    color: #29452e;
-  }
-
-  :global(:root[data-theme='stardew']) .docs-article header {
-    padding: clamp(1.5rem, 4vw, 2.5rem);
-    border: 0.24rem solid #713b24;
-    border-radius: 0.35rem;
-    background:
-      repeating-linear-gradient(
-        0deg,
-        transparent 0 1.5rem,
-        rgb(155 91 45 / 9%) 1.5rem 1.58rem
-      ),
-      linear-gradient(#f7d494, #edbb72);
-    box-shadow:
-      0 0 0 0.14rem #b96c3c,
-      0.28rem 0.32rem 0 #633c25,
-      inset 0 0 0 0.15rem #ffe6ad;
-  }
-
-  :global(:root[data-theme='stardew']) .docs-article h1,
-  :global(:root[data-theme='stardew']) .docs-content :global(h2) {
-    color: #6a3525;
-    font-family: var(--stardew-display-font);
-    font-weight: 400;
-    text-shadow: 0.08rem 0.08rem 0 #ffd99b;
-  }
-
-  :global(:root[data-theme='stardew']) .docs-content {
-    margin-top: 1.5rem;
-    padding: clamp(1.25rem, 3vw, 2rem);
-    border: 0.16rem solid #b87845;
-    border-radius: 0.3rem;
-    background: rgb(255 244 207 / 92%);
-    box-shadow: 0.18rem 0.2rem 0 rgb(99 60 37 / 42%);
-  }
-
-  :global(:root[data-theme='stardew']) .article-navigation a {
-    border: 0.16rem solid #713b24;
-    border-radius: 0.25rem;
-    background: linear-gradient(#f2be72, #e5a85e);
-    box-shadow: 0.16rem 0.18rem 0 #633c25;
   }
 
   @media (max-width: 70rem) {

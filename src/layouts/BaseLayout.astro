@@ -6,16 +6,13 @@ import { withBase } from '../utils/paths';
 interface Props {
   title: string;
   description: string;
-  pageKind?: 'home' | 'docs' | 'internal';
 }
 
-const { title, description, pageKind } = Astro.props;
-const isHomePage = Astro.url.pathname === withBase();
-const resolvedPageKind = pageKind ?? (isHomePage ? 'home' : 'internal');
+const { title, description } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="zh-CN" data-page={resolvedPageKind}>
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -28,15 +25,12 @@ const resolvedPageKind = pageKind ?? (isHomePage ? 'home' : 'internal');
     <title>{title}</title>
     <script is:inline>
       const savedTheme = localStorage.getItem('asaw-theme');
-      const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      const availableThemes = ['light', 'dark', 'ark', 'stardew'];
+      const availableThemes = ['light', 'dark'];
       document.documentElement.dataset.theme = availableThemes.includes(
         savedTheme,
       )
         ? savedTheme
-        : systemTheme;
+        : 'light';
     </script>
   </head>
   <body>
