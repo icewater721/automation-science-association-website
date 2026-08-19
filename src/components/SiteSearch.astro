@@ -1,10 +1,17 @@
 ---
 import { withBase } from '../utils/paths';
+
+interface Props {
+  placement?: 'content' | 'sidebar';
+}
+
+const { placement = 'content' } = Astro.props;
 ---
 
 <div
   class="site-search"
   data-search-root
+  data-placement={placement}
   data-search-index-url={withBase('/search-index.json')}
 >
   <form class="search-form" role="search" data-search-form>
@@ -229,6 +236,16 @@ import { withBase } from '../utils/paths';
     background: var(--color-surface);
     color: var(--color-text);
     box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 18%);
+  }
+
+  .site-search[data-placement='sidebar'] {
+    width: 100%;
+  }
+
+  .site-search[data-placement='sidebar'] .search-panel {
+    top: 0;
+    bottom: auto;
+    left: calc(100% + 1.1rem);
   }
 
   .search-panel[hidden] {
