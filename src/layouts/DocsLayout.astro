@@ -45,10 +45,12 @@ const visibleHeadings = headings.filter(
 >
   <main class="docs-shell">
     <article class="docs-article">
-      <details class="document-browser" open={isLearning}>
-        <summary>
-          <span>浏览文档</span>
-          <small>按层级展开目录</small>
+      <details class="document-browser">
+        <summary aria-label="浏览文档" title="浏览文档">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M3.5 6.5h6l2 2h9v10h-17Z"></path>
+            <path d="M3.5 8.5v-3h6l2 3"></path>
+          </svg>
         </summary>
         <nav class="document-tree" aria-label="文档目录">
           <a
@@ -156,7 +158,7 @@ const visibleHeadings = headings.filter(
     gap: clamp(1.5rem, 3vw, 3rem);
     width: min(88rem, calc(100% - 4rem));
     margin-inline: auto;
-    padding-block: clamp(2.5rem, 6vw, 5rem);
+    padding: 1.4rem 0 clamp(2.5rem, 6vw, 5rem);
   }
 
   .page-outline {
@@ -217,34 +219,53 @@ const visibleHeadings = headings.filter(
   }
 
   .document-browser {
+    position: relative;
+    z-index: 5;
+    width: fit-content;
     margin-bottom: 1.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.65rem;
-    background: var(--color-surface);
   }
 
   .document-browser > summary {
-    display: flex;
-    align-items: baseline;
-    gap: 0.7rem;
-    padding: 0.8rem 1rem;
+    display: grid;
+    width: 3.25rem;
+    height: 3.25rem;
+    place-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: 0.65rem;
+    background: var(--color-surface);
     cursor: pointer;
-    list-style-position: inside;
+    list-style: none;
   }
 
-  .document-browser > summary span {
-    font-size: 0.88rem;
-    font-weight: 750;
+  .document-browser > summary::-webkit-details-marker,
+  .document-tree summary::-webkit-details-marker {
+    display: none;
   }
 
-  .document-browser > summary small {
-    color: var(--color-text-muted);
-    font-size: 0.72rem;
+  .document-browser > summary:hover {
+    border-color: var(--color-accent);
+  }
+
+  .document-browser > summary svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
   }
 
   .document-browser > .document-tree {
-    padding: 0 1rem 1rem;
-    border-top: 1px solid var(--color-border);
+    position: absolute;
+    top: calc(100% + 0.55rem);
+    left: 0;
+    width: min(20rem, calc(100vw - var(--site-sidebar-width) - 4rem));
+    padding: 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.65rem;
+    background: var(--color-page);
+    box-shadow: 0 1rem 2.5rem color-mix(in srgb, #000 14%, transparent);
   }
 
   .document-tree details {
@@ -252,11 +273,27 @@ const visibleHeadings = headings.filter(
   }
 
   .document-tree summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 0.55rem 0.6rem;
     border-radius: 0.3rem;
     font-size: 0.86rem;
     font-weight: 700;
     cursor: pointer;
+    list-style: none;
+  }
+
+  .document-tree summary::after {
+    content: '›';
+    margin-left: 1rem;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    transition: transform 160ms ease;
+  }
+
+  .document-tree details[open] > summary::after {
+    transform: rotate(90deg);
   }
 
   .tree-branch {
