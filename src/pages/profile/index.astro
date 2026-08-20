@@ -7,6 +7,8 @@ import { withBase } from '../../utils/paths';
   <main
     class="profile-page"
     data-profile-page
+    data-loading="true"
+    aria-busy="true"
     data-login-url={withBase('/login/')}
   >
     <section class="identity-card">
@@ -149,6 +151,11 @@ import { withBase } from '../../utils/paths';
     .eq('user_id', userId)
     .single()) ?? { data: null };
   if (profile) applyProfile(profile);
+  window.requestAnimationFrame(() => {
+    if (!page) return;
+    page.dataset.loading = 'false';
+    page.setAttribute('aria-busy', 'false');
+  });
 
   document
     .querySelector('[data-sign-out]')
@@ -186,6 +193,9 @@ import { withBase } from '../../utils/paths';
   ) => {
     if (element.dataset.editing === 'true') return;
     element.dataset.editing = 'true';
+    const originalBounds = element.getBoundingClientRect();
+    element.style.width = `${originalBounds.width}px`;
+    element.style.height = `${originalBounds.height}px`;
     const original = String(currentProfile[field] || '');
     const control = document.createElement('input');
     control.type = 'text';
@@ -209,6 +219,8 @@ import { withBase } from '../../utils/paths';
         applyProfile(currentProfile);
       }
       delete element.dataset.editing;
+      element.style.removeProperty('width');
+      element.style.removeProperty('height');
     };
     control.addEventListener('blur', () => void finish(true));
     control.addEventListener('beforeinput', (event) => {
@@ -290,7 +302,6 @@ import { withBase } from '../../utils/paths';
   };
 
   const saveImage = async (file: File, kind: 'avatar' | 'background') => {
-    setNote('正在上传图片……');
     try {
       const url = await uploadImage(file, kind);
       await updateProfile({ [`${kind}_url`]: url });
@@ -344,16 +355,27 @@ import { withBase } from '../../utils/paths';
 
 <style>
   .profile-page {
-    width: min(62rem, calc(100% - 4rem));
-    margin-inline: auto;
+    width: min(48rem, calc(100% - 4rem));
+    margin-right: auto;
+    margin-left: clamp(2rem, 6vw, 5rem);
     padding-bottom: clamp(2rem, 6vw, 5rem);
   }
   .identity-card {
     border-bottom: 1px solid var(--color-border);
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 220ms ease,
+      transform 220ms ease;
+  }
+  .profile-page[data-loading='true'] .identity-card {
+    opacity: 0;
+    transform: translateY(0.35rem);
   }
   .cover {
     position: relative;
-    height: clamp(9rem, 19vw, 12.5rem);
+    width: 100%;
+    aspect-ratio: 16 / 9;
     background:
       radial-gradient(
         circle at 28% 35%,
@@ -448,10 +470,13 @@ import { withBase } from '../../utils/paths';
   }
   [data-display-name],
   [data-bio] {
-    width: fit-content;
     max-width: 100%;
+    box-sizing: border-box;
     border-radius: 0.35rem;
     cursor: text;
+  }
+  [data-display-name] {
+    width: fit-content;
   }
   [data-display-name]:hover,
   [data-bio]:hover {
@@ -460,7 +485,7 @@ import { withBase } from '../../utils/paths';
   :global(.inline-editor) {
     display: block;
     width: 100%;
-    height: 1.65em;
+    height: 100%;
     box-sizing: border-box;
     padding: 0 0.35rem;
     border: 1px solid var(--color-accent);
@@ -470,25 +495,34 @@ import { withBase } from '../../utils/paths';
     font: inherit;
     line-height: inherit;
   }
+  .signature :global(.inline-editor) {
+    padding-right: 3.25rem;
+  }
   .signature {
-    display: flex;
+    position: relative;
+    display: block;
     width: min(42rem, 100%);
-    align-items: baseline;
-    gap: 0.5rem;
     margin: 0.65rem 0 0;
     color: var(--color-text-muted);
     line-height: 1.65;
     white-space: nowrap;
   }
   .signature [data-bio] {
-    flex: 1;
+    display: block;
+    width: 100%;
     min-width: 0;
     min-height: 1.65em;
+    padding-right: 3.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .signature small {
-    flex: none;
+    position: absolute;
+    right: 0.45rem;
+    top: 50%;
+    z-index: 1;
+    transform: translateY(-50%);
+    pointer-events: none;
     color: var(--color-text-muted);
     font-size: 0.7rem;
     font-variant-numeric: tabular-nums;
@@ -537,7 +571,8 @@ import { withBase } from '../../utils/paths';
 
   @media (max-width: 42rem) {
     .profile-page {
-      width: 100%;
+      width: calc(100% - 2rem);
+      margin-inline: 1rem;
     }
 
     .identity-content,
