@@ -154,12 +154,30 @@ import { withBase } from '../../utils/paths';
         : '';
   };
 
-  const { data: profile } = (await supabase
+  let { data: profile, error: profileError } = (await supabase
     ?.from('profiles')
     .select('display_name,bio,avatar_url,background_url,role')
     .eq('user_id', userId)
-    .single()) ?? { data: null };
+    .single()) ?? { data: null, error: null };
+  if (profileError?.code === '42703') {
+    const legacyResult = await supabase!
+      .from('profiles')
+      .select('display_name,bio,avatar_url,background_url,is_collaborator')
+      .eq('user_id', userId)
+      .single();
+    profile = legacyResult.data
+      ? {
+          ...legacyResult.data,
+          role: legacyResult.data.is_collaborator ? 'editor' : null,
+        }
+      : null;
+    profileError = legacyResult.error;
+  }
   if (profile) applyProfile(profile);
+  if (profileError && note) {
+    note.textContent = '个人资料加载失败，请稍后重试。';
+    note.dataset.error = 'true';
+  }
   window.requestAnimationFrame(() => {
     if (!page) return;
     page.dataset.loading = 'false';
