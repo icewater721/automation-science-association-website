@@ -12,9 +12,6 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
 
 <BaseLayout title="文档 | 人工智能学院科协" description="科协文档与学习资料。">
   <main class="articles-page">
-    <header class="articles-heading">
-      <p class="eyebrow">DOCUMENTS</p><h1>文档</h1><p>经验、项目记录与学习资料。</p>
-    </header>
     <div class="article-tools">
       <details class="category-filter" data-category-filter>
         <summary aria-label="筛选栏目" title="筛选栏目">
@@ -85,11 +82,8 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
 </script>
 
 <style>
-  .articles-page { width: min(64rem, calc(100% - 4rem)); margin-inline: auto; padding-block: clamp(2.5rem, 7vw, 6rem); }
-  .articles-heading p { color: var(--color-text-muted); }
-  .eyebrow { margin: 0 0 0.6rem; color: var(--color-accent) !important; font-size: 0.74rem; font-weight: 750; letter-spacing: 0.12em; }
-  h1 { margin: 0; font-size: clamp(2.8rem, 7vw, 5.5rem); letter-spacing: -0.055em; }
-  .article-tools { display: flex; align-items: center; gap: 0.65rem; margin-top: 2.5rem; padding-bottom: 0.8rem; }
+  .articles-page { width: min(52rem, calc(100% - 4rem)); margin-right: auto; margin-left: clamp(2rem, 5vw, 4.5rem); padding-block: clamp(2rem, 5vw, 4.5rem); }
+  .article-tools { display: flex; align-items: center; gap: 0.65rem; padding-bottom: 0.7rem; }
   .category-filter { position: relative; }
   .category-filter > summary { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: 50%; cursor: pointer; list-style: none; transition: color 180ms ease, background 180ms ease, transform 180ms ease; }
   .category-filter > summary:hover { background: var(--color-surface); color: var(--color-accent); transform: translateY(-0.1rem); }
@@ -102,12 +96,12 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
   .category-menu button:hover, .category-menu button[aria-pressed='true'] { padding-left: 0.85rem; background: var(--color-surface); color: var(--color-accent); }
   .draft-link { padding: 0.45rem 0.7rem; border-radius: 999px; color: var(--color-text-muted); font-size: 0.82rem; text-decoration: none; transition: color 180ms ease, background 180ms ease, transform 180ms ease; }
   .draft-link:hover { background: var(--color-surface); color: var(--color-text); transform: translateY(-0.1rem); }
-  .article-list { display: grid; gap: 0.3rem; }
-  .article-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.38rem 2rem; margin-inline: -0.8rem; padding: 1.05rem 2.8rem 1.05rem 0.8rem; border-radius: 0.65rem; color: var(--color-text); text-decoration: none; animation: post-in 420ms both; animation-delay: calc(var(--post-index) * 45ms); transition: background 180ms ease, transform 180ms ease; }
+  .article-list { display: grid; gap: 0.12rem; }
+  .article-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.28rem 1.25rem; margin-inline: -0.65rem; padding: 0.78rem 2.5rem 0.78rem 0.65rem; border-radius: 0.55rem; color: var(--color-text); text-decoration: none; animation: post-in 420ms both; animation-delay: calc(var(--post-index) * 45ms); transition: background 180ms ease, transform 180ms ease; }
   .article-card::after { position: absolute; top: 50%; right: 0.9rem; color: var(--color-text-muted); content: '→'; opacity: 0; transform: translate(-0.35rem, -50%); transition: opacity 180ms ease, transform 180ms ease; }
   .article-card > span { grid-column: 1 / -1; width: fit-content; padding: 0.18rem 0.48rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: 0.66rem; font-weight: 720; letter-spacing: 0.06em; }
-  .article-card h2 { margin: 0; font-size: clamp(1.08rem, 1.8vw, 1.35rem); font-weight: 680; transition: color 180ms ease; }
-  .article-card p { grid-column: 1; margin: 0; overflow: hidden; color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.55; text-overflow: ellipsis; white-space: nowrap; }
+  .article-card h2 { margin: 0; font-size: clamp(1rem, 1.6vw, 1.22rem); font-weight: 660; transition: color 180ms ease; }
+  .article-card p { grid-column: 1; margin: 0; overflow: hidden; color: var(--color-text-muted); font-size: 0.82rem; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
   .article-card time { grid-column: 2; grid-row: 2; color: var(--color-text-muted); font-size: 0.72rem; }
   .article-card:hover { background: color-mix(in srgb, var(--color-text) 3.5%, transparent); transform: translateX(0.25rem); }
   .article-card:hover h2 { color: var(--color-accent); }
@@ -115,6 +109,6 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
   @keyframes post-in { from { opacity: 0; transform: translateY(0.55rem); } to { opacity: 1; transform: translateY(0); } }
   .empty-filter { color: var(--color-text-muted); }
   [hidden] { display: none !important; }
-  @media (max-width: 42rem) { .articles-page { width: calc(100% - 2rem); } .article-card { grid-template-columns: 1fr; margin-inline: 0; padding-inline: 0.65rem 2.4rem; } .article-card time { grid-column: 1; grid-row: auto; } }
+  @media (max-width: 42rem) { .articles-page { width: calc(100% - 2rem); margin-inline: 1rem; } .article-card { grid-template-columns: 1fr; margin-inline: 0; padding-inline: 0.65rem 2.4rem; } .article-card time { grid-column: 1; grid-row: auto; } }
   @media (prefers-reduced-motion: reduce) { .article-card { animation: none; } .article-card, .article-card::after, .category-filter svg, .category-filter > summary { transition: none; } }
 </style>

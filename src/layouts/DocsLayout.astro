@@ -1,14 +1,12 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
-import { withBase } from '../utils/paths';
 
 interface Props {
   title: string;
   description: string;
   browserTitle?: string;
   headings?: MarkdownHeading[];
-  currentPath?: string;
   breadcrumbs?: Array<{ title: string; href?: string }>;
   previous?: { title: string; href: string };
   next?: { title: string; href: string };
@@ -22,16 +20,7 @@ const {
   breadcrumbs = [],
   previous,
   next,
-  currentPath = '/docs/',
 } = Astro.props;
-const documentPath = withBase(currentPath);
-const basicTools = [
-  { title: 'VS Code', path: '/articles/vscode/' },
-  { title: 'Git 与 GitHub', path: '/articles/git-github/' },
-  { title: 'CMake', path: '/articles/cmake/' },
-  { title: '容器', path: '/articles/containers/' },
-  { title: '包管理器', path: '/articles/package-managers/' },
-];
 const visibleHeadings = headings.filter(
   (heading) => heading.depth === 2 || heading.depth === 3,
 );
@@ -43,26 +32,6 @@ const visibleHeadings = headings.filter(
 >
   <main class="docs-shell">
     <article class="docs-article">
-      <details class="document-browser">
-        <summary aria-label="浏览文档" title="浏览文档">
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="M3.5 6.5h6l2 2h9v10h-17Z"></path>
-            <path d="M3.5 8.5v-3h6l2 3"></path>
-          </svg>
-        </summary>
-        <nav class="document-tree" aria-label="文档目录">
-          <a class="tree-link tree-link--root" href={withBase('/articles/')}>全部文档</a>
-          <details open>
-            <summary>基础工具</summary>
-            <div class="tree-branch">
-              {basicTools.map((tool) => {
-                const href = withBase(tool.path);
-                return <a class="tree-link" href={href} aria-current={documentPath === href ? 'page' : undefined}>{tool.title}</a>;
-              })}
-            </div>
-          </details>
-        </nav>
-      </details>
       {
         breadcrumbs.length > 0 && (
           <nav class="breadcrumbs" aria-label="面包屑导航">
@@ -76,7 +45,7 @@ const visibleHeadings = headings.filter(
         )
       }
       <header>
-        <p class="eyebrow">文档 · 基础工具</p>
+        <p class="eyebrow">基础工具</p>
         <h1>{title}</h1>
         <p class="description">{description}</p>
       </header>
@@ -184,120 +153,6 @@ const visibleHeadings = headings.filter(
   .page-outline span {
     color: var(--color-text-muted);
     font-size: 0.78rem;
-  }
-
-  .document-tree {
-    display: grid;
-    gap: 0.55rem;
-  }
-
-  .document-browser {
-    position: relative;
-    z-index: 5;
-    width: fit-content;
-    margin-bottom: 1.5rem;
-  }
-
-  .document-browser > summary {
-    display: grid;
-    width: 2.5rem;
-    height: 2.5rem;
-    place-items: center;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-    list-style: none;
-  }
-
-  .document-browser > summary::-webkit-details-marker,
-  .document-tree summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .document-browser > summary:hover {
-    color: var(--color-accent);
-  }
-
-  .document-browser > summary svg {
-    width: 1.35rem;
-    height: 1.35rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 1.7;
-  }
-
-  .document-browser > .document-tree {
-    position: absolute;
-    top: calc(100% + 0.55rem);
-    left: 0;
-    width: min(20rem, calc(100vw - var(--site-sidebar-width) - 4rem));
-    padding: 0.8rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.65rem;
-    background: var(--color-page);
-    box-shadow: 0 1rem 2.5rem color-mix(in srgb, #000 14%, transparent);
-  }
-
-  .document-tree details {
-    min-width: 0;
-  }
-
-  .document-tree summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.55rem 0.6rem;
-    border-radius: 0.3rem;
-    font-size: 0.86rem;
-    font-weight: 700;
-    cursor: pointer;
-    list-style: none;
-  }
-
-  .document-tree summary::after {
-    content: '›';
-    margin-left: 1rem;
-    color: var(--color-text-muted);
-    font-size: 1rem;
-    transition: transform 160ms ease;
-  }
-
-  .document-tree details[open] > summary::after {
-    transform: rotate(90deg);
-  }
-
-  .tree-branch {
-    display: grid;
-    gap: 0.25rem;
-    margin-left: 0.65rem;
-    padding: 0.2rem 0 0.25rem 0.65rem;
-    border-left: 1px solid var(--color-border);
-  }
-
-  .tree-branch .tree-branch {
-    margin-left: 0.4rem;
-  }
-
-  .tree-link {
-    padding: 0.48rem 0.65rem;
-    border-radius: 0.25rem;
-    color: var(--color-text-muted);
-    font-size: 0.82rem;
-    text-decoration: none;
-  }
-
-  .tree-link--root {
-    font-size: 0.86rem;
-    font-weight: 700;
-  }
-
-  .tree-link[aria-current='page'] {
-    box-shadow: inset 0.18rem 0 var(--color-accent);
-    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-    color: var(--color-text);
-    font-weight: 700;
   }
 
   .docs-article {

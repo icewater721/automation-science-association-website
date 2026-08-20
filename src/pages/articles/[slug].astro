@@ -29,7 +29,6 @@ const navigationItem = (item: (typeof entries)[number] | undefined) => item ? {
   description={entry.data.description}
   browserTitle={`${entry.data.title} | 文档`}
   headings={headings}
-  currentPath={`/articles/${slugFor(entry.id)}/`}
   breadcrumbs={[
     { title: '文档', href: withBase('/articles/') },
     { title: entry.data.category },
