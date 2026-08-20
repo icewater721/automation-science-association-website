@@ -49,9 +49,14 @@ import { withBase } from '../../utils/paths';
             />
             <button type="submit">验证并登录</button>
           </div>
-          <button class="text-button" type="button" data-change-email
-            >更换邮箱</button
-          >
+          <div class="code-actions">
+            <button class="text-button" type="button" data-change-email
+              >更换邮箱</button
+            >
+            <button class="text-button" type="button" data-resend-code disabled>
+              60 秒后重新发送
+            </button>
+          </div>
         </div>
         <p class="form-note" data-form-note aria-live="polite">
           首次验证成功后会自动创建账号。
@@ -71,7 +76,10 @@ import { withBase } from '../../utils/paths';
   const changeEmail = document.querySelector<HTMLButtonElement>(
     '[data-change-email]',
   );
+  const resendCode =
+    document.querySelector<HTMLButtonElement>('[data-resend-code]');
   let waitingForCode = false;
+  let resendTimer: number | undefined;
 
   const setNote = (message: string, error = false) => {
     if (!note) return;
@@ -84,11 +92,55 @@ import { withBase } from '../../utils/paths';
     window.location.replace(form.dataset.profileUrl);
   }
 
+  const startResendCountdown = () => {
+    if (!resendCode) return;
+    window.clearInterval(resendTimer);
+    let seconds = 60;
+    resendCode.disabled = true;
+    resendCode.textContent = `${seconds} 秒后重新发送`;
+    resendTimer = window.setInterval(() => {
+      seconds -= 1;
+      resendCode.textContent =
+        seconds > 0 ? `${seconds} 秒后重新发送` : '重新发送验证码';
+      if (seconds <= 0) {
+        window.clearInterval(resendTimer);
+        resendCode.disabled = false;
+      }
+    }, 1000);
+  };
+
+  const sendCode = async (email: string, isResend = false) => {
+    if (!supabase) return false;
+    setNote(isResend ? '正在重新发送验证码……' : '正在发送验证码……');
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
+    if (error) {
+      setNote(error.message, true);
+      return false;
+    }
+    setNote(
+      isResend
+        ? `新验证码已发送到 ${email}，上一枚验证码已失效。`
+        : `验证码已发送到 ${email}，有效期为 5 分钟。`,
+    );
+    startResendCountdown();
+    return true;
+  };
+
   changeEmail?.addEventListener('click', () => {
     waitingForCode = false;
+    window.clearInterval(resendTimer);
     if (emailStep) emailStep.hidden = false;
     if (codeStep) codeStep.hidden = true;
     setNote('首次验证成功后会自动创建账号。');
+  });
+
+  resendCode?.addEventListener('click', async () => {
+    if (!isSupabaseConfigured || !supabase || !form) return;
+    const email = String(new FormData(form).get('email') ?? '').trim();
+    await sendCode(email, true);
   });
 
   form?.addEventListener('submit', async (event) => {
@@ -102,17 +154,12 @@ import { withBase } from '../../utils/paths';
     const email = String(data.get('email') ?? '').trim();
 
     if (!waitingForCode) {
-      setNote('正在发送验证码……');
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: true },
-      });
-      if (error) return setNote(error.message, true);
+      const sent = await sendCode(email);
+      if (!sent) return;
 
       waitingForCode = true;
       if (emailStep) emailStep.hidden = true;
       if (codeStep) codeStep.hidden = false;
-      setNote(`验证码已发送到 ${email}。`);
       document.querySelector<HTMLInputElement>('#code')?.focus();
       return;
     }
@@ -232,6 +279,16 @@ import { withBase } from '../../utils/paths';
     background: transparent;
     color: var(--color-text-muted);
     font-size: 0.78rem;
+  }
+  .code-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .text-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   @media (max-width: 54rem) {
     .auth-page {
