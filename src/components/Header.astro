@@ -81,8 +81,7 @@ const isArticlesPage = pathname.startsWith(articlesPath);
           aria-expanded="false"
           title="个人登录"
         >
-          <img data-member-avatar alt="" hidden />
-          <svg data-member-placeholder aria-hidden="true" viewBox="0 0 24 24">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
             <circle cx="12" cy="8" r="3.5"></circle>
             <path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6"></path>
           </svg>
@@ -152,19 +151,17 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     const avatarUrl = String(profile?.avatar_url || '');
     const name = document.querySelector<HTMLElement>('[data-member-name]');
     if (name) name.textContent = displayName;
-    document
-      .querySelectorAll<HTMLImageElement>('[data-member-avatar],[data-menu-avatar]')
-      .forEach((image) => {
-        if (!avatarUrl) return;
-        image.src = avatarUrl;
-        image.hidden = false;
-      });
+    const menuAvatar =
+      document.querySelector<HTMLImageElement>('[data-menu-avatar]');
+    if (menuAvatar && avatarUrl) {
+      menuAvatar.src = avatarUrl;
+      menuAvatar.hidden = false;
+    }
     if (avatarUrl) {
-      document
-        .querySelectorAll<HTMLElement>(
-          '[data-member-placeholder],[data-menu-placeholder]',
-        )
-        .forEach((placeholder) => (placeholder.hidden = true));
+      const placeholder = document.querySelector<HTMLElement>(
+        '[data-menu-placeholder]',
+      );
+      if (placeholder) placeholder.hidden = true;
     }
   }
 
@@ -348,13 +345,6 @@ const isArticlesPage = pathname.startsWith(articlesPath);
 
   .member-menu {
     position: relative;
-  }
-
-  .login-link img {
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-    object-fit: cover;
   }
 
   .member-popover {
