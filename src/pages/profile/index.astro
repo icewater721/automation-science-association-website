@@ -10,51 +10,56 @@ import { withBase } from '../../utils/paths';
     data-login-url={withBase('/login/')}
   >
     <section class="identity-card">
-      <div class="cover" data-cover></div>
+      <div
+        class="cover image-edit-target"
+        data-cover
+        data-image-target="background"
+        role="button"
+        tabindex="0"
+        aria-label="悬停三秒后更换背景图"
+      >
+        <span>更换背景图</span>
+      </div>
       <div class="identity-content">
         <div class="profile-actions">
-          <div class="avatar" aria-hidden="true" data-avatar>A</div>
+          <div
+            class="avatar image-edit-target"
+            data-avatar
+            data-image-target="avatar"
+            role="button"
+            tabindex="0"
+            aria-label="悬停三秒后更换头像"
+          >
+            <b>A</b><span>更换头像</span>
+          </div>
           <div class="action-buttons">
-            <button type="button" data-edit-profile>编辑资料</button>
             <button type="button" data-sign-out>退出</button>
           </div>
         </div>
         <div class="identity-copy">
           <p class="role">REGISTERED MEMBER</p>
-          <h1 data-display-name>正在读取……</h1>
-          <p class="signature" data-bio>
+          <h1 data-display-name tabindex="0" title="单击编辑昵称">
+            正在读取……
+          </h1>
+          <p class="signature" data-bio tabindex="0" title="单击编辑个性签名">
             用一句话介绍自己，或者留下你最近正在探索的事情。
           </p>
+          <p class="profile-note" data-profile-note aria-live="polite"></p>
         </div>
       </div>
     </section>
-
-    <form class="profile-editor" data-profile-editor hidden>
-      <label>昵称<input name="display_name" maxlength="40" required /></label>
-      <label
-        >个性签名<textarea name="bio" maxlength="160" rows="3"
-        ></textarea></label
-      >
-      <label
-        >头像<input
-          name="avatar"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-        /></label
-      >
-      <label
-        >背景图<input
-          name="background"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-        /></label
-      >
-      <div class="editor-actions">
-        <button type="button" data-cancel-edit>取消</button>
-        <button type="submit">保存</button>
-      </div>
-      <p data-profile-note aria-live="polite"></p>
-    </form>
+    <input
+      data-avatar-input
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      hidden
+    />
+    <input
+      data-background-input
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      hidden
+    />
 
     <section class="profile-section">
       <header><p>PUBLICATIONS</p><h2>我发布的文章</h2></header>
@@ -77,11 +82,15 @@ import { withBase } from '../../utils/paths';
   const bioElement = document.querySelector<HTMLElement>('[data-bio]');
   const avatarElement = document.querySelector<HTMLElement>('[data-avatar]');
   const coverElement = document.querySelector<HTMLElement>('[data-cover]');
-  const editor = document.querySelector<HTMLFormElement>(
-    '[data-profile-editor]',
-  );
   const note = document.querySelector<HTMLElement>('[data-profile-note]');
+  const avatarInput = document.querySelector<HTMLInputElement>(
+    '[data-avatar-input]',
+  );
+  const backgroundInput = document.querySelector<HTMLInputElement>(
+    '[data-background-input]',
+  );
   let userId = '';
+  let currentProfile: Record<string, unknown> = {};
 
   const goToLogin = () =>
     window.location.replace(page?.dataset.loginUrl ?? '/');
@@ -94,6 +103,7 @@ import { withBase } from '../../utils/paths';
   userId = sessionData.session?.user.id ?? '';
 
   const applyProfile = (profile: Record<string, unknown>) => {
+    currentProfile = { ...currentProfile, ...profile };
     const displayName = String(profile.display_name || '未设置昵称');
     const bio = String(
       profile.bio || '用一句话介绍自己，或者留下你最近正在探索的事情。',
@@ -101,7 +111,8 @@ import { withBase } from '../../utils/paths';
     if (nameElement) nameElement.textContent = displayName;
     if (bioElement) bioElement.textContent = bio;
     if (avatarElement) {
-      avatarElement.textContent = displayName.slice(0, 1).toUpperCase();
+      const initial = avatarElement.querySelector('b');
+      if (initial) initial.textContent = displayName.slice(0, 1).toUpperCase();
       const avatarUrl = String(profile.avatar_url || '');
       avatarElement.style.backgroundImage = avatarUrl
         ? `url("${avatarUrl}")`
@@ -112,14 +123,6 @@ import { withBase } from '../../utils/paths';
       coverElement.style.backgroundImage = backgroundUrl
         ? `url("${backgroundUrl}")`
         : '';
-    if (editor) {
-      const nameInput = editor.elements.namedItem(
-        'display_name',
-      ) as HTMLInputElement;
-      const bioInput = editor.elements.namedItem('bio') as HTMLTextAreaElement;
-      nameInput.value = String(profile.display_name || '');
-      bioInput.value = String(profile.bio || '');
-    }
   };
 
   const { data: profile } = (await supabase
@@ -130,23 +133,96 @@ import { withBase } from '../../utils/paths';
   if (profile) applyProfile(profile);
 
   document
-    .querySelector('[data-edit-profile]')
-    ?.addEventListener('click', () => {
-      if (editor) editor.hidden = false;
-    });
-  document
-    .querySelector('[data-cancel-edit]')
-    ?.addEventListener('click', () => {
-      if (editor) editor.hidden = true;
-    });
-  document
     .querySelector('[data-sign-out]')
     ?.addEventListener('click', async () => {
       await supabase?.auth.signOut();
       goToLogin();
     });
 
+  const setNote = (message: string, error = false) => {
+    if (!note) return;
+    note.textContent = message;
+    note.dataset.error = String(error);
+  };
+
+  const updateProfile = async (updates: Record<string, string>) => {
+    setNote('正在保存……');
+    const { data, error } = await supabase!
+      .from('profiles')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .select()
+      .single();
+    if (error) {
+      setNote(error.message, true);
+      return false;
+    }
+    applyProfile(data);
+    setNote('已保存');
+    window.setTimeout(() => setNote(''), 1600);
+    return true;
+  };
+
+  const beginInlineEdit = (
+    element: HTMLElement,
+    field: 'display_name' | 'bio',
+    multiline = false,
+  ) => {
+    if (element.dataset.editing === 'true') return;
+    element.dataset.editing = 'true';
+    const original = String(currentProfile[field] || '');
+    const control = document.createElement(multiline ? 'textarea' : 'input');
+    control.className = 'inline-editor';
+    control.value = original;
+    control.maxLength = multiline ? 160 : 40;
+    if (control instanceof HTMLTextAreaElement) control.rows = 3;
+    element.replaceChildren(control);
+    control.focus();
+    control.select();
+
+    let finished = false;
+    const finish = async (save: boolean) => {
+      if (finished) return;
+      finished = true;
+      const value = control.value.trim();
+      if (save && (field !== 'display_name' || value)) {
+        await updateProfile({ [field]: value });
+      } else {
+        applyProfile(currentProfile);
+      }
+      delete element.dataset.editing;
+    };
+    control.addEventListener('blur', () => void finish(true));
+    control.addEventListener('keydown', (event) => {
+      const keyboardEvent = event as KeyboardEvent;
+      if (keyboardEvent.key === 'Escape') void finish(false);
+      if (
+        keyboardEvent.key === 'Enter' &&
+        (!multiline || keyboardEvent.ctrlKey)
+      ) {
+        event.preventDefault();
+        void finish(true);
+      }
+    });
+  };
+
+  nameElement?.addEventListener('click', () =>
+    beginInlineEdit(nameElement, 'display_name'),
+  );
+  bioElement?.addEventListener('click', () =>
+    beginInlineEdit(bioElement, 'bio', true),
+  );
+  nameElement?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') beginInlineEdit(nameElement, 'display_name');
+  });
+  bioElement?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') beginInlineEdit(bioElement, 'bio', true);
+  });
+
   const uploadImage = async (file: File, kind: 'avatar' | 'background') => {
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('图片不能超过 5 MB。');
+    }
     const extension = file.name.split('.').pop()?.toLowerCase() || 'webp';
     const path = `${userId}/${kind}.${extension}`;
     const { error } = await supabase!.storage
@@ -159,36 +235,56 @@ import { withBase } from '../../utils/paths';
     );
   };
 
-  editor?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (note) note.textContent = '正在保存……';
+  const saveImage = async (file: File, kind: 'avatar' | 'background') => {
+    setNote('正在上传图片……');
     try {
-      const formData = new FormData(editor);
-      const updates: Record<string, string> = {
-        display_name: String(formData.get('display_name') ?? '').trim(),
-        bio: String(formData.get('bio') ?? '').trim(),
-        updated_at: new Date().toISOString(),
-      };
-      const avatar = formData.get('avatar');
-      const background = formData.get('background');
-      if (avatar instanceof File && avatar.size)
-        updates.avatar_url = await uploadImage(avatar, 'avatar');
-      if (background instanceof File && background.size)
-        updates.background_url = await uploadImage(background, 'background');
-      const { data, error } = await supabase!
-        .from('profiles')
-        .update(updates)
-        .eq('user_id', userId)
-        .select()
-        .single();
-      if (error) throw error;
-      applyProfile(data);
-      editor.hidden = true;
+      const url = await uploadImage(file, kind);
+      await updateProfile({ [`${kind}_url`]: url });
     } catch (error) {
-      if (note)
-        note.textContent =
-          error instanceof Error ? error.message : '保存失败。';
+      setNote(error instanceof Error ? error.message : '上传失败。', true);
     }
+  };
+
+  const setupImageTarget = (target: HTMLElement) => {
+    let hoverTimer: number | undefined;
+    const kind = target.dataset.imageTarget as 'avatar' | 'background';
+    const input = kind === 'avatar' ? avatarInput : backgroundInput;
+    target.addEventListener('pointerenter', () => {
+      hoverTimer = window.setTimeout(
+        () => target.classList.add('is-edit-ready'),
+        3000,
+      );
+    });
+    target.addEventListener('pointerleave', () => {
+      window.clearTimeout(hoverTimer);
+      target.classList.remove('is-edit-ready');
+    });
+    target.addEventListener('focus', () =>
+      target.classList.add('is-edit-ready'),
+    );
+    target.addEventListener('blur', () =>
+      target.classList.remove('is-edit-ready'),
+    );
+    target.addEventListener('click', () => {
+      if (target.classList.contains('is-edit-ready')) input?.click();
+    });
+    target.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') input?.click();
+    });
+  };
+
+  document
+    .querySelectorAll<HTMLElement>('[data-image-target]')
+    .forEach(setupImageTarget);
+  avatarInput?.addEventListener('change', () => {
+    const file = avatarInput.files?.[0];
+    if (file) void saveImage(file, 'avatar');
+    avatarInput.value = '';
+  });
+  backgroundInput?.addEventListener('change', () => {
+    const file = backgroundInput.files?.[0];
+    if (file) void saveImage(file, 'background');
+    backgroundInput.value = '';
   });
 </script>
 
@@ -202,6 +298,7 @@ import { withBase } from '../../utils/paths';
     border-bottom: 1px solid var(--color-border);
   }
   .cover {
+    position: relative;
     height: clamp(9rem, 19vw, 12.5rem);
     background:
       radial-gradient(
@@ -216,6 +313,7 @@ import { withBase } from '../../utils/paths';
       );
     background-position: center;
     background-size: cover;
+    overflow: hidden;
   }
   .identity-content {
     padding: 0 1.75rem 2rem;
@@ -227,6 +325,7 @@ import { withBase } from '../../utils/paths';
     justify-content: space-between;
   }
   .avatar {
+    position: relative;
     display: grid;
     width: 5.75rem;
     height: 5.75rem;
@@ -240,6 +339,31 @@ import { withBase } from '../../utils/paths';
     font-weight: 800;
     background-position: center;
     background-size: cover;
+    overflow: hidden;
+  }
+  .avatar b {
+    font: inherit;
+  }
+  .image-edit-target {
+    cursor: default;
+  }
+  .image-edit-target > span {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, #000 56%, transparent);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+  .image-edit-target.is-edit-ready {
+    cursor: pointer;
+  }
+  .image-edit-target.is-edit-ready > span {
+    opacity: 1;
   }
   .profile-actions button {
     margin-top: 0.7rem;
@@ -262,6 +386,28 @@ import { withBase } from '../../utils/paths';
   h1 {
     margin: 0;
     font-size: clamp(1.45rem, 3vw, 2rem);
+  }
+  [data-display-name],
+  [data-bio] {
+    width: fit-content;
+    max-width: 100%;
+    border-radius: 0.35rem;
+    cursor: text;
+  }
+  [data-display-name]:hover,
+  [data-bio]:hover {
+    background: color-mix(in srgb, var(--color-text) 5%, transparent);
+  }
+  :global(.inline-editor) {
+    width: min(36rem, 100%);
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 0.4rem;
+    background: var(--color-page);
+    color: var(--color-text);
+    font: inherit;
+    line-height: inherit;
+    resize: vertical;
   }
   .signature {
     margin: 0.65rem 0 0;
@@ -295,41 +441,14 @@ import { withBase } from '../../utils/paths';
     color: var(--color-text-muted);
     font-size: 0.88rem;
   }
-  .profile-editor {
-    display: grid;
-    gap: 1rem;
-    margin: 1.5rem 1.75rem 0;
-    padding: 1.25rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.7rem;
-    background: var(--color-surface);
-  }
-  .profile-editor[hidden] {
-    display: none;
-  }
-  .profile-editor label {
-    display: grid;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-  }
-  .profile-editor input,
-  .profile-editor textarea {
-    width: 100%;
-    padding: 0.7rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.45rem;
-    background: var(--color-page);
-  }
-  .editor-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-  }
-  [data-profile-note] {
-    margin: 0;
+  .profile-note {
+    min-height: 1.2em;
+    margin: 0.65rem 0 0;
     color: var(--color-text-muted);
     font-size: 0.78rem;
+  }
+  .profile-note[data-error='true'] {
+    color: #c23b3b;
   }
   @media (min-width: 48.01rem) {
     .profile-page {
