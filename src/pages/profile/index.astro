@@ -16,7 +16,7 @@ import { withBase } from '../../utils/paths';
         data-image-target="background"
         role="button"
         tabindex="0"
-        aria-label="悬停 1.2 秒后更换背景图"
+        aria-label="悬停 0.5 秒后更换背景图"
       >
         <span>更换背景图</span>
       </div>
@@ -28,7 +28,7 @@ import { withBase } from '../../utils/paths';
             data-image-target="avatar"
             role="button"
             tabindex="0"
-            aria-label="悬停 1.2 秒后更换头像"
+            aria-label="悬停 0.5 秒后更换头像"
           >
             <svg
               class="avatar-placeholder"
@@ -164,7 +164,6 @@ import { withBase } from '../../utils/paths';
   };
 
   const updateProfile = async (updates: Record<string, string>) => {
-    setNote('正在保存……');
     const { data, error } = await supabase!
       .from('profiles')
       .update({ ...updates, updated_at: new Date().toISOString() })
@@ -176,8 +175,7 @@ import { withBase } from '../../utils/paths';
       return false;
     }
     applyProfile(data);
-    setNote('已保存');
-    window.setTimeout(() => setNote(''), 1600);
+    setNote('');
     return true;
   };
 
@@ -308,7 +306,7 @@ import { withBase } from '../../utils/paths';
     target.addEventListener('pointerenter', () => {
       hoverTimer = window.setTimeout(
         () => target.classList.add('is-edit-ready'),
-        1200,
+        500,
       );
     });
     target.addEventListener('pointerleave', () => {
@@ -460,15 +458,17 @@ import { withBase } from '../../utils/paths';
     background: color-mix(in srgb, var(--color-text) 5%, transparent);
   }
   :global(.inline-editor) {
-    width: min(36rem, 100%);
-    padding: 0.35rem 0.5rem;
+    display: block;
+    width: 100%;
+    height: 1.65em;
+    box-sizing: border-box;
+    padding: 0 0.35rem;
     border: 1px solid var(--color-accent);
     border-radius: 0.4rem;
     background: var(--color-page);
     color: var(--color-text);
     font: inherit;
     line-height: inherit;
-    resize: vertical;
   }
   .signature {
     display: flex;
@@ -481,12 +481,11 @@ import { withBase } from '../../utils/paths';
     white-space: nowrap;
   }
   .signature [data-bio] {
+    flex: 1;
     min-width: 0;
+    min-height: 1.65em;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  .signature [data-editing='true'] {
-    flex: 1;
   }
   .signature small {
     flex: none;
