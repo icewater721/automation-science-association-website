@@ -70,19 +70,38 @@ const isArticlesPage = pathname.startsWith(articlesPath);
 
   <div class="sidebar-tools">
     <div class="tool-row">
-      <a
-        class="tool-link login-link"
-        href={loginPath}
-        data-member-link
-        data-profile-url={profilePath}
-        aria-label="个人登录"
-        title="个人登录"
-      >
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <circle cx="12" cy="8" r="3.5"></circle>
-          <path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6"></path>
-        </svg>
-      </a>
+      <div class="member-menu" data-member-menu data-login-url={loginPath}>
+        <button
+          class="tool-link login-link"
+          type="button"
+          data-member-trigger
+          data-profile-url={profilePath}
+          aria-label="个人登录"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          title="个人登录"
+        >
+          <img data-member-avatar alt="" hidden />
+          <svg data-member-placeholder aria-hidden="true" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="3.5"></circle>
+            <path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6"></path>
+          </svg>
+        </button>
+        <div class="member-popover" data-member-popover role="menu" hidden>
+          <div class="member-summary">
+            <span class="member-summary-avatar">
+              <img data-menu-avatar alt="" hidden />
+              <svg data-menu-placeholder aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="3.5"></circle>
+                <path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6"></path>
+              </svg>
+            </span>
+            <span><small>已登录</small><strong data-member-name>未设置昵称</strong></span>
+          </div>
+          <a href={profilePath} role="menuitem">个人主页</a>
+          <button type="button" data-menu-sign-out role="menuitem">退出登录</button>
+        </div>
+      </div>
       <a
         class="tool-link github-link"
         href="https://github.com/icewater721/automation-science-association-website"
@@ -105,14 +124,69 @@ const isArticlesPage = pathname.startsWith(articlesPath);
 <script>
   import { supabase } from '../lib/supabase';
 
-  const memberLink =
-    document.querySelector<HTMLAnchorElement>('[data-member-link]');
+  const memberMenu = document.querySelector<HTMLElement>('[data-member-menu]');
+  const memberTrigger = document.querySelector<HTMLButtonElement>(
+    '[data-member-trigger]',
+  );
+  const memberPopover = document.querySelector<HTMLElement>(
+    '[data-member-popover]',
+  );
   const sessionResult = await supabase?.auth.getSession();
-  if (memberLink && sessionResult?.data.session) {
-    memberLink.href = memberLink.dataset.profileUrl ?? memberLink.href;
-    memberLink.ariaLabel = '打开个人页';
-    memberLink.title = '个人页';
+  const session = sessionResult?.data.session;
+
+  const closeMemberMenu = () => {
+    if (!memberPopover || !memberTrigger) return;
+    memberPopover.hidden = true;
+    memberTrigger.ariaExpanded = 'false';
+  };
+
+  if (memberTrigger && session) {
+    memberTrigger.ariaLabel = '打开个人菜单';
+    memberTrigger.title = '个人菜单';
+    const { data: profile } = await supabase!
+      .from('profiles')
+      .select('display_name,avatar_url')
+      .eq('user_id', session.user.id)
+      .single();
+    const displayName = String(profile?.display_name || '未设置昵称');
+    const avatarUrl = String(profile?.avatar_url || '');
+    const name = document.querySelector<HTMLElement>('[data-member-name]');
+    if (name) name.textContent = displayName;
+    document
+      .querySelectorAll<HTMLImageElement>('[data-member-avatar],[data-menu-avatar]')
+      .forEach((image) => {
+        if (!avatarUrl) return;
+        image.src = avatarUrl;
+        image.hidden = false;
+      });
+    if (avatarUrl) {
+      document
+        .querySelectorAll<HTMLElement>(
+          '[data-member-placeholder],[data-menu-placeholder]',
+        )
+        .forEach((placeholder) => (placeholder.hidden = true));
+    }
   }
+
+  memberTrigger?.addEventListener('click', () => {
+    if (!session) {
+      window.location.assign(memberMenu?.dataset.loginUrl ?? '/');
+      return;
+    }
+    if (!memberPopover) return;
+    memberPopover.hidden = !memberPopover.hidden;
+    memberTrigger.ariaExpanded = String(!memberPopover.hidden);
+  });
+  document.addEventListener('pointerdown', (event) => {
+    if (!memberMenu?.contains(event.target as Node)) closeMemberMenu();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMemberMenu();
+  });
+  document.querySelector('[data-menu-sign-out]')?.addEventListener('click', async () => {
+    await supabase?.auth.signOut();
+    window.location.assign(memberMenu?.dataset.loginUrl ?? '/');
+  });
 </script>
 
 <style>
@@ -246,6 +320,9 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     place-items: center;
     border-radius: 999px;
     color: var(--color-nav-text);
+    border: 0;
+    background: transparent;
+    cursor: pointer;
   }
 
   .tool-link:hover {
@@ -267,6 +344,107 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 1.7;
+  }
+
+  .member-menu {
+    position: relative;
+  }
+
+  .login-link img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+  }
+
+  .member-popover {
+    position: absolute;
+    z-index: 10;
+    bottom: calc(100% + 0.8rem);
+    left: 0;
+    width: 13.5rem;
+    padding: 0.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-nav);
+    box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 18%, transparent);
+  }
+
+  .member-popover[hidden] {
+    display: none;
+  }
+
+  .member-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.45rem 0.45rem 0.7rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .member-summary > span:last-child {
+    display: grid;
+    min-width: 0;
+    gap: 0.1rem;
+  }
+
+  .member-summary small {
+    color: color-mix(in srgb, var(--color-nav-text) 58%, transparent);
+    font-size: 0.65rem;
+  }
+
+  .member-summary strong {
+    overflow: hidden;
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .member-summary-avatar {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--color-nav-text);
+    color: var(--color-nav);
+  }
+
+  .member-summary-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .member-summary-avatar svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+  }
+
+  .member-popover > a,
+  .member-popover > button {
+    display: block;
+    width: 100%;
+    padding: 0.65rem 0.55rem;
+    border: 0;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: var(--color-nav-text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    text-align: left;
+    text-decoration: none;
+  }
+
+  .member-popover > a:hover,
+  .member-popover > button:hover {
+    background: color-mix(in srgb, var(--color-nav-text) 9%, transparent);
   }
 
   @media (max-width: 48rem) {

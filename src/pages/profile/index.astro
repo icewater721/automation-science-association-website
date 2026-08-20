@@ -43,9 +43,6 @@ import { withBase } from '../../utils/paths';
             </svg>
             <span>更换头像</span>
           </div>
-          <div class="action-buttons">
-            <button type="button" data-sign-out>退出</button>
-          </div>
         </div>
         <div class="identity-copy">
           <p class="role">REGISTERED MEMBER</p>
@@ -159,13 +156,6 @@ import { withBase } from '../../utils/paths';
     page.dataset.loading = 'false';
     page.setAttribute('aria-busy', 'false');
   });
-
-  document
-    .querySelector('[data-sign-out]')
-    ?.addEventListener('click', async () => {
-      await supabase?.auth.signOut();
-      goToLogin();
-    });
 
   const setNote = (message: string, error = false) => {
     if (!note) return;
@@ -457,13 +447,6 @@ import { withBase } from '../../utils/paths';
   }
   .image-edit-target.is-edit-ready > span {
     opacity: 1;
-  }
-  .profile-actions button {
-    margin-top: 0.7rem;
-  }
-  .action-buttons {
-    display: flex;
-    gap: 0.5rem;
   }
   .identity-copy {
     max-width: 42rem;
