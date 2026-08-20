@@ -3,12 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
 ---
 
-<BaseLayout title="草稿箱 | 文章" description="创建和管理文章草稿。">
+<BaseLayout title="草稿箱 | 文档" description="创建和管理文档草稿。">
   <main class="draft-page" data-draft-page data-login-url={withBase('/login/')}>
-    <header><p>ARTICLE WORKSPACE</p><h1>草稿箱</h1></header>
+    <header><p>DOCUMENT WORKSPACE</p><h1>草稿箱</h1></header>
     <p class="access-note" data-access-note>正在确认编辑权限……</p>
     <div class="workspace" data-workspace hidden>
-      <aside><button type="button" data-new-draft>新建文章</button><div data-draft-list></div></aside>
+      <aside><button type="button" data-new-draft>新建文档</button><div data-draft-list></div></aside>
       <form data-draft-form>
         <input type="hidden" name="id" />
         <label>标题 <input name="title" maxlength="60" required /></label>

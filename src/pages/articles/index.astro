@@ -10,10 +10,10 @@ const categories = [...new Set(articles.map((article) => article.data.category))
 const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? id;
 ---
 
-<BaseLayout title="文章 | 人工智能学院科协" description="科协文章与学习资料。">
+<BaseLayout title="文档 | 人工智能学院科协" description="科协文档与学习资料。">
   <main class="articles-page">
     <header class="articles-heading">
-      <p class="eyebrow">ARTICLES</p><h1>文章</h1><p>经验、项目记录与学习资料。</p>
+      <p class="eyebrow">DOCUMENTS</p><h1>文档</h1><p>经验、项目记录与学习资料。</p>
     </header>
     <div class="article-tools">
       <details class="category-filter" data-category-filter>
@@ -21,22 +21,22 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
           <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"></path><path d="M3.5 8.5v-3h6l2 3"></path></svg>
         </summary>
         <div class="category-menu">
-          <button type="button" data-category="all" aria-pressed="true">全部文章</button>
+          <button type="button" data-category="all" aria-pressed="true">全部文档</button>
           {categories.map((category) => <button type="button" data-category={category} aria-pressed="false">{category}</button>)}
         </div>
       </details>
       <a class="draft-link" href={withBase('/articles/drafts/')} data-draft-link hidden>草稿箱</a>
     </div>
     <section class="article-list" aria-live="polite">
-      {articles.map((article) => (
-        <a class="article-card" href={withBase(`/articles/${slugFor(article.id)}/`)} data-article-card data-category={article.data.category}>
+      {articles.map((article, index) => (
+        <a class="article-card" href={withBase(`/articles/${slugFor(article.id)}/`)} data-article-card data-category={article.data.category} style={`--post-index: ${index}`}>
           <span>{article.data.category}</span><h2>{article.data.title}</h2>
           <p>{article.data.description}</p>
           <time datetime={article.data.updatedAt.toISOString()}>{article.data.updatedAt.toLocaleDateString('zh-CN')}</time>
         </a>
       ))}
     </section>
-    <p class="empty-filter" data-empty-filter hidden>该栏目暂时没有文章。</p>
+    <p class="empty-filter" data-empty-filter hidden>该栏目暂时没有文档。</p>
   </main>
 </BaseLayout>
 
@@ -51,7 +51,17 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
       cards.forEach((card) => {
         const show = category === 'all' || card.dataset.category === category;
         card.hidden = !show;
-        if (show) visible += 1;
+        if (show) {
+          visible += 1;
+          if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+            card.animate(
+              [
+                { opacity: 0, transform: 'translateY(0.35rem)' },
+                { opacity: 1, transform: 'translateY(0)' },
+              ],
+              { duration: 260, easing: 'ease-out' },
+            );
+        }
       });
       document.querySelectorAll<HTMLButtonElement>('[data-category]').forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate === button)));
       if (emptyFilter) emptyFilter.hidden = visible > 0;
@@ -79,24 +89,32 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
   .articles-heading p { color: var(--color-text-muted); }
   .eyebrow { margin: 0 0 0.6rem; color: var(--color-accent) !important; font-size: 0.74rem; font-weight: 750; letter-spacing: 0.12em; }
   h1 { margin: 0; font-size: clamp(2.8rem, 7vw, 5.5rem); letter-spacing: -0.055em; }
-  .article-tools { display: flex; align-items: center; gap: 0.65rem; margin-top: 2.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border); }
+  .article-tools { display: flex; align-items: center; gap: 0.65rem; margin-top: 2.5rem; padding-bottom: 0.8rem; }
   .category-filter { position: relative; }
-  .category-filter > summary { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; cursor: pointer; list-style: none; }
+  .category-filter > summary { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: 50%; cursor: pointer; list-style: none; transition: color 180ms ease, background 180ms ease, transform 180ms ease; }
+  .category-filter > summary:hover { background: var(--color-surface); color: var(--color-accent); transform: translateY(-0.1rem); }
+  .category-filter[open] > summary { background: var(--color-surface); color: var(--color-accent); }
   .category-filter > summary::-webkit-details-marker { display: none; }
-  .category-filter svg { width: 1.35rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+  .category-filter svg { width: 1.35rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; transition: transform 220ms ease; }
+  .category-filter[open] svg { transform: scale(1.08) rotate(-3deg); }
   .category-menu { position: absolute; z-index: 5; top: calc(100% + 0.45rem); left: 0; display: grid; width: 13rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: 0.6rem; background: var(--color-page); box-shadow: 0 1rem 2rem color-mix(in srgb, #000 14%, transparent); }
-  .category-menu button { padding: 0.65rem; border: 0; border-radius: 0.35rem; background: transparent; cursor: pointer; font: inherit; text-align: left; }
-  .category-menu button:hover, .category-menu button[aria-pressed='true'] { background: var(--color-surface); }
-  .draft-link { color: var(--color-text-muted); font-size: 0.85rem; text-decoration: none; }
-  .draft-link:hover { color: var(--color-text); }
-  .article-list { display: grid; }
-  .article-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.45rem 2rem; padding-block: 1.5rem; border-bottom: 1px solid var(--color-border); color: var(--color-text); text-decoration: none; }
-  .article-card > span { grid-column: 1 / -1; color: var(--color-accent); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; }
-  .article-card h2 { margin: 0; font-size: clamp(1.25rem, 2vw, 1.65rem); }
-  .article-card p { grid-column: 1; margin: 0; color: var(--color-text-muted); line-height: 1.65; }
-  .article-card time { grid-column: 2; grid-row: 2; color: var(--color-text-muted); font-size: 0.75rem; }
+  .category-menu button { padding: 0.65rem; border: 0; border-radius: 0.35rem; background: transparent; cursor: pointer; font: inherit; text-align: left; transition: background 160ms ease, color 160ms ease, padding-left 160ms ease; }
+  .category-menu button:hover, .category-menu button[aria-pressed='true'] { padding-left: 0.85rem; background: var(--color-surface); color: var(--color-accent); }
+  .draft-link { padding: 0.45rem 0.7rem; border-radius: 999px; color: var(--color-text-muted); font-size: 0.82rem; text-decoration: none; transition: color 180ms ease, background 180ms ease, transform 180ms ease; }
+  .draft-link:hover { background: var(--color-surface); color: var(--color-text); transform: translateY(-0.1rem); }
+  .article-list { display: grid; gap: 0.3rem; }
+  .article-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.38rem 2rem; margin-inline: -0.8rem; padding: 1.05rem 2.8rem 1.05rem 0.8rem; border-radius: 0.65rem; color: var(--color-text); text-decoration: none; animation: post-in 420ms both; animation-delay: calc(var(--post-index) * 45ms); transition: background 180ms ease, transform 180ms ease; }
+  .article-card::after { position: absolute; top: 50%; right: 0.9rem; color: var(--color-text-muted); content: '→'; opacity: 0; transform: translate(-0.35rem, -50%); transition: opacity 180ms ease, transform 180ms ease; }
+  .article-card > span { grid-column: 1 / -1; width: fit-content; padding: 0.18rem 0.48rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: 0.66rem; font-weight: 720; letter-spacing: 0.06em; }
+  .article-card h2 { margin: 0; font-size: clamp(1.08rem, 1.8vw, 1.35rem); font-weight: 680; transition: color 180ms ease; }
+  .article-card p { grid-column: 1; margin: 0; overflow: hidden; color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.55; text-overflow: ellipsis; white-space: nowrap; }
+  .article-card time { grid-column: 2; grid-row: 2; color: var(--color-text-muted); font-size: 0.72rem; }
+  .article-card:hover { background: color-mix(in srgb, var(--color-text) 3.5%, transparent); transform: translateX(0.25rem); }
   .article-card:hover h2 { color: var(--color-accent); }
+  .article-card:hover::after { opacity: 1; transform: translate(0, -50%); }
+  @keyframes post-in { from { opacity: 0; transform: translateY(0.55rem); } to { opacity: 1; transform: translateY(0); } }
   .empty-filter { color: var(--color-text-muted); }
   [hidden] { display: none !important; }
-  @media (max-width: 42rem) { .articles-page { width: calc(100% - 2rem); } .article-card { grid-template-columns: 1fr; } .article-card time { grid-column: 1; grid-row: auto; } }
+  @media (max-width: 42rem) { .articles-page { width: calc(100% - 2rem); } .article-card { grid-template-columns: 1fr; margin-inline: 0; padding-inline: 0.65rem 2.4rem; } .article-card time { grid-column: 1; grid-row: auto; } }
+  @media (prefers-reduced-motion: reduce) { .article-card { animation: none; } .article-card, .article-card::after, .category-filter svg, .category-filter > summary { transition: none; } }
 </style>

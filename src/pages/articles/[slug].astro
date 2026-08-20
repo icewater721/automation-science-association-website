@@ -27,11 +27,11 @@ const navigationItem = (item: (typeof entries)[number] | undefined) => item ? {
 <DocsLayout
   title={entry.data.title}
   description={entry.data.description}
-  browserTitle={`${entry.data.title} | 文章`}
+  browserTitle={`${entry.data.title} | 文档`}
   headings={headings}
   currentPath={`/articles/${slugFor(entry.id)}/`}
   breadcrumbs={[
-    { title: '文章', href: withBase('/articles/') },
+    { title: '文档', href: withBase('/articles/') },
     { title: entry.data.category },
     { title: entry.data.title },
   ]}
