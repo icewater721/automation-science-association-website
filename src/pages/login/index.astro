@@ -12,7 +12,6 @@ import { withBase } from '../../utils/paths';
       <p class="eyebrow">MEMBER SPACE</p>
       <h1>个人空间</h1>
       <p>用邮箱接收一次性验证码，登录后管理个人资料并查看自己发布过的文章。</p>
-      <a href={withBase('/profile/')}>预览个人页</a>
     </section>
 
     <section class="auth-card" aria-labelledby="login-title">
@@ -203,12 +202,6 @@ import { withBase } from '../../utils/paths';
     max-width: 34rem;
     color: var(--color-text-muted);
     line-height: 1.8;
-  }
-  .auth-intro a {
-    display: inline-block;
-    margin-top: 1.2rem;
-    color: var(--color-text-muted);
-    font-size: 0.84rem;
   }
   .auth-card {
     display: grid;

@@ -45,7 +45,7 @@ import { withBase } from '../../utils/paths';
           </div>
         </div>
         <div class="identity-copy">
-          <p class="role">REGISTERED MEMBER</p>
+          <p class="role" data-profile-role>REGISTERED MEMBER</p>
           <h1 data-display-name tabindex="0" title="单击编辑昵称">
             正在读取……
           </h1>
@@ -73,7 +73,7 @@ import { withBase } from '../../utils/paths';
       <header><p>PUBLICATIONS</p><h2>我发布的文章</h2></header>
       <div class="empty-state">
         <strong>还没有文章</strong><span
-          >获得协作者权限并发布文章后，它们会出现在这里。</span
+          >获得编辑权限并发布文章后，它们会出现在这里。</span
         >
       </div>
     </section>
@@ -91,6 +91,7 @@ import { withBase } from '../../utils/paths';
   const avatarElement = document.querySelector<HTMLElement>('[data-avatar]');
   const coverElement = document.querySelector<HTMLElement>('[data-cover]');
   const note = document.querySelector<HTMLElement>('[data-profile-note]');
+  const roleElement = document.querySelector<HTMLElement>('[data-profile-role]');
   const avatarInput = document.querySelector<HTMLInputElement>(
     '[data-avatar-input]',
   );
@@ -129,8 +130,16 @@ import { withBase } from '../../utils/paths';
       .join('');
     currentProfile.bio = bio;
     currentProfile.display_name = displayName;
+    const role = profile.role === 'admin' ? 'admin' : profile.role === 'editor' ? 'editor' : '';
     if (nameElement) nameElement.textContent = displayName;
     if (bioElement) bioElement.textContent = bio;
+    if (roleElement)
+      roleElement.textContent =
+        role === 'admin'
+          ? 'ADMINISTRATOR'
+          : role === 'editor'
+            ? 'EDITOR'
+            : 'REGISTERED MEMBER';
     if (avatarElement) {
       const avatarUrl = String(profile.avatar_url || '');
       avatarElement.classList.toggle('has-image', Boolean(avatarUrl));
@@ -147,7 +156,7 @@ import { withBase } from '../../utils/paths';
 
   const { data: profile } = (await supabase
     ?.from('profiles')
-    .select('display_name,bio,avatar_url,background_url,is_collaborator')
+    .select('display_name,bio,avatar_url,background_url,role')
     .eq('user_id', userId)
     .single()) ?? { data: null };
   if (profile) applyProfile(profile);

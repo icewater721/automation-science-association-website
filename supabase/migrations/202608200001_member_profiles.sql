@@ -4,11 +4,12 @@ create table public.profiles (
   bio text not null default '',
   avatar_url text,
   background_url text,
-  is_collaborator boolean not null default false,
+  role text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint display_name_length check (char_length(display_name) <= 12),
-  constraint bio_length check (char_length(bio) <= 30)
+  constraint bio_length check (char_length(bio) <= 30),
+  constraint profile_role check (role is null or role in ('editor', 'admin'))
 );
 
 alter table public.profiles enable row level security;
