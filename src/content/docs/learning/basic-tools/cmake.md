@@ -2,6 +2,7 @@
 title: CMake：组织 C/C++ 构建
 description: 认识 CMake 的作用，并用最小项目生成和执行一次构建。
 kind: document
+category: 基础工具
 audience:
   - C 或 C++ 初学者
 order: 30

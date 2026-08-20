@@ -2,6 +2,7 @@
 title: Git 与 GitHub
 description: 用 Git 记录代码变化，并通过 GitHub 备份项目和开展协作。
 kind: document
+category: 基础工具
 audience:
   - Git 初学者
 order: 20

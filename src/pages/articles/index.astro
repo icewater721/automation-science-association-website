@@ -1,59 +1,102 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../utils/paths';
+
+const articles = (await getCollection('docs', ({ data }) =>
+  data.kind === 'document' && !data.draft,
+)).sort((a, b) => b.data.updatedAt.getTime() - a.data.updatedAt.getTime());
+const categories = [...new Set(articles.map((article) => article.data.category))];
+const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? id;
 ---
 
-<BaseLayout
-  title="文章 | 人工智能学院科协"
-  description="科协成员的经验、记录与表达。"
->
+<BaseLayout title="文章 | 人工智能学院科协" description="科协文章与学习资料。">
   <main class="articles-page">
-    <p class="eyebrow">ARTICLES</p>
-    <h1>文章</h1>
-    <p>这里将用于沉淀科协成员的经验、项目记录与自由表达。</p>
-    <div class="empty-state">
-      <strong>文章功能正在搭建</strong>
-      <span>文章结构与发布方式将在后续迭代中确定。</span>
+    <header class="articles-heading">
+      <p class="eyebrow">ARTICLES</p><h1>文章</h1><p>经验、项目记录与学习资料。</p>
+    </header>
+    <div class="article-tools">
+      <details class="category-filter" data-category-filter>
+        <summary aria-label="筛选栏目" title="筛选栏目">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17Z"></path><path d="M3.5 8.5v-3h6l2 3"></path></svg>
+        </summary>
+        <div class="category-menu">
+          <button type="button" data-category="all" aria-pressed="true">全部文章</button>
+          {categories.map((category) => <button type="button" data-category={category} aria-pressed="false">{category}</button>)}
+        </div>
+      </details>
+      <a class="draft-link" href={withBase('/articles/drafts/')} data-draft-link hidden>草稿箱</a>
     </div>
+    <section class="article-list" aria-live="polite">
+      {articles.map((article) => (
+        <a class="article-card" href={withBase(`/articles/${slugFor(article.id)}/`)} data-article-card data-category={article.data.category}>
+          <span>{article.data.category}</span><h2>{article.data.title}</h2>
+          <p>{article.data.description}</p>
+          <time datetime={article.data.updatedAt.toISOString()}>{article.data.updatedAt.toLocaleDateString('zh-CN')}</time>
+        </a>
+      ))}
+    </section>
+    <p class="empty-filter" data-empty-filter hidden>该栏目暂时没有文章。</p>
   </main>
 </BaseLayout>
 
+<script>
+  import { supabase } from '../../lib/supabase';
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-article-card]'));
+  const emptyFilter = document.querySelector<HTMLElement>('[data-empty-filter]');
+  document.querySelectorAll<HTMLButtonElement>('[data-category]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const category = button.dataset.category ?? 'all';
+      let visible = 0;
+      cards.forEach((card) => {
+        const show = category === 'all' || card.dataset.category === category;
+        card.hidden = !show;
+        if (show) visible += 1;
+      });
+      document.querySelectorAll<HTMLButtonElement>('[data-category]').forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate === button)));
+      if (emptyFilter) emptyFilter.hidden = visible > 0;
+      const filter = document.querySelector<HTMLDetailsElement>('[data-category-filter]');
+      if (filter) filter.open = false;
+    });
+  });
+  const session = (await supabase?.auth.getSession())?.data.session;
+  if (session && supabase) {
+    const current = await supabase.from('profiles').select('role').eq('user_id', session.user.id).single();
+    let role = String(current.data?.role ?? '');
+    if (current.error?.code === '42703') {
+      const legacy = await supabase.from('profiles').select('is_collaborator').eq('user_id', session.user.id).single();
+      role = legacy.data?.is_collaborator ? 'editor' : '';
+    }
+    if (role === 'editor' || role === 'admin') {
+      const draftLink = document.querySelector<HTMLElement>('[data-draft-link]');
+      if (draftLink) draftLink.hidden = false;
+    }
+  }
+</script>
+
 <style>
-  .articles-page {
-    width: min(54rem, calc(100% - 4rem));
-    margin-inline: auto;
-    padding-block: clamp(3rem, 8vw, 7rem);
-  }
-
-  .eyebrow {
-    margin: 0 0 0.7rem;
-    color: var(--color-accent);
-    font-size: 0.75rem;
-    font-weight: 750;
-    letter-spacing: 0.12em;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(2.8rem, 7vw, 5.5rem);
-    letter-spacing: -0.055em;
-  }
-
-  h1 + p {
-    color: var(--color-text-muted);
-    line-height: 1.8;
-  }
-
-  .empty-state {
-    display: grid;
-    gap: 0.45rem;
-    margin-top: 3rem;
-    padding: 1.4rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.7rem;
-  }
-
-  .empty-state span {
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-  }
+  .articles-page { width: min(64rem, calc(100% - 4rem)); margin-inline: auto; padding-block: clamp(2.5rem, 7vw, 6rem); }
+  .articles-heading p { color: var(--color-text-muted); }
+  .eyebrow { margin: 0 0 0.6rem; color: var(--color-accent) !important; font-size: 0.74rem; font-weight: 750; letter-spacing: 0.12em; }
+  h1 { margin: 0; font-size: clamp(2.8rem, 7vw, 5.5rem); letter-spacing: -0.055em; }
+  .article-tools { display: flex; align-items: center; gap: 0.65rem; margin-top: 2.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border); }
+  .category-filter { position: relative; }
+  .category-filter > summary { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; cursor: pointer; list-style: none; }
+  .category-filter > summary::-webkit-details-marker { display: none; }
+  .category-filter svg { width: 1.35rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+  .category-menu { position: absolute; z-index: 5; top: calc(100% + 0.45rem); left: 0; display: grid; width: 13rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: 0.6rem; background: var(--color-page); box-shadow: 0 1rem 2rem color-mix(in srgb, #000 14%, transparent); }
+  .category-menu button { padding: 0.65rem; border: 0; border-radius: 0.35rem; background: transparent; cursor: pointer; font: inherit; text-align: left; }
+  .category-menu button:hover, .category-menu button[aria-pressed='true'] { background: var(--color-surface); }
+  .draft-link { color: var(--color-text-muted); font-size: 0.85rem; text-decoration: none; }
+  .draft-link:hover { color: var(--color-text); }
+  .article-list { display: grid; }
+  .article-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.45rem 2rem; padding-block: 1.5rem; border-bottom: 1px solid var(--color-border); color: var(--color-text); text-decoration: none; }
+  .article-card > span { grid-column: 1 / -1; color: var(--color-accent); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; }
+  .article-card h2 { margin: 0; font-size: clamp(1.25rem, 2vw, 1.65rem); }
+  .article-card p { grid-column: 1; margin: 0; color: var(--color-text-muted); line-height: 1.65; }
+  .article-card time { grid-column: 2; grid-row: 2; color: var(--color-text-muted); font-size: 0.75rem; }
+  .article-card:hover h2 { color: var(--color-accent); }
+  .empty-filter { color: var(--color-text-muted); }
+  [hidden] { display: none !important; }
+  @media (max-width: 42rem) { .articles-page { width: calc(100% - 2rem); } .article-card { grid-template-columns: 1fr; } .article-card time { grid-column: 1; grid-row: auto; } }
 </style>

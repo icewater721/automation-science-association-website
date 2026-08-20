@@ -25,14 +25,12 @@ const {
   currentPath = '/docs/',
 } = Astro.props;
 const documentPath = withBase(currentPath);
-const isLearning = currentPath.startsWith('/docs/learning');
-const isBasicTools = currentPath.startsWith('/docs/learning/basic-tools');
 const basicTools = [
-  { title: 'VS Code', path: '/docs/learning/basic-tools/vscode/' },
-  { title: 'Git 与 GitHub', path: '/docs/learning/basic-tools/git-github/' },
-  { title: 'CMake', path: '/docs/learning/basic-tools/cmake/' },
-  { title: '容器', path: '/docs/learning/basic-tools/containers/' },
-  { title: '包管理器', path: '/docs/learning/basic-tools/package-managers/' },
+  { title: 'VS Code', path: '/articles/vscode/' },
+  { title: 'Git 与 GitHub', path: '/articles/git-github/' },
+  { title: 'CMake', path: '/articles/cmake/' },
+  { title: '容器', path: '/articles/containers/' },
+  { title: '包管理器', path: '/articles/package-managers/' },
 ];
 const visibleHeadings = headings.filter(
   (heading) => heading.depth === 2 || heading.depth === 3,
@@ -53,39 +51,14 @@ const visibleHeadings = headings.filter(
           </svg>
         </summary>
         <nav class="document-tree" aria-label="文档目录">
-          <a
-            class="tree-link tree-link--root"
-            href={withBase('/docs/')}
-            aria-current={documentPath === withBase('/docs/')
-              ? 'page'
-              : undefined}
-          >
-            简介
-          </a>
-          <details open={isLearning}>
-            <summary>学习资料</summary>
+          <a class="tree-link tree-link--root" href={withBase('/articles/')}>全部文章</a>
+          <details open>
+            <summary>基础工具</summary>
             <div class="tree-branch">
-              <details open={isBasicTools}>
-                <summary>基础工具</summary>
-                <div class="tree-branch">
-                  {
-                    basicTools.map((tool) => {
-                      const href = withBase(tool.path);
-                      return (
-                        <a
-                          class="tree-link"
-                          href={href}
-                          aria-current={
-                            documentPath === href ? 'page' : undefined
-                          }
-                        >
-                          {tool.title}
-                        </a>
-                      );
-                    })
-                  }
-                </div>
-              </details>
+              {basicTools.map((tool) => {
+                const href = withBase(tool.path);
+                return <a class="tree-link" href={href} aria-current={documentPath === href ? 'page' : undefined}>{tool.title}</a>;
+              })}
             </div>
           </details>
         </nav>
@@ -103,7 +76,7 @@ const visibleHeadings = headings.filter(
         )
       }
       <header>
-        <p class="eyebrow">文档中心</p>
+        <p class="eyebrow">文章 · 基础工具</p>
         <h1>{title}</h1>
         <p class="description">{description}</p>
       </header>

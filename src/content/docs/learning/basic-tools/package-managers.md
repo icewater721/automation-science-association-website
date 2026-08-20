@@ -2,6 +2,7 @@
 title: 包管理器：安装和记录依赖
 description: 了解包管理器、依赖清单和锁文件之间的关系。
 kind: document
+category: 基础工具
 audience:
   - 项目开发初学者
 order: 50

@@ -8,6 +8,7 @@ const docs = defineCollection({
     title: z.string(),
     description: z.string(),
     kind: z.enum(['category', 'document']),
+    category: z.string().default('基础工具'),
     audience: z.array(z.string()).default([]),
     order: z.number().int().nonnegative(),
     updatedAt: z.coerce.date(),

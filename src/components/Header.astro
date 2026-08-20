@@ -5,12 +5,10 @@ import { withBase } from '../utils/paths';
 
 const pathname = Astro.url.pathname;
 const homePath = withBase();
-const docsPath = withBase('/docs/');
 const articlesPath = withBase('/articles/');
 const loginPath = withBase('/login/');
 const profilePath = withBase('/profile/');
 const isHomePage = pathname === homePath;
-const isDocsPage = pathname.startsWith(docsPath);
 const isArticlesPage = pathname.startsWith(articlesPath);
 ---
 
@@ -43,17 +41,6 @@ const isArticlesPage = pathname.startsWith(articlesPath);
         <path d="M5.5 10v10h13V10M9.5 20v-6h5v6"></path>
       </svg>
       首页
-    </a>
-    <a
-      class:list={['nav-link', { 'nav-link--current': isDocsPage }]}
-      href={docsPath}
-      aria-current={isDocsPage ? 'page' : undefined}
-    >
-      <svg aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M6 3.5h8l4 4V20.5H6Z"></path>
-        <path d="M14 3.5v4h4M9 12h6M9 16h6"></path>
-      </svg>
-      文档
     </a>
     <a
       class:list={['nav-link', { 'nav-link--current': isArticlesPage }]}

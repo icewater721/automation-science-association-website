@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../utils/paths';
+---
+
+<BaseLayout title="草稿箱 | 文章" description="创建和管理文章草稿。">
+  <main class="draft-page" data-draft-page data-login-url={withBase('/login/')}>
+    <header><p>ARTICLE WORKSPACE</p><h1>草稿箱</h1></header>
+    <p class="access-note" data-access-note>正在确认编辑权限……</p>
+    <div class="workspace" data-workspace hidden>
+      <aside><button type="button" data-new-draft>新建文章</button><div data-draft-list></div></aside>
+      <form data-draft-form>
+        <input type="hidden" name="id" />
+        <label>标题 <input name="title" maxlength="60" required /></label>
+        <label>栏目
+          <select name="category"><option>基础工具</option><option>竞赛经验</option><option>项目记录</option><option>科协动态</option><option>其他</option></select>
+        </label>
+        <label>摘要 <textarea name="summary" maxlength="160" rows="3" required></textarea></label>
+        <div class="editor-actions">
+          <label class="import-button">读取 Markdown<input data-md-input type="file" accept=".md,.markdown,text/markdown" hidden /></label>
+          <button type="submit">保存草稿</button>
+        </div>
+        <label>正文 <textarea class="markdown-editor" name="content_markdown" rows="24" required></textarea></label>
+        <p data-draft-note aria-live="polite"></p>
+      </form>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  const page = document.querySelector<HTMLElement>('[data-draft-page]');
+  const workspace = document.querySelector<HTMLElement>('[data-workspace]');
+  const accessNote = document.querySelector<HTMLElement>('[data-access-note]');
+  const form = document.querySelector<HTMLFormElement>('[data-draft-form]');
+  const draftList = document.querySelector<HTMLElement>('[data-draft-list]');
+  const note = document.querySelector<HTMLElement>('[data-draft-note]');
+  const session = (await supabase?.auth.getSession())?.data.session;
+  if (!session) window.location.replace(page?.dataset.loginUrl ?? '/');
+
+  let role = '';
+  if (session && supabase) {
+    const current = await supabase.from('profiles').select('role').eq('user_id', session.user.id).single();
+    if (current.error?.code === '42703') {
+      const legacy = await supabase.from('profiles').select('is_collaborator').eq('user_id', session.user.id).single();
+      role = legacy.data?.is_collaborator ? 'editor' : '';
+    } else role = String(current.data?.role ?? '');
+  }
+  if (role === 'editor' || role === 'admin') {
+    if (workspace) workspace.hidden = false;
+    if (accessNote) accessNote.hidden = true;
+  } else if (accessNote) accessNote.textContent = '此功能仅对编辑和管理员开放。';
+
+  const setNote = (message: string, error = false) => {
+    if (!note) return;
+    note.textContent = message;
+    note.dataset.error = String(error);
+  };
+  const loadDrafts = async () => {
+    if (!supabase || !session || !draftList) return;
+    const { data, error } = await supabase.from('articles').select('id,title,category,summary,content_markdown,updated_at').eq('author_id', session.user.id).eq('status', 'draft').order('updated_at', { ascending: false });
+    if (error) return setNote('草稿数据库尚未启用。', true);
+    draftList.replaceChildren(...(data ?? []).map((draft) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = draft.title || '未命名草稿';
+      button.addEventListener('click', () => {
+        if (!form) return;
+        for (const [key, value] of Object.entries(draft)) {
+          const field = form.elements.namedItem(key);
+          if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) field.value = String(value ?? '');
+        }
+      });
+      return button;
+    }));
+  };
+  if (role === 'editor' || role === 'admin') void loadDrafts();
+  document.querySelector('[data-new-draft]')?.addEventListener('click', () => { form?.reset(); const id = form?.elements.namedItem('id'); if (id instanceof HTMLInputElement) id.value = ''; });
+  document.querySelector<HTMLInputElement>('[data-md-input]')?.addEventListener('change', async (event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !form) return;
+    const markdown = await file.text();
+    const content = form.elements.namedItem('content_markdown');
+    const title = form.elements.namedItem('title');
+    if (content instanceof HTMLTextAreaElement) content.value = markdown;
+    const heading = markdown.match(/^#\s+(.+)$/m)?.[1];
+    if (heading && title instanceof HTMLInputElement && !title.value) title.value = heading.slice(0, 60);
+    input.value = '';
+  });
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!supabase || !session) return;
+    const values = Object.fromEntries(new FormData(form));
+    const id = String(values.id || '');
+    const payload = { title: String(values.title), category: String(values.category), summary: String(values.summary), content_markdown: String(values.content_markdown), author_id: session.user.id, status: 'draft', updated_at: new Date().toISOString() };
+    const result = id ? await supabase.from('articles').update(payload).eq('id', id).select('id').single() : await supabase.from('articles').insert(payload).select('id').single();
+    if (result.error) return setNote(result.error.message, true);
+    const idField = form.elements.namedItem('id');
+    if (idField instanceof HTMLInputElement) idField.value = result.data.id;
+    setNote('草稿已保存。');
+    void loadDrafts();
+  });
+</script>
+
+<style>
+  .draft-page { width: min(72rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 3rem 5rem; }
+  header p { margin: 0; color: var(--color-accent); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.1em; }
+  h1 { margin: 0.4rem 0 2rem; font-size: clamp(2.5rem, 6vw, 4.5rem); }
+  .workspace { display: grid; grid-template-columns: 14rem minmax(0, 1fr); gap: 2rem; }
+  aside { display: grid; align-content: start; gap: 0.5rem; }
+  aside button, [data-draft-list] button { width: 100%; padding: 0.7rem; border: 1px solid var(--color-border); background: transparent; cursor: pointer; text-align: left; }
+  [data-draft-list] { display: grid; gap: 0.4rem; }
+  form { display: grid; gap: 1rem; }
+  label { display: grid; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; }
+  input, select, textarea { width: 100%; padding: 0.7rem; border: 1px solid var(--color-border); border-radius: 0.4rem; background: var(--color-page); font: inherit; }
+  .markdown-editor { font-family: ui-monospace, 'Cascadia Code', monospace; line-height: 1.65; resize: vertical; }
+  .editor-actions { display: flex; justify-content: space-between; align-items: center; }
+  .editor-actions button, .import-button { display: inline-block; width: auto; padding: 0.65rem 0.9rem; border: 1px solid var(--color-border); background: transparent; cursor: pointer; font: inherit; }
+  [data-draft-note][data-error='true'] { color: #c23b3b; }
+  [hidden] { display: none !important; }
+  @media (max-width: 48rem) { .draft-page { width: calc(100% - 2rem); } .workspace { grid-template-columns: 1fr; } }
+</style>

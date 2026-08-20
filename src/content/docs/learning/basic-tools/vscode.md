@@ -2,6 +2,7 @@
 title: VS Code
 description: 认识 VS Code 的基本界面，并完成打开项目、查找文件、使用终端和安装扩展等基础操作。
 kind: document
+category: 基础工具
 audience:
   - VS Code 初学者
 order: 10
