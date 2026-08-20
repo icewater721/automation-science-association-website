@@ -54,7 +54,6 @@ import { withBase } from '../../utils/paths';
           </h1>
           <p class="signature" title="单击编辑个性签名">
             <span data-bio tabindex="0">用一句话介绍自己</span>
-            <small data-bio-count>08/30</small>
           </p>
           <p class="profile-note" data-profile-note aria-live="polite"></p>
         </div>
@@ -92,7 +91,6 @@ import { withBase } from '../../utils/paths';
     '[data-display-name]',
   );
   const bioElement = document.querySelector<HTMLElement>('[data-bio]');
-  const bioCount = document.querySelector<HTMLElement>('[data-bio-count]');
   const avatarElement = document.querySelector<HTMLElement>('[data-avatar]');
   const coverElement = document.querySelector<HTMLElement>('[data-cover]');
   const note = document.querySelector<HTMLElement>('[data-profile-note]');
@@ -104,10 +102,11 @@ import { withBase } from '../../utils/paths';
   );
   let userId = '';
   let currentProfile: Record<string, unknown> = {};
+  const NAME_MAX_LENGTH = 12;
   const BIO_MAX_LENGTH = 30;
   const countCharacters = (value: string) => Array.from(value).length;
-  const formatBioCount = (value: string) =>
-    `${String(countCharacters(value)).padStart(2, '0')}/${BIO_MAX_LENGTH}`;
+  const formatCount = (value: string, maximum: number) =>
+    `${String(countCharacters(value)).padStart(2, '0')}/${maximum}`;
 
   const goToLogin = () =>
     window.location.replace(page?.dataset.loginUrl ?? '/');
@@ -121,16 +120,20 @@ import { withBase } from '../../utils/paths';
 
   const applyProfile = (profile: Record<string, unknown>) => {
     currentProfile = { ...currentProfile, ...profile };
-    const displayName = String(profile.display_name || '未设置昵称');
+    const displayName = Array.from(
+      String(profile.display_name || '未设置昵称'),
+    )
+      .slice(0, NAME_MAX_LENGTH)
+      .join('');
     const bio = Array.from(
       String(profile.bio || '用一句话介绍自己，或者留下你最近正在探索的事情。'),
     )
       .slice(0, BIO_MAX_LENGTH)
       .join('');
     currentProfile.bio = bio;
+    currentProfile.display_name = displayName;
     if (nameElement) nameElement.textContent = displayName;
     if (bioElement) bioElement.textContent = bio;
-    if (bioCount) bioCount.textContent = formatBioCount(bio);
     if (avatarElement) {
       const avatarUrl = String(profile.avatar_url || '');
       avatarElement.classList.toggle('has-image', Boolean(avatarUrl));
@@ -189,22 +192,25 @@ import { withBase } from '../../utils/paths';
   const beginInlineEdit = (
     element: HTMLElement,
     field: 'display_name' | 'bio',
-    multiline = false,
   ) => {
     if (element.dataset.editing === 'true') return;
     element.dataset.editing = 'true';
     const originalBounds = element.getBoundingClientRect();
-    element.style.width = `${originalBounds.width}px`;
     element.style.height = `${originalBounds.height}px`;
     const original = String(currentProfile[field] || '');
+    const maximum = field === 'bio' ? BIO_MAX_LENGTH : NAME_MAX_LENGTH;
+    const editorShell = document.createElement('span');
+    editorShell.className = 'inline-editor-shell';
     const control = document.createElement('input');
     control.type = 'text';
     control.className = 'inline-editor';
     control.value = original;
-    control.maxLength = multiline ? BIO_MAX_LENGTH : 40;
-    element.replaceChildren(control);
-    if (field === 'bio' && bioCount)
-      bioCount.textContent = formatBioCount(control.value);
+    control.maxLength = maximum;
+    const counter = document.createElement('small');
+    counter.className = 'inline-editor-count';
+    counter.textContent = formatCount(control.value, maximum);
+    editorShell.append(control, counter);
+    element.replaceChildren(editorShell);
     control.focus();
     control.select();
 
@@ -219,24 +225,22 @@ import { withBase } from '../../utils/paths';
         applyProfile(currentProfile);
       }
       delete element.dataset.editing;
-      element.style.removeProperty('width');
       element.style.removeProperty('height');
     };
     control.addEventListener('blur', () => void finish(true));
     control.addEventListener('beforeinput', (event) => {
-      if (field !== 'bio' || !event.inputType.startsWith('insert')) return;
+      if (!event.inputType.startsWith('insert')) return;
       const selectionLength =
         (control.selectionEnd ?? 0) - (control.selectionStart ?? 0);
       const incomingLength = countCharacters(event.data ?? '');
       if (
         countCharacters(control.value) - selectionLength + incomingLength >
-        BIO_MAX_LENGTH
+        maximum
       ) {
-        setNote('个性签名最多 30 个字符。', true);
+        setNote(`${field === 'bio' ? '个性签名' : '昵称'}最多 ${maximum} 个字符。`, true);
       }
     });
     control.addEventListener('paste', (event) => {
-      if (field !== 'bio') return;
       const pastedLength = countCharacters(
         event.clipboardData?.getData('text') ?? '',
       );
@@ -244,20 +248,19 @@ import { withBase } from '../../utils/paths';
         (control.selectionEnd ?? 0) - (control.selectionStart ?? 0);
       if (
         countCharacters(control.value) - selectionLength + pastedLength >
-        BIO_MAX_LENGTH
+        maximum
       ) {
-        setNote('粘贴内容已限制为 30 个字符。', true);
+        setNote(`粘贴内容已限制为 ${maximum} 个字符。`, true);
       }
     });
     control.addEventListener('input', () => {
-      if (field !== 'bio') return;
       const characters = Array.from(control.value);
-      if (characters.length > BIO_MAX_LENGTH) {
-        control.value = characters.slice(0, BIO_MAX_LENGTH).join('');
+      if (characters.length > maximum) {
+        control.value = characters.slice(0, maximum).join('');
       }
-      if (bioCount) bioCount.textContent = formatBioCount(control.value);
-      if (characters.length >= BIO_MAX_LENGTH) {
-        setNote('个性签名最多 30 个字符。', true);
+      counter.textContent = formatCount(control.value, maximum);
+      if (characters.length >= maximum) {
+        setNote(`${field === 'bio' ? '个性签名' : '昵称'}最多 ${maximum} 个字符。`, true);
       } else if (note?.dataset.error === 'true') {
         setNote('');
       }
@@ -276,13 +279,13 @@ import { withBase } from '../../utils/paths';
     beginInlineEdit(nameElement, 'display_name'),
   );
   bioElement?.addEventListener('click', () =>
-    beginInlineEdit(bioElement, 'bio', true),
+    beginInlineEdit(bioElement, 'bio'),
   );
   nameElement?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') beginInlineEdit(nameElement, 'display_name');
   });
   bioElement?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') beginInlineEdit(bioElement, 'bio', true);
+    if (event.key === 'Enter') beginInlineEdit(bioElement, 'bio');
   });
 
   const uploadImage = async (file: File, kind: 'avatar' | 'background') => {
@@ -355,7 +358,7 @@ import { withBase } from '../../utils/paths';
 
 <style>
   .profile-page {
-    width: min(48rem, calc(100% - 4rem));
+    width: min(60rem, calc(100% - 4rem));
     margin-right: auto;
     margin-left: clamp(2rem, 6vw, 5rem);
     padding-bottom: clamp(2rem, 6vw, 5rem);
@@ -365,17 +368,26 @@ import { withBase } from '../../utils/paths';
     opacity: 1;
     transform: translateY(0);
     transition:
-      opacity 220ms ease,
-      transform 220ms ease;
+      opacity 620ms ease,
+      transform 620ms ease,
+      filter 620ms ease;
   }
-  .profile-page[data-loading='true'] .identity-card {
+  .profile-section {
+    transition:
+      opacity 620ms ease 100ms,
+      transform 620ms ease 100ms,
+      filter 620ms ease 100ms;
+  }
+  .profile-page[data-loading='true'] .identity-card,
+  .profile-page[data-loading='true'] .profile-section {
     opacity: 0;
-    transform: translateY(0.35rem);
+    transform: translateY(0.55rem);
+    filter: blur(5px);
   }
   .cover {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 20 / 9;
     background:
       radial-gradient(
         circle at 28% 35%,
@@ -478,16 +490,26 @@ import { withBase } from '../../utils/paths';
   [data-display-name] {
     width: fit-content;
   }
+  [data-display-name][data-editing='true'],
+  [data-bio][data-editing='true'] {
+    width: 100%;
+  }
   [data-display-name]:hover,
   [data-bio]:hover {
     background: color-mix(in srgb, var(--color-text) 5%, transparent);
+  }
+  :global(.inline-editor-shell) {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
   }
   :global(.inline-editor) {
     display: block;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    padding: 0 0.35rem;
+    padding: 0 3.25rem 0 0.5rem;
     border: 1px solid var(--color-accent);
     border-radius: 0.4rem;
     background: var(--color-page);
@@ -495,8 +517,16 @@ import { withBase } from '../../utils/paths';
     font: inherit;
     line-height: inherit;
   }
-  .signature :global(.inline-editor) {
-    padding-right: 3.25rem;
+  :global(.inline-editor-count) {
+    position: absolute;
+    top: 50%;
+    right: 0.55rem;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    pointer-events: none;
+    transform: translateY(-50%);
   }
   .signature {
     position: relative;
@@ -512,20 +542,8 @@ import { withBase } from '../../utils/paths';
     width: 100%;
     min-width: 0;
     min-height: 1.65em;
-    padding-right: 3.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  .signature small {
-    position: absolute;
-    right: 0.45rem;
-    top: 50%;
-    z-index: 1;
-    transform: translateY(-50%);
-    pointer-events: none;
-    color: var(--color-text-muted);
-    font-size: 0.7rem;
-    font-variant-numeric: tabular-nums;
   }
   button {
     padding: 0.7rem 1rem;
