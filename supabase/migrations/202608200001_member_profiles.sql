@@ -8,7 +8,7 @@ create table public.profiles (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint display_name_length check (char_length(display_name) <= 40),
-  constraint bio_length check (char_length(bio) <= 160)
+  constraint bio_length check (char_length(bio) <= 30)
 );
 
 alter table public.profiles enable row level security;

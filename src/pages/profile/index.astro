@@ -16,7 +16,7 @@ import { withBase } from '../../utils/paths';
         data-image-target="background"
         role="button"
         tabindex="0"
-        aria-label="悬停三秒后更换背景图"
+        aria-label="悬停 1.2 秒后更换背景图"
       >
         <span>更换背景图</span>
       </div>
@@ -28,9 +28,18 @@ import { withBase } from '../../utils/paths';
             data-image-target="avatar"
             role="button"
             tabindex="0"
-            aria-label="悬停三秒后更换头像"
+            aria-label="悬停 1.2 秒后更换头像"
           >
-            <b>A</b><span>更换头像</span>
+            <svg
+              class="avatar-placeholder"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"
+              ></path>
+            </svg>
+            <span>更换头像</span>
           </div>
           <div class="action-buttons">
             <button type="button" data-sign-out>退出</button>
@@ -41,8 +50,9 @@ import { withBase } from '../../utils/paths';
           <h1 data-display-name tabindex="0" title="单击编辑昵称">
             正在读取……
           </h1>
-          <p class="signature" data-bio tabindex="0" title="单击编辑个性签名">
-            用一句话介绍自己，或者留下你最近正在探索的事情。
+          <p class="signature" title="单击编辑个性签名">
+            <span data-bio tabindex="0">用一句话介绍自己</span>
+            <small data-bio-count>08/30</small>
           </p>
           <p class="profile-note" data-profile-note aria-live="polite"></p>
         </div>
@@ -80,6 +90,7 @@ import { withBase } from '../../utils/paths';
     '[data-display-name]',
   );
   const bioElement = document.querySelector<HTMLElement>('[data-bio]');
+  const bioCount = document.querySelector<HTMLElement>('[data-bio-count]');
   const avatarElement = document.querySelector<HTMLElement>('[data-avatar]');
   const coverElement = document.querySelector<HTMLElement>('[data-cover]');
   const note = document.querySelector<HTMLElement>('[data-profile-note]');
@@ -91,6 +102,10 @@ import { withBase } from '../../utils/paths';
   );
   let userId = '';
   let currentProfile: Record<string, unknown> = {};
+  const BIO_MAX_LENGTH = 30;
+  const countCharacters = (value: string) => Array.from(value).length;
+  const formatBioCount = (value: string) =>
+    `${String(countCharacters(value)).padStart(2, '0')}/${BIO_MAX_LENGTH}`;
 
   const goToLogin = () =>
     window.location.replace(page?.dataset.loginUrl ?? '/');
@@ -105,15 +120,18 @@ import { withBase } from '../../utils/paths';
   const applyProfile = (profile: Record<string, unknown>) => {
     currentProfile = { ...currentProfile, ...profile };
     const displayName = String(profile.display_name || '未设置昵称');
-    const bio = String(
-      profile.bio || '用一句话介绍自己，或者留下你最近正在探索的事情。',
-    );
+    const bio = Array.from(
+      String(profile.bio || '用一句话介绍自己，或者留下你最近正在探索的事情。'),
+    )
+      .slice(0, BIO_MAX_LENGTH)
+      .join('');
+    currentProfile.bio = bio;
     if (nameElement) nameElement.textContent = displayName;
     if (bioElement) bioElement.textContent = bio;
+    if (bioCount) bioCount.textContent = formatBioCount(bio);
     if (avatarElement) {
-      const initial = avatarElement.querySelector('b');
-      if (initial) initial.textContent = displayName.slice(0, 1).toUpperCase();
       const avatarUrl = String(profile.avatar_url || '');
+      avatarElement.classList.toggle('has-image', Boolean(avatarUrl));
       avatarElement.style.backgroundImage = avatarUrl
         ? `url("${avatarUrl}")`
         : '';
@@ -171,12 +189,14 @@ import { withBase } from '../../utils/paths';
     if (element.dataset.editing === 'true') return;
     element.dataset.editing = 'true';
     const original = String(currentProfile[field] || '');
-    const control = document.createElement(multiline ? 'textarea' : 'input');
+    const control = document.createElement('input');
+    control.type = 'text';
     control.className = 'inline-editor';
     control.value = original;
-    control.maxLength = multiline ? 160 : 40;
-    if (control instanceof HTMLTextAreaElement) control.rows = 3;
+    control.maxLength = multiline ? BIO_MAX_LENGTH : 40;
     element.replaceChildren(control);
+    if (field === 'bio' && bioCount)
+      bioCount.textContent = formatBioCount(control.value);
     control.focus();
     control.select();
 
@@ -193,13 +213,49 @@ import { withBase } from '../../utils/paths';
       delete element.dataset.editing;
     };
     control.addEventListener('blur', () => void finish(true));
+    control.addEventListener('beforeinput', (event) => {
+      if (field !== 'bio' || !event.inputType.startsWith('insert')) return;
+      const selectionLength =
+        (control.selectionEnd ?? 0) - (control.selectionStart ?? 0);
+      const incomingLength = countCharacters(event.data ?? '');
+      if (
+        countCharacters(control.value) - selectionLength + incomingLength >
+        BIO_MAX_LENGTH
+      ) {
+        setNote('个性签名最多 30 个字符。', true);
+      }
+    });
+    control.addEventListener('paste', (event) => {
+      if (field !== 'bio') return;
+      const pastedLength = countCharacters(
+        event.clipboardData?.getData('text') ?? '',
+      );
+      const selectionLength =
+        (control.selectionEnd ?? 0) - (control.selectionStart ?? 0);
+      if (
+        countCharacters(control.value) - selectionLength + pastedLength >
+        BIO_MAX_LENGTH
+      ) {
+        setNote('粘贴内容已限制为 30 个字符。', true);
+      }
+    });
+    control.addEventListener('input', () => {
+      if (field !== 'bio') return;
+      const characters = Array.from(control.value);
+      if (characters.length > BIO_MAX_LENGTH) {
+        control.value = characters.slice(0, BIO_MAX_LENGTH).join('');
+      }
+      if (bioCount) bioCount.textContent = formatBioCount(control.value);
+      if (characters.length >= BIO_MAX_LENGTH) {
+        setNote('个性签名最多 30 个字符。', true);
+      } else if (note?.dataset.error === 'true') {
+        setNote('');
+      }
+    });
     control.addEventListener('keydown', (event) => {
       const keyboardEvent = event as KeyboardEvent;
       if (keyboardEvent.key === 'Escape') void finish(false);
-      if (
-        keyboardEvent.key === 'Enter' &&
-        (!multiline || keyboardEvent.ctrlKey)
-      ) {
+      if (keyboardEvent.key === 'Enter') {
         event.preventDefault();
         void finish(true);
       }
@@ -252,7 +308,7 @@ import { withBase } from '../../utils/paths';
     target.addEventListener('pointerenter', () => {
       hoverTimer = window.setTimeout(
         () => target.classList.add('is-edit-ready'),
-        3000,
+        1200,
       );
     });
     target.addEventListener('pointerleave', () => {
@@ -341,8 +397,13 @@ import { withBase } from '../../utils/paths';
     background-size: cover;
     overflow: hidden;
   }
-  .avatar b {
-    font: inherit;
+  .avatar-placeholder {
+    width: 2.75rem;
+    height: 2.75rem;
+    fill: currentColor;
+  }
+  .avatar.has-image .avatar-placeholder {
+    display: none;
   }
   .image-edit-target {
     cursor: default;
@@ -385,7 +446,7 @@ import { withBase } from '../../utils/paths';
   }
   h1 {
     margin: 0;
-    font-size: clamp(1.45rem, 3vw, 2rem);
+    font-size: clamp(1.3rem, 2.5vw, 1.75rem);
   }
   [data-display-name],
   [data-bio] {
@@ -410,9 +471,28 @@ import { withBase } from '../../utils/paths';
     resize: vertical;
   }
   .signature {
+    display: flex;
+    width: min(42rem, 100%);
+    align-items: baseline;
+    gap: 0.5rem;
     margin: 0.65rem 0 0;
     color: var(--color-text-muted);
     line-height: 1.65;
+    white-space: nowrap;
+  }
+  .signature [data-bio] {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .signature [data-editing='true'] {
+    flex: 1;
+  }
+  .signature small {
+    flex: none;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
   }
   button {
     padding: 0.7rem 1rem;
