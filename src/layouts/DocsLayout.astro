@@ -12,7 +12,6 @@ interface Props {
   breadcrumbs?: Array<{ title: string; href?: string }>;
   previous?: { title: string; href: string };
   next?: { title: string; href: string };
-  showDescription?: boolean;
 }
 
 const {
@@ -23,7 +22,6 @@ const {
   breadcrumbs = [],
   previous,
   next,
-  showDescription = true,
   currentPath = '/docs/',
 } = Astro.props;
 const documentPath = withBase(currentPath);
@@ -107,7 +105,7 @@ const visibleHeadings = headings.filter(
       <header>
         <p class="eyebrow">文档中心</p>
         <h1>{title}</h1>
-        {showDescription && <p class="description">{description}</p>}
+        <p class="description">{description}</p>
       </header>
       <div class="docs-content">
         <slot />
