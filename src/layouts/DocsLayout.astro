@@ -12,6 +12,7 @@ interface Props {
   breadcrumbs?: Array<{ title: string; href?: string }>;
   previous?: { title: string; href: string };
   next?: { title: string; href: string };
+  showDescription?: boolean;
 }
 
 const {
@@ -22,6 +23,7 @@ const {
   breadcrumbs = [],
   previous,
   next,
+  showDescription = true,
   currentPath = '/docs/',
 } = Astro.props;
 const documentPath = withBase(currentPath);
@@ -105,7 +107,7 @@ const visibleHeadings = headings.filter(
       <header>
         <p class="eyebrow">文档中心</p>
         <h1>{title}</h1>
-        <p class="description">{description}</p>
+        {showDescription && <p class="description">{description}</p>}
       </header>
       <div class="docs-content">
         <slot />
@@ -227,12 +229,11 @@ const visibleHeadings = headings.filter(
 
   .document-browser > summary {
     display: grid;
-    width: 3.25rem;
-    height: 3.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     place-items: center;
-    border: 1px solid var(--color-border);
-    border-radius: 0.65rem;
-    background: var(--color-surface);
+    border: 0;
+    background: transparent;
     cursor: pointer;
     list-style: none;
   }
@@ -243,7 +244,7 @@ const visibleHeadings = headings.filter(
   }
 
   .document-browser > summary:hover {
-    border-color: var(--color-accent);
+    color: var(--color-accent);
   }
 
   .document-browser > summary svg {

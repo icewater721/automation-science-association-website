@@ -5,7 +5,9 @@ const currentYear = new Date().getFullYear();
 <footer class="site-footer">
   <div>
     <p class="footer-brand">人工智能与自动化学院学生科协</p>
-    <p>Automation Science Association</p>
+    <p class="footer-english">
+      <span>Automation</span><span>Science</span><span>Association</span>
+    </p>
   </div>
   <p>&copy; {currentYear} ASAW</p>
 </footer>
@@ -34,6 +36,13 @@ const currentYear = new Date().getFullYear();
     color: var(--color-text);
     font-weight: 700;
     letter-spacing: 0.03em;
+  }
+
+  .footer-english {
+    display: flex;
+    width: min(100%, 20rem);
+    justify-content: space-between;
+    gap: 1.25rem;
   }
 
   @media (max-width: 38rem) {

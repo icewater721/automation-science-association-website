@@ -189,6 +189,7 @@ import { departments } from '../data/departments';
 
   .department-tabs button {
     position: relative;
+    flex: 1;
     padding: 0.25rem clamp(1rem, 3vw, 2.25rem);
     border: 0;
     background: transparent;
@@ -197,10 +198,7 @@ import { departments } from '../data/departments';
     font-size: 1rem;
     font-weight: 650;
     cursor: pointer;
-  }
-
-  .department-tabs button:first-child {
-    padding-left: 0;
+    text-align: center;
   }
 
   .department-tabs button:not(:last-child)::after {
@@ -224,9 +222,6 @@ import { departments } from '../data/departments';
     content: '';
   }
 
-  .department-tabs button:first-child[aria-selected='true']::before {
-    left: 0;
-  }
 
   .department-panel {
     position: relative;
@@ -305,9 +300,6 @@ import { departments } from '../data/departments';
       left: 0.55rem;
     }
 
-    .department-tabs button:first-child[aria-selected='true']::before {
-      left: 0.55rem;
-    }
 
     .introduction {
       font-size: 1rem;
