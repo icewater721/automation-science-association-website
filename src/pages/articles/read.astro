@@ -5,11 +5,16 @@ import { withBase } from '../../utils/paths';
 
 <BaseLayout title="文档 | 人工智能学院科协" description="阅读科协文档。">
   <main class="reader" data-reader data-list-url={withBase('/articles/')}>
-    <a class="back-link" href={withBase('/articles/')}>← <span>返回</span></a>
     <article data-document hidden>
+      <a class="back-link" href={withBase('/articles/')}>← <span>返回</span></a>
       <header><p data-category-label></p><h1 data-title></h1><p data-summary></p></header>
       <div class="content" data-content></div>
     </article>
+    <aside class="page-outline" data-outline hidden>
+      <div class="outline-heading"><p>文档目录</p><button type="button" data-back-to-top title="回到顶部" aria-label="回到顶部">↑</button></div>
+      <nav data-outline-nav></nav>
+      <span data-outline-empty hidden>本页暂无小节</span>
+    </aside>
     <p data-reader-note>正在加载文档……</p>
   </main>
 </BaseLayout>
@@ -32,17 +37,62 @@ import { withBase } from '../../utils/paths';
       const content = document.querySelector<HTMLElement>('[data-content]');
       if (title) title.textContent = data.title;
       if (summary) summary.textContent = data.summary;
-      if (content) content.innerHTML = renderMarkdown(data.content_markdown);
+      if (content) {
+        content.innerHTML = renderMarkdown(data.content_markdown);
+        const headings = [...content.querySelectorAll<HTMLElement>('h1,h2,h3')];
+        const usedIds = new Map<string, number>();
+        for (const heading of headings) {
+          const base = heading.textContent?.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || 'section';
+          const occurrence = usedIds.get(base) ?? 0;
+          usedIds.set(base, occurrence + 1);
+          heading.id = occurrence ? `${base}-${occurrence + 1}` : base;
+        }
+        const outline = document.querySelector<HTMLElement>('[data-outline]');
+        const outlineNav = document.querySelector<HTMLElement>('[data-outline-nav]');
+        const outlineEmpty = document.querySelector<HTMLElement>('[data-outline-empty]');
+        if (outline && outlineNav) {
+          outline.hidden = false;
+          if (!headings.length) {
+            if (outlineEmpty) outlineEmpty.hidden = false;
+          } else {
+            outlineNav.replaceChildren(...headings.map((heading) => {
+              const link = document.createElement('a');
+              link.href = `#${encodeURIComponent(heading.id)}`;
+              link.dataset.depth = heading.tagName.slice(1);
+              link.textContent = heading.textContent;
+              return link;
+            }));
+            const links = [...outlineNav.querySelectorAll<HTMLAnchorElement>('a')];
+            const updateActive = () => {
+              const marker = Math.min(window.innerHeight * .3, 180);
+              let active = headings[0];
+              for (const heading of headings) {
+                if (heading.getBoundingClientRect().top <= marker) active = heading;
+                else break;
+              }
+              links.forEach((link) => {
+                const selected = decodeURIComponent(link.hash.slice(1)) === active.id;
+                link.classList.toggle('is-active', selected);
+                if (selected) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
+              });
+            };
+            updateActive();
+            window.addEventListener('scroll', updateActive, { passive: true });
+          }
+        }
+      }
       const documentElement = document.querySelector<HTMLElement>('[data-document]');
       if (documentElement) documentElement.hidden = false;
       if (note) note.hidden = true;
       document.title = `${data.title} | 文档`;
     }
   }
+  document.querySelector('[data-back-to-top]')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 </script>
 
 <style>
-  .reader { width: min(66rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 2rem 5rem; }
+  .reader { display: grid; grid-template-columns: minmax(0, 48rem) minmax(9rem, 11rem); gap: clamp(1.5rem, 3vw, 3rem); width: min(88rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 2rem 5rem; }
+  article { min-width: 0; grid-column: 1; }
   .back-link { display: inline-flex; gap: 0.45rem; margin-bottom: 1.2rem; color: var(--color-text-muted); font-size: 0.8rem; text-decoration: none; transition: color 160ms ease, transform 160ms ease; }
   .back-link:hover { color: var(--color-accent); transform: translateX(-0.15rem); }
   article header { padding: 1.4rem 0 2rem; border-bottom: 1px solid var(--color-border); }
@@ -53,6 +103,20 @@ import { withBase } from '../../utils/paths';
   .content :global(h1), .content :global(h2), .content :global(h3) { margin: 2.4rem 0 0.8rem; }
   .content :global(a) { color: var(--color-accent); }
   .content :global(pre) { overflow: auto; padding: 1rem; border: 1px solid color-mix(in srgb, var(--color-text) 24%, var(--color-border)); border-radius: 0.8rem; background: color-mix(in srgb, var(--color-text) 9%, var(--color-page)); color: var(--color-text); font-family: 'Maple Mono', 'Maple Mono NF', 'Maple Mono CN', 'Cascadia Code', ui-monospace, monospace; }
+  .content :global(h1), .content :global(h2), .content :global(h3) { scroll-margin-top: 2rem; }
+  .page-outline { position: sticky; top: 2rem; grid-column: 2; align-self: start; }
+  .outline-heading { display: flex; align-items: center; justify-content: space-between; }
+  .outline-heading p { margin: 0 0 .9rem; font-size: .78rem; font-weight: 750; letter-spacing: .08em; }
+  .outline-heading button { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; margin: 0 0 .9rem; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; }
+  .outline-heading button:hover { background: var(--color-surface); color: var(--color-accent); }
+  .page-outline nav { display: grid; gap: .2rem; }
+  .page-outline :global(a) { padding: .42rem 0 .42rem .7rem; border-left: 1px solid var(--color-border); color: var(--color-text-muted); font-size: .82rem; line-height: 1.45; text-decoration: none; transition: border-color 160ms ease, background 160ms ease, color 160ms ease; }
+  .page-outline :global(a[data-depth='1']) { font-weight: 700; }
+  .page-outline :global(a[data-depth='3']) { padding-left: 1.15rem; }
+  .page-outline :global(a:hover) { border-left-color: var(--color-accent); color: var(--color-text); }
+  .page-outline :global(a.is-active) { border-left: 3px solid var(--color-accent); border-radius: 0 .5rem .5rem 0; background: color-mix(in srgb, var(--color-accent) 16%, transparent); color: var(--color-accent); font-weight: 750; }
+  .page-outline > span { color: var(--color-text-muted); font-size: .78rem; }
   [hidden] { display: none !important; }
-  @media (max-width: 46rem) { .reader { width: calc(100% - 2rem); } }
+  @media (max-width: 86rem) { .reader { grid-template-columns: minmax(0, 48rem); justify-content: center; } .page-outline { display: none; } }
+  @media (max-width: 46rem) { .reader { grid-template-columns: 1fr; width: calc(100% - 2rem); } }
 </style>
