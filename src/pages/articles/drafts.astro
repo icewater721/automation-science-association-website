@@ -7,8 +7,7 @@ import { withBase } from '../../utils/paths';
   <main class="draft-page" data-draft-page data-login-url={withBase('/login/')}>
     <a class="back-link" href={withBase('/articles/')}>← <span>返回</span></a>
     <header><p>DOCUMENT WORKSPACE</p><h1>编辑文档</h1></header>
-    <p class="access-note" data-access-note>正在确认编辑权限……</p>
-    <div class="workspace" data-workspace hidden>
+    <div class="workspace" data-workspace>
       <form data-draft-form>
         <input type="hidden" name="id" />
         <label>标题 <input name="title" maxlength="60" required /></label>
@@ -39,7 +38,12 @@ import { withBase } from '../../utils/paths';
         <p data-draft-note aria-live="polite"></p>
       </form>
       <aside>
-        <p class="aside-title">文档管理</p>
+        <p class="aside-title">编辑工具</p>
+        <div class="format-tools" aria-label="正文格式工具">
+          <button type="button" data-format="heading">H</button><button type="button" data-format="bold"><strong>B</strong></button><button type="button" data-format="italic"><em>I</em></button>
+          <button type="button" data-format="list">≡</button><button type="button" data-format="quote">“</button><button type="button" data-format="divider">—</button>
+          <button type="button" data-format="code">&lt;/&gt;</button><button type="button" data-format="link">↗</button>
+        </div>
         <details class="create-menu">
           <summary class="icon-button" aria-label="新建或导入文档" title="新建或导入文档">+</summary>
           <div class="create-menu-popover">
@@ -63,7 +67,6 @@ import { withBase } from '../../utils/paths';
   import { supabase } from '../../lib/supabase';
   const page = document.querySelector<HTMLElement>('[data-draft-page]');
   const workspace = document.querySelector<HTMLElement>('[data-workspace]');
-  const accessNote = document.querySelector<HTMLElement>('[data-access-note]');
   const form = document.querySelector<HTMLFormElement>('[data-draft-form]');
   const draftList = document.querySelector<HTMLElement>('[data-draft-list]');
   const note = document.querySelector<HTMLElement>('[data-draft-note]');
@@ -83,10 +86,7 @@ import { withBase } from '../../utils/paths';
       role = legacy.data?.is_collaborator ? 'editor' : '';
     } else role = String(current.data?.role ?? '');
   }
-  if (role === 'editor' || role === 'admin') {
-    if (workspace) workspace.hidden = false;
-    if (accessNote) accessNote.hidden = true;
-  } else if (accessNote) accessNote.textContent = '此功能仅对编辑和管理员开放。';
+  if (workspace) workspace.hidden = false;
 
   const setNote = (message: string, error = false) => {
     if (!note) return;
@@ -184,6 +184,17 @@ import { withBase } from '../../utils/paths';
     input.value = '';
     setNote('图片已插入正文。');
   });
+  const applyFormat = (format: string) => {
+    if (!(markdownEditor instanceof HTMLTextAreaElement)) return;
+    const start = markdownEditor.selectionStart;
+    const end = markdownEditor.selectionEnd;
+    const selected = markdownEditor.value.slice(start, end);
+    const formats: Record<string, [string, string]> = { heading: ['## ', ''], bold: ['**', '**'], italic: ['*', '*'], list: ['- ', ''], quote: ['> ', ''], divider: ['\n---\n', ''], code: ['`', '`'], link: ['[', '](https://)'] };
+    const [before, after] = formats[format] ?? ['', ''];
+    markdownEditor.setRangeText(`${before}${selected}${after}`, start, end, 'select');
+    markdownEditor.focus();
+  };
+  document.querySelectorAll<HTMLButtonElement>('[data-format]').forEach((button) => button.addEventListener('click', () => applyFormat(button.dataset.format ?? '')));
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!supabase || !session) return;
@@ -250,9 +261,11 @@ import { withBase } from '../../utils/paths';
   .create-menu-popover svg { width: 1.05rem; height: 1.05rem; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
   form { display: grid; gap: 1rem; }
   label { display: grid; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; }
-  input, select, textarea { width: 100%; padding: 0.7rem; border: 1px solid var(--color-border); border-radius: 0.4rem; background: var(--color-page); font: inherit; }
+  input, select, textarea { width: 100%; padding: 0.75rem 0.85rem; border: 1px solid var(--color-border); border-radius: 0.75rem; background: color-mix(in srgb, var(--color-surface) 55%, var(--color-page)); font: inherit; transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease; }
+  input:hover, textarea:hover, select:hover { border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border)); }
+  input:focus, textarea:focus, select:focus { border-color: var(--color-accent); background: var(--color-page); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); outline: 0; }
   .select-shell { position: relative; display: block; }
-  .select-shell select { appearance: none; padding: 0.72rem 2.6rem 0.72rem 0.85rem; border-radius: 0.65rem; background: color-mix(in srgb, var(--color-surface) 72%, var(--color-page)); cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease; }
+  .select-shell select { appearance: none; padding: 0.8rem 2.6rem 0.8rem 0.9rem; border: 0; border-radius: 0.8rem; background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface)); cursor: pointer; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 24%, var(--color-border)); transition: box-shadow 160ms ease, background 160ms ease; }
   .select-shell select:hover, .select-shell select:focus { border-color: var(--color-accent); box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--color-accent) 10%, transparent); outline: 0; }
   .select-shell svg { position: absolute; top: 50%; right: 0.85rem; width: 1rem; height: 1rem; fill: none; stroke: var(--color-text-muted); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; transform: translateY(-50%); pointer-events: none; }
   .content-field { display: grid; gap: 0.4rem; }
@@ -260,7 +273,10 @@ import { withBase } from '../../utils/paths';
   .insert-image-button { display: flex; width: auto; align-items: center; gap: 0.35rem; padding: 0.38rem 0.55rem; border-radius: 0.4rem; color: var(--color-text-muted); cursor: pointer; font-size: 0.72rem; font-weight: 650; transition: background 150ms ease, color 150ms ease; }
   .insert-image-button:hover { background: var(--color-surface); color: var(--color-accent); }
   .insert-image-button svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
-  .markdown-editor { font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.95rem; letter-spacing: 0.01em; line-height: 1.8; resize: vertical; }
+  .markdown-editor { min-height: 23rem; font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.95rem; letter-spacing: 0.01em; line-height: 1.8; resize: vertical; }
+  .format-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; }
+  .format-tools button { display: grid; width: 100%; height: 2.5rem; place-items: center; padding: 0; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.82rem; transition: background 150ms ease, color 150ms ease, transform 150ms ease; }
+  .format-tools button:hover { background: var(--color-surface); color: var(--color-accent); transform: translateY(-0.08rem); }
   .editor-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 0.45rem; }
   .button { width: auto; padding: 0.62rem 0.9rem; border: 1px solid transparent; border-radius: 999px; cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 680; transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease; }
   .button:hover { transform: translateY(-0.1rem); }

@@ -93,12 +93,9 @@ const isArticlesPage = pathname.startsWith(articlesPath);
           </div>
           <a href={profilePath} role="menuitem">个人主页</a>
           <div class="editor-menu" data-editor-menu hidden>
-            <a href={draftsPath} role="menuitem">
-              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>
-              <span>草稿箱</span>
-            </a>
-            <section><p><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5Z"></path><path d="M8 9h8M8 13h8M8 17h5"></path></svg>我的草稿</p><div data-menu-drafts></div></section>
-            <section data-menu-review-section hidden><p><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5Z"></path><path d="m8 12 2.2 2.2L16.5 8"></path></svg>待审核</p><div data-menu-reviews></div></section>
+            <a href={draftsPath} role="menuitem">草稿箱</a>
+            <section><p>我的草稿</p><div data-menu-drafts></div></section>
+            <section data-menu-review-section hidden><p>待审核</p><div data-menu-reviews></div></section>
           </div>
           <button type="button" data-menu-sign-out role="menuitem">退出登录</button>
         </div>
@@ -514,11 +511,10 @@ const isArticlesPage = pathname.startsWith(articlesPath);
 
   .editor-menu { display: grid; padding-block: 0.25rem; }
   .editor-menu[hidden] { display: none; }
-  .editor-menu > a, .editor-menu section > p { display: flex; align-items: center; gap: 0.55rem; margin: 0; padding: 0.55rem; color: var(--color-nav-text); font-size: 0.78rem; font-weight: 650; text-decoration: none; }
+  .editor-menu > a, .editor-menu section > p { display: block; margin: 0; padding: 0.65rem 0.55rem; color: var(--color-nav-text); font-size: 0.78rem; font-weight: 500; text-decoration: none; }
   .editor-menu > a { border-radius: 0.45rem; }
   .editor-menu > a:hover { background: color-mix(in srgb, var(--color-nav-text) 9%, transparent); }
-  .editor-menu svg { width: 1rem; height: 1rem; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
-  .editor-menu section div { display: grid; padding: 0 0.35rem 0.3rem 2.1rem; }
+  .editor-menu section div { display: grid; padding: 0 0.35rem 0.3rem 0.75rem; }
   .editor-menu section div a { overflow: hidden; padding: 0.26rem 0; color: color-mix(in srgb, var(--color-nav-text) 62%, transparent); font-size: 0.72rem; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
   .editor-menu section div a:hover { color: var(--color-nav-text); }
 
