@@ -5,9 +5,10 @@ import { withBase } from '../../utils/paths';
 
 <BaseLayout title="我的草稿 | 文档" description="管理我的文档草稿。">
   <main class="manage-page" data-page data-login={withBase('/login/')} data-edit={withBase('/articles/drafts/')}>
-    <a class="back" href={withBase('/articles/')}>← 返回</a>
     <header><p>DOCUMENT WORKSPACE</p><h1>我的草稿</h1></header>
-    <div class="list" data-list><p class="empty">正在加载……</p></div>
+    <div class="list is-loading" data-list aria-busy="true">
+      {Array.from({ length: 3 }, () => <div class="skeleton" aria-hidden="true"><i></i><b></b><span></span></div>)}
+    </div>
     <p class="toast" data-toast hidden></p>
   </main>
 </BaseLayout>
@@ -31,11 +32,12 @@ import { withBase } from '../../utils/paths';
     const client = supabase;
     const editUrl = page?.dataset.edit ?? '/articles/drafts/';
     const { data, error } = await client.from('articles').select('id,title,category,status,updated_at').eq('author_id', session.user.id).in('status', ['draft', 'review']).order('updated_at', { ascending: false });
+    list.classList.remove('is-loading'); list.ariaBusy = 'false';
     if (error) { list.innerHTML = '<p class="empty">草稿加载失败。</p>'; return; }
     if (!data?.length) { list.innerHTML = '<p class="empty">还没有草稿。</p>'; return; }
     list.replaceChildren(...data.map((draft) => {
       const card = document.createElement('article');
-      card.innerHTML = `<div><span>${draft.status === 'review' ? '待审核' : '草稿'}</span><h2></h2><p>${draft.category} · 更新于 ${new Date(draft.updated_at).toLocaleString('zh-CN')}</p></div><div class="actions"><a>继续编辑</a><button type="button">删除</button></div>`;
+      card.innerHTML = `<div class="card-content"><span>${draft.status === 'review' ? '待审核' : '草稿'}</span><h2></h2><p>${draft.category}</p></div><div class="actions"><a>继续编辑</a><button type="button">删除</button></div>`;
       card.querySelector('h2')!.textContent = draft.title || '未命名草稿';
       card.querySelector('a')!.setAttribute('href', `${editUrl}?id=${encodeURIComponent(draft.id)}`);
       card.querySelector('button')!.addEventListener('click', async () => {
@@ -52,20 +54,27 @@ import { withBase } from '../../utils/paths';
 </script>
 
 <style>
-  .manage-page { width: min(48rem, calc(100% - 3rem)); margin-inline: auto; padding-block: 1.2rem 5rem; }
-  .back { color: var(--color-text-muted); font-size: .8rem; text-decoration: none; }
-  header p { margin: 1.5rem 0 0; color: var(--color-accent); font-size: .7rem; font-weight: 750; letter-spacing: .1em; }
-  h1 { margin: .3rem 0 1.5rem; font-size: clamp(2rem, 5vw, 3rem); }
+  .manage-page { width: min(44rem, calc(100% - 4rem)); margin-left: clamp(2rem, 5vw, 4.5rem); padding-block: 1rem 5rem; }
+  header { padding: .9rem 0 1.25rem; }
+  header p { margin: 0; color: var(--color-accent); font-size: .68rem; font-weight: 750; letter-spacing: .1em; }
+  h1 { margin: .28rem 0 0; font-size: clamp(1.9rem, 4vw, 2.7rem); }
   .list { display: grid; gap: .7rem; }
-  article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.1rem; border: 1px solid var(--color-border); border-radius: 1rem; }
-  article span { color: var(--color-accent); font-size: .68rem; font-weight: 700; }
-  article h2 { margin: .2rem 0; font-size: 1rem; }
+  article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem 1rem; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border)); border-left: 3px solid color-mix(in srgb, var(--color-accent) 48%, transparent); border-radius: 1.05rem; background: linear-gradient(110deg, color-mix(in srgb, var(--color-accent) 3%, transparent), transparent 45%); animation: card-in 560ms both cubic-bezier(.22, 1, .36, 1); transition: background 180ms ease, transform 180ms ease; }
+  article:hover { background: color-mix(in srgb, var(--color-text) 3.5%, transparent); transform: translateX(.25rem); }
+  article span { display: inline-block; padding: .18rem .48rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: .66rem; font-weight: 720; letter-spacing: .06em; }
+  article h2 { margin: .24rem 0 .1rem; font-size: 1.08rem; font-weight: 660; }
   article p, .empty { margin: 0; color: var(--color-text-muted); font-size: .76rem; }
   .actions { display: flex; flex: none; gap: .4rem; }
   .actions a, .actions button { padding: .5rem .7rem; border: 0; border-radius: .6rem; background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; font-size: .74rem; text-decoration: none; }
   .actions button { color: #d25a5a; }
+  .skeleton { display: grid; gap: .48rem; padding: .95rem 1rem; border: 1px solid var(--color-border); border-radius: 1.05rem; overflow: hidden; }
+  .skeleton > * { display: block; height: .65rem; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--color-text) 4%, transparent) 20%, color-mix(in srgb, var(--color-text) 9%, transparent) 50%, color-mix(in srgb, var(--color-text) 4%, transparent) 80%); background-size: 220% 100%; animation: shimmer 1.35s ease-in-out infinite; }
+  .skeleton i { width: 3.2rem; height: .85rem; } .skeleton b { width: 42%; height: .95rem; } .skeleton span { width: 18%; }
+  @keyframes shimmer { to { background-position: -220% 0; } }
+  @keyframes card-in { from { opacity: 0; transform: translateY(.28rem); } to { opacity: 1; transform: translateY(0); } }
   .toast { position: fixed; right: 1.4rem; bottom: 1.4rem; padding: .7rem .9rem; border-radius: .75rem; background: var(--color-nav); color: var(--color-nav-text); font-size: .78rem; box-shadow: 0 .8rem 2rem #0003; }
   .toast[data-error='true'] { color: #ef7777; }
   [hidden] { display: none !important; }
-  @media (max-width: 38rem) { article { align-items: flex-start; flex-direction: column; } }
+  @media (max-width: 38rem) { .manage-page { width: calc(100% - 2rem); margin-inline: 1rem; } article { align-items: flex-start; flex-direction: column; } }
+  @media (prefers-reduced-motion: reduce) { article, .skeleton > * { animation: none; } }
 </style>
