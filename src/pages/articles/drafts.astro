@@ -4,10 +4,10 @@ import { withBase } from '../../utils/paths';
 ---
 
 <BaseLayout title="编辑文档 | 文档" description="创建和编辑文档。">
-  <main class="draft-page" data-draft-page data-login-url={withBase('/login/')}>
+  <main class="draft-page" data-draft-page data-login-url={withBase('/login/')} data-articles-url={withBase('/articles/')}>
     <a class="back-link" href={withBase('/articles/')}>← <span>返回</span></a>
     <header><p>DOCUMENT WORKSPACE</p><h1>编辑文档</h1></header>
-    <div class="workspace" data-workspace>
+    <div class="workspace" data-workspace hidden>
       <form data-draft-form>
         <input type="hidden" name="id" />
         <label>标题 <input name="title" maxlength="60" required /></label>
@@ -145,6 +145,7 @@ import { withBase } from '../../utils/paths';
       role = legacy.data?.is_collaborator ? 'editor' : '';
     } else role = String(current.data?.role ?? '');
   }
+  if (role !== 'admin') window.location.replace(page?.dataset.articlesUrl ?? '/articles/');
   if (workspace) workspace.hidden = false;
 
   let noteTimer: number | undefined;

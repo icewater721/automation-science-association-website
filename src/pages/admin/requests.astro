@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../utils/paths';
+---
+
+<BaseLayout title="权限申请 | 文档" description="处理管理员权限申请。">
+  <main class="requests-page" data-page data-login={withBase('/login/')} data-articles={withBase('/articles/')}>
+    <header><p>ACCESS CONTROL</p><h1>权限申请</h1></header>
+    <div class="list" data-list aria-busy="true">{Array.from({ length: 2 }, () => <div class="skeleton"><i></i><b></b><span></span></div>)}</div>
+    <p class="toast" data-toast hidden></p>
+  </main>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  const page = document.querySelector<HTMLElement>('[data-page]'); const list = document.querySelector<HTMLElement>('[data-list]'); const toast = document.querySelector<HTMLElement>('[data-toast]');
+  const session = (await supabase?.auth.getSession())?.data.session;
+  if (!session) window.location.replace(page?.dataset.login ?? '/');
+  const profile = session && supabase ? await supabase.from('profiles').select('role').eq('user_id', session.user.id).single() : null;
+  if (profile?.data?.role !== 'admin') window.location.replace(page?.dataset.articles ?? '/articles/');
+  const showToast = (message: string, error = false) => { if (!toast) return; toast.textContent = message; toast.dataset.error = String(error); toast.hidden = false; window.setTimeout(() => { toast.hidden = true; }, error ? 4000 : 2200); };
+  if (supabase && list && profile?.data?.role === 'admin') {
+    const client = supabase;
+    const result = await client.from('admin_requests').select('id,display_name,reason,created_at').eq('status', 'pending').order('created_at');
+    list.ariaBusy = 'false';
+    if (result.error) list.innerHTML = '<p class="empty">权限申请加载失败。</p>';
+    else if (!result.data?.length) list.innerHTML = '<p class="empty">目前没有待处理申请。</p>';
+    else list.replaceChildren(...result.data.map((request) => {
+      const card = document.createElement('article'); card.innerHTML = '<div><span>管理员申请</span><h2></h2><p></p></div><div class="actions"><button data-reject>拒绝</button><button data-approve>通过</button></div>';
+      card.querySelector('h2')!.textContent = request.display_name || '未设置昵称'; card.querySelector('p')!.textContent = request.reason;
+      const decide = async (approve: boolean) => { const response = await client.rpc('decide_admin_request', { request_id: request.id, approve }); if (response.error) return showToast(response.error.message, true); card.remove(); showToast(approve ? '已授予管理员权限。' : '已拒绝申请。'); if (!list.children.length) list.innerHTML = '<p class="empty">目前没有待处理申请。</p>'; };
+      card.querySelector<HTMLButtonElement>('[data-reject]')!.onclick = () => void decide(false); card.querySelector<HTMLButtonElement>('[data-approve]')!.onclick = () => void decide(true); return card;
+    }));
+  }
+</script>
+
+<style>
+  .requests-page { width: min(44rem, calc(100% - 4rem)); margin-left: clamp(2rem, 5vw, 4.5rem); padding-block: 1.9rem 5rem; } header p { margin: 0; color: var(--color-accent); font-size: .68rem; font-weight: 750; letter-spacing: .1em; } h1 { margin: .3rem 0 1.5rem; font-size: clamp(2rem, 4vw, 2.8rem); } .list { display: grid; gap: .7rem; }
+  .list :global(article), .skeleton { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.05rem; border: 1px solid var(--color-border); border-radius: 1.05rem; background: var(--color-surface); } .list :global(article span) { color: var(--color-accent); font-size: .65rem; font-weight: 720; letter-spacing: .08em; } .list :global(article h2) { margin: .2rem 0; font-size: 1.05rem; } .list :global(article p), .list :global(.empty) { margin: 0; color: var(--color-text-muted); font-size: .78rem; } .list :global(.actions) { display: flex; gap: .4rem; } .list :global(button) { padding: .5rem .72rem; border: 1px solid var(--color-border); border-radius: .65rem; background: var(--color-page); color: var(--color-text); cursor: pointer; font: inherit; font-size: .74rem; } .list :global([data-approve]) { border-color: var(--color-accent); color: var(--color-accent); }
+  .skeleton { display: grid; justify-content: stretch; } .skeleton > * { display: block; width: 45%; height: .7rem; border-radius: 999px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-text) 10%, transparent), transparent); background-size: 220% 100%; animation: shimmer 1.3s infinite; } .skeleton i { width: 18%; } .skeleton span { width: 70%; } @keyframes shimmer { to { background-position: -220% 0; } }
+  .toast { position: fixed; right: 1.4rem; bottom: 1.4rem; padding: .7rem .9rem; border-radius: .75rem; background: var(--color-nav); color: var(--color-nav-text); font-size: .78rem; box-shadow: 0 .8rem 2rem #0003; } .toast[data-error='true'] { color: #ef7777; } [hidden] { display: none !important; }
+  @media (max-width: 38rem) { .requests-page { width: calc(100% - 2rem); margin-inline: 1rem; } .list :global(article) { align-items: flex-start; flex-direction: column; } }
+</style>

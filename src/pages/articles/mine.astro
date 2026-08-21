@@ -4,7 +4,7 @@ import { withBase } from '../../utils/paths';
 ---
 
 <BaseLayout title="我的草稿 | 文档" description="管理我的文档草稿。">
-  <main class="manage-page" data-page data-login={withBase('/login/')} data-edit={withBase('/articles/drafts/')}>
+  <main class="manage-page" data-page data-login={withBase('/login/')} data-articles={withBase('/articles/')} data-edit={withBase('/articles/drafts/')}>
     <header><p>DOCUMENT WORKSPACE</p><h1>我的草稿</h1></header>
     <div class="list is-loading" data-list aria-busy="true">
       {Array.from({ length: 3 }, () => <div class="skeleton" aria-hidden="true"><i></i><b></b><span></span></div>)}
@@ -20,6 +20,8 @@ import { withBase } from '../../utils/paths';
   const toast = document.querySelector<HTMLElement>('[data-toast]');
   const session = (await supabase?.auth.getSession())?.data.session;
   if (!session) window.location.replace(page?.dataset.login ?? '/');
+  const profile = session && supabase ? await supabase.from('profiles').select('role').eq('user_id', session.user.id).single() : null;
+  if (profile?.data?.role !== 'admin') window.location.replace(page?.dataset.articles ?? '/articles/');
   const showToast = (message: string, error = false) => {
     if (!toast) return;
     toast.textContent = message;
