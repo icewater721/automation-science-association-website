@@ -82,7 +82,13 @@ const isArticlesPage = pathname.startsWith(articlesPath);
                 <path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6"></path>
               </svg>
             </span>
-            <span><small>已登录</small><strong data-member-name>未设置昵称</strong></span>
+            <span>
+              <small>已登录</small>
+              <span class="member-name-row">
+                <strong data-member-name>未设置昵称</strong>
+                <em data-admin-badge hidden>管理员</em>
+              </span>
+            </span>
           </div>
           <a href={profilePath} role="menuitem">个人主页</a>
           <button type="button" data-menu-sign-out role="menuitem">退出登录</button>
@@ -129,15 +135,36 @@ const isArticlesPage = pathname.startsWith(articlesPath);
   if (memberTrigger && session) {
     memberTrigger.ariaLabel = '打开个人菜单';
     memberTrigger.title = '个人菜单';
-    const { data: profile } = await supabase!
+    const profileResult = await supabase!
       .from('profiles')
-      .select('display_name,avatar_url')
+      .select('display_name,avatar_url,role')
       .eq('user_id', session.user.id)
       .single();
+    let profile: {
+      display_name?: unknown;
+      avatar_url?: unknown;
+      role?: unknown;
+    } | null = profileResult.data;
+    if (profileResult.error?.code === '42703') {
+      const legacyResult = await supabase!
+        .from('profiles')
+        .select('display_name,avatar_url,is_collaborator')
+        .eq('user_id', session.user.id)
+        .single();
+      profile = legacyResult.data
+        ? {
+            display_name: legacyResult.data.display_name,
+            avatar_url: legacyResult.data.avatar_url,
+            role: legacyResult.data.is_collaborator ? 'editor' : null,
+          }
+        : null;
+    }
     const displayName = String(profile?.display_name || '未设置昵称');
     const avatarUrl = String(profile?.avatar_url || '');
     const name = document.querySelector<HTMLElement>('[data-member-name]');
     if (name) name.textContent = displayName;
+    const adminBadge = document.querySelector<HTMLElement>('[data-admin-badge]');
+    if (adminBadge && profile?.role === 'admin') adminBadge.hidden = false;
     const menuAvatar =
       document.querySelector<HTMLImageElement>('[data-menu-avatar]');
     if (menuAvatar && avatarUrl) {
@@ -224,13 +251,13 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     display: flex;
     width: 100%;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.35rem;
+    justify-content: flex-start;
+    gap: 0.5rem;
     color: color-mix(in srgb, var(--color-nav-text) 62%, transparent);
     font-family: ui-serif, Georgia, serif;
     font-size: 0.5rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.09em;
     line-height: 1.35;
   }
 
@@ -240,6 +267,12 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     color: var(--color-nav-text);
     font-family: ui-sans-serif, system-ui, sans-serif;
     font-size: 0.48rem;
+  }
+
+  .brand small > span {
+    display: inline-block;
+    letter-spacing: 0.12em;
+    word-spacing: 0.22em;
   }
 
   .primary-nav {
@@ -377,6 +410,24 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     font-size: 0.82rem;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .member-name-row {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .member-name-row em {
+    flex: none;
+    padding: 0.12rem 0.32rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+    color: var(--color-accent);
+    font-size: 0.56rem;
+    font-style: normal;
+    font-weight: 750;
   }
 
   .member-summary-avatar {
