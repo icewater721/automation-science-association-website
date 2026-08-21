@@ -31,13 +31,13 @@ import { withBase } from '../../utils/paths';
     if (!supabase || !session || !list) return;
     const client = supabase;
     const editUrl = page?.dataset.edit ?? '/articles/drafts/';
-    const { data, error } = await client.from('articles').select('id,title,category,status,updated_at').eq('author_id', session.user.id).in('status', ['draft', 'review']).order('updated_at', { ascending: false });
+    const { data, error } = await client.from('articles').select('id,title,category,status,updated_at').eq('author_id', session.user.id).eq('status', 'draft').order('updated_at', { ascending: false });
     list.classList.remove('is-loading'); list.ariaBusy = 'false';
     if (error) { list.innerHTML = '<p class="empty">草稿加载失败。</p>'; return; }
     if (!data?.length) { list.innerHTML = '<p class="empty">还没有草稿。</p>'; return; }
     list.replaceChildren(...data.map((draft) => {
       const card = document.createElement('article');
-      card.innerHTML = `<div class="card-content"><span>${draft.status === 'review' ? '待审核' : '草稿'}</span><h2></h2><p>${draft.category}</p></div><div class="actions"><a>继续编辑</a><button type="button">删除</button></div>`;
+      card.innerHTML = `<div class="card-content"><span>草稿</span><h2></h2><p>${draft.category}</p></div><div class="actions"><a>继续编辑</a><button type="button">删除</button></div>`;
       card.querySelector('h2')!.textContent = draft.title || '未命名草稿';
       card.querySelector('a')!.setAttribute('href', `${editUrl}?id=${encodeURIComponent(draft.id)}`);
       card.querySelector('button')!.addEventListener('click', async () => {
@@ -59,13 +59,15 @@ import { withBase } from '../../utils/paths';
   header p { margin: 0; color: var(--color-accent); font-size: .68rem; font-weight: 750; letter-spacing: .1em; }
   h1 { margin: .28rem 0 0; font-size: clamp(1.9rem, 4vw, 2.7rem); }
   .list { display: grid; gap: .7rem; }
-  .list :global(article) { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem 1rem; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border)); border-left: 3px solid color-mix(in srgb, var(--color-accent) 48%, transparent); border-radius: 1.05rem; background: linear-gradient(110deg, color-mix(in srgb, var(--color-accent) 3%, transparent), transparent 45%); animation: card-in 560ms both cubic-bezier(.22, 1, .36, 1); transition: background 180ms ease, transform 180ms ease; }
-  .list :global(article:hover) { background: color-mix(in srgb, var(--color-text) 3.5%, transparent); transform: translateX(.25rem); }
-  .list :global(article span) { display: inline-block; padding: .18rem .48rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: .66rem; font-weight: 720; letter-spacing: .06em; }
+  .list :global(article) { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.05rem 1rem 1.2rem; border: 1px solid var(--color-border); border-radius: 1.05rem; background: color-mix(in srgb, var(--color-surface) 72%, var(--color-page)); box-shadow: 0 .35rem 1.2rem color-mix(in srgb, #000 5%, transparent); animation: card-in 560ms both cubic-bezier(.22, 1, .36, 1); transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+  .list :global(article::before) { position: absolute; top: 1rem; bottom: 1rem; left: .55rem; width: 2px; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 52%, transparent); content: ''; }
+  .list :global(article:hover) { border-color: color-mix(in srgb, var(--color-accent) 38%, var(--color-border)); box-shadow: 0 .55rem 1.5rem color-mix(in srgb, #000 9%, transparent); transform: translateY(-.12rem); }
+  .list :global(article span) { display: inline-block; color: var(--color-text-muted); font-size: .64rem; font-weight: 720; letter-spacing: .12em; }
   .list :global(article h2) { margin: .24rem 0 .1rem; font-size: 1.08rem; font-weight: 660; }
   .list :global(article p), .list :global(.empty) { margin: 0; color: var(--color-text-muted); font-size: .76rem; }
   .list :global(.actions) { display: flex; flex: none; gap: .4rem; }
-  .list :global(.actions a), .list :global(.actions button) { padding: .5rem .7rem; border: 0; border-radius: .6rem; background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; font-size: .74rem; text-decoration: none; }
+  .list :global(.actions a), .list :global(.actions button) { padding: .5rem .7rem; border: 1px solid var(--color-border); border-radius: .65rem; background: var(--color-page); color: var(--color-text); cursor: pointer; font: inherit; font-size: .74rem; text-decoration: none; transition: border-color 160ms ease, color 160ms ease; }
+  .list :global(.actions a:hover) { border-color: var(--color-accent); color: var(--color-accent); }
   .list :global(.actions button) { color: #d25a5a; }
   .skeleton { display: grid; gap: .48rem; padding: .95rem 1rem; border: 1px solid var(--color-border); border-radius: 1.05rem; overflow: hidden; }
   .skeleton > * { display: block; height: .65rem; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--color-text) 4%, transparent) 20%, color-mix(in srgb, var(--color-text) 9%, transparent) 50%, color-mix(in srgb, var(--color-text) 4%, transparent) 80%); background-size: 220% 100%; animation: shimmer 1.35s ease-in-out infinite; }

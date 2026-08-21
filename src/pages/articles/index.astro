@@ -101,7 +101,7 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
       }
       link.append(category, title, summary, dates);
       list?.prepend(link);
-      if (!document.querySelector(`[data-category="${CSS.escape(article.category)}"]`)) {
+      if (!document.querySelector(`.category-menu [data-category="${CSS.escape(article.category)}"]`)) {
         const button = document.createElement('button');
         button.type = 'button';
         button.dataset.category = article.category;
@@ -129,19 +129,19 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
   .category-menu button:hover, .category-menu button[aria-pressed='true'] { padding-left: 0.85rem; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); }
   .tool-item > summary:hover { background: var(--color-surface); }
   .article-list { display: grid; gap: 0.7rem; padding-top: 1rem; }
-  .article-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.28rem 1.25rem; padding: 0.9rem 2.5rem 0.9rem 1rem; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border)); border-left: 3px solid color-mix(in srgb, var(--color-accent) 48%, transparent); border-radius: 1.05rem; background: linear-gradient(110deg, color-mix(in srgb, var(--color-accent) 3%, transparent), transparent 45%); color: var(--color-text); text-decoration: none; animation: post-in 680ms both cubic-bezier(0.22, 1, 0.36, 1); animation-delay: calc(var(--post-index) * 55ms); transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }
-  .article-card::after { position: absolute; top: 50%; right: 0.9rem; color: var(--color-text-muted); content: '→'; opacity: 0; transform: translate(-0.35rem, -50%); transition: opacity 180ms ease, transform 180ms ease; }
-  .article-card > span { grid-column: 1 / -1; width: fit-content; padding: 0.18rem 0.48rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: 0.66rem; font-weight: 720; letter-spacing: 0.06em; }
-  .article-card h2 { margin: 0; font-size: clamp(1rem, 1.6vw, 1.22rem); font-weight: 660; transition: color 180ms ease; }
-  .article-card p { grid-column: 1; margin: 0; overflow: hidden; color: var(--color-text-muted); font-size: 0.82rem; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
-  .article-dates { grid-column: 1; display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; color: var(--color-text-muted); font-size: 0.68rem; }
-  .article-card:hover { background: color-mix(in srgb, var(--color-text) 3.5%, transparent); transform: translateX(0.25rem); }
-  .article-card:hover h2 { color: var(--color-accent); }
-  .article-card:hover::after { opacity: 1; transform: translate(0, -50%); }
+  :global(.article-card) { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.28rem 1.25rem; padding: 0.95rem 2.5rem 0.95rem 1rem; border: 1px solid color-mix(in srgb, var(--color-accent) 36%, var(--color-border)); border-left: 3px solid color-mix(in srgb, var(--color-accent) 72%, transparent); border-radius: 1.05rem; background: linear-gradient(110deg, color-mix(in srgb, var(--color-accent) 10%, var(--color-page)), color-mix(in srgb, var(--color-surface) 68%, var(--color-page)) 65%); box-shadow: 0 .25rem 1rem color-mix(in srgb, #000 7%, transparent); color: var(--color-text); text-decoration: none; animation: post-in 680ms both cubic-bezier(0.22, 1, 0.36, 1); animation-delay: calc(var(--post-index) * 55ms); transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+  :global(.article-card::after) { position: absolute; top: 50%; right: 0.9rem; color: var(--color-text-muted); content: '→'; opacity: 0; transform: translate(-0.35rem, -50%); transition: opacity 180ms ease, transform 180ms ease; }
+  :global(.article-card > span) { grid-column: 1 / -1; width: fit-content; padding: 0.18rem 0.48rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--color-accent); font-size: 0.66rem; font-weight: 720; letter-spacing: 0.06em; }
+  :global(.article-card h2) { margin: 0; font-size: clamp(1rem, 1.6vw, 1.22rem); font-weight: 660; transition: color 180ms ease; }
+  :global(.article-card p) { grid-column: 1; margin: 0; overflow: hidden; color: color-mix(in srgb, var(--color-text) 68%, transparent); font-size: 0.82rem; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+  :global(.article-dates) { grid-column: 1; display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; color: var(--color-text-muted); font-size: 0.68rem; }
+  :global(.article-card:hover) { border-color: color-mix(in srgb, var(--color-accent) 68%, var(--color-border)); box-shadow: 0 .45rem 1.25rem color-mix(in srgb, #000 11%, transparent); transform: translateX(0.25rem); }
+  :global(.article-card:hover h2) { color: var(--color-accent); }
+  :global(.article-card:hover::after) { opacity: 1; transform: translate(0, -50%); }
   @keyframes post-in { from { opacity: 0; transform: translateY(0.28rem); } to { opacity: 1; transform: translateY(0); } }
   .empty-filter { color: var(--color-text-muted); }
   [hidden] { display: none !important; }
   @media (max-width: 60rem) { .articles-page { grid-template-columns: 1fr; width: calc(100% - 2rem); margin-inline: 1rem; } .article-tools { position: static; grid-row: 1; } }
-  @media (max-width: 42rem) { .article-card { grid-template-columns: 1fr; margin-inline: 0; padding-inline: 0.65rem 2.4rem; } }
-  @media (prefers-reduced-motion: reduce) { .article-card { animation: none; } .article-card, .article-card::after, .category-filter svg, .category-filter > summary { transition: none; } }
+  @media (max-width: 42rem) { :global(.article-card) { grid-template-columns: 1fr; margin-inline: 0; padding-inline: 0.65rem 2.4rem; } }
+  @media (prefers-reduced-motion: reduce) { :global(.article-card) { animation: none; } :global(.article-card), :global(.article-card::after), .category-filter svg, .category-filter > summary { transition: none; } }
 </style>

@@ -25,9 +25,7 @@ import { withBase } from '../../utils/paths';
         </div>
         <div class="editor-actions">
           <button class="button button--quiet" type="submit" data-save-draft>保存草稿</button>
-          <button class="button button--primary" type="button" data-submit-review>提交审核</button>
           <button class="button button--primary" type="button" data-publish hidden>发布</button>
-          <button class="button button--danger" type="button" data-return hidden>退回</button>
         </div>
         <p class="editor-toast" data-draft-note aria-live="polite" hidden></p>
       </form>
@@ -178,41 +176,24 @@ import { withBase } from '../../utils/paths';
     if (categoryInput instanceof HTMLInputElement) categoryInput.value = normalizedCategory;
     const categoryValue = document.querySelector<HTMLElement>('[data-category-value]');
     if (categoryValue) categoryValue.textContent = normalizedCategory;
-    const reviewing = draft.status === 'review';
-    const saveButton = document.querySelector<HTMLElement>('[data-save-draft]');
-    const submitButton = document.querySelector<HTMLElement>('[data-submit-review]');
-    if (saveButton) saveButton.hidden = reviewing;
-    if (submitButton) submitButton.hidden = reviewing;
-    document.querySelectorAll<HTMLElement>('[data-publish],[data-return]').forEach((button) => (button.hidden = !reviewing || role !== 'admin'));
+    const publishButton = document.querySelector<HTMLElement>('[data-publish]');
+    if (publishButton) publishButton.hidden = role !== 'admin';
   };
   const loadDrafts = async () => {
     if (!supabase || !session || !draftList) return;
-    const { data, error } = await supabase.from('articles').select('id,title,category,summary,content_markdown,status,updated_at').eq('author_id', session.user.id).in('status', ['draft', 'review']).order('updated_at', { ascending: false });
+    const { data, error } = await supabase.from('articles').select('id,title,category,summary,content_markdown,status,updated_at').eq('author_id', session.user.id).eq('status', 'draft').order('updated_at', { ascending: false });
     if (error) return setNote('草稿数据库尚未启用。', true);
     draftList.replaceChildren(...(data ?? []).map((draft) => {
       const button = document.createElement('button');
       button.type = 'button';
-      button.textContent = `${draft.title || '未命名草稿'}${draft.status === 'review' ? ' · 待审核' : ''}`;
+      button.textContent = draft.title || '未命名草稿';
       button.addEventListener('click', () => fillForm(draft));
       return button;
     }));
   };
-  const loadReviews = async () => {
-    const reviewList = document.querySelector<HTMLElement>('[data-review-list]');
-    if (!supabase || role !== 'admin' || !reviewList) return;
-    const { data } = await supabase.from('articles').select('id,title,category,summary,content_markdown,status,updated_at').eq('status', 'review').order('updated_at');
-    reviewList.replaceChildren(...(data ?? []).map((draft) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = draft.title || '未命名文档';
-      button.addEventListener('click', () => fillForm(draft));
-      return button;
-    }));
-  };
-  if (role === 'editor' || role === 'admin') void loadDrafts();
-  if (role === 'admin') void loadReviews();
+  void loadDrafts();
   const requestedDraftId = new URLSearchParams(window.location.search).get('id');
-  if (requestedDraftId && supabase && (role === 'editor' || role === 'admin')) {
+  if (requestedDraftId && supabase) {
     const { data: requestedDraft } = await supabase.from('articles').select('id,title,category,summary,content_markdown,status,updated_at').eq('id', requestedDraftId).single();
     if (requestedDraft) fillForm(requestedDraft);
   }
@@ -221,8 +202,8 @@ import { withBase } from '../../utils/paths';
     const id = form?.elements.namedItem('id');
     if (id instanceof HTMLInputElement) id.value = '';
     if (richEditor) richEditor.innerHTML = '';
-    document.querySelectorAll<HTMLElement>('[data-save-draft],[data-submit-review]').forEach((button) => (button.hidden = false));
-    document.querySelectorAll<HTMLElement>('[data-publish],[data-return]').forEach((button) => (button.hidden = true));
+    const publishButton = document.querySelector<HTMLElement>('[data-publish]');
+    if (publishButton) publishButton.hidden = role !== 'admin';
     closeCreateMenu();
   });
   const insertHtmlAtCaret = (html: string) => {
@@ -323,31 +304,23 @@ import { withBase } from '../../utils/paths';
     setNote('草稿已保存。');
     void loadDrafts();
   });
-  const updateStatus = async (status: 'draft' | 'review' | 'published') => {
+  const publishDraft = async () => {
     if (!supabase || !form) return;
+    if (role !== 'admin') return setNote('只有管理员可以发布文档。', true);
     const id = form.elements.namedItem('id');
     if (!(id instanceof HTMLInputElement) || !id.value) return setNote('请先保存草稿。', true);
-    const updates: Record<string, string | null> = { status, updated_at: new Date().toISOString() };
-    if (status === 'review') {
-      syncMarkdown();
-      if (!form.reportValidity()) return;
-      const values = Object.fromEntries(new FormData(form));
-      updates.title = String(values.title);
-      updates.category = String(values.category);
-      updates.summary = String(values.summary);
-      updates.content_markdown = String(values.content_markdown);
-    }
-    if (status === 'published') updates.published_at = new Date().toISOString();
+    syncMarkdown();
+    if (!form.reportValidity()) return;
+    const values = Object.fromEntries(new FormData(form));
+    const now = new Date().toISOString();
+    const updates = { status: 'published', updated_at: now, published_at: now, title: String(values.title), category: String(values.category), summary: String(values.summary), content_markdown: String(values.content_markdown) };
     const { error } = await supabase.from('articles').update(updates).eq('id', id.value);
     if (error) return setNote(error.message, true);
-    setNote(status === 'review' ? '已提交审核。' : status === 'published' ? '文档已发布。' : '已退回草稿。');
+    setNote('文档已发布。');
     form.reset();
     void loadDrafts();
-    void loadReviews();
   };
-  document.querySelector('[data-submit-review]')?.addEventListener('click', () => void updateStatus('review'));
-  document.querySelector('[data-publish]')?.addEventListener('click', () => void updateStatus('published'));
-  document.querySelector('[data-return]')?.addEventListener('click', () => void updateStatus('draft'));
+  document.querySelector('[data-publish]')?.addEventListener('click', () => void publishDraft());
 </script>
 
 <style>
@@ -362,9 +335,9 @@ import { withBase } from '../../utils/paths';
   aside section { display: grid; gap: 0.4rem; }
   aside p { margin: 0; color: var(--color-text); font-size: 0.72rem; font-weight: 780; letter-spacing: 0.07em; }
   aside section + section { padding-top: 0.8rem; border-top: 1px solid var(--color-border); }
-  [data-draft-list], [data-review-list] { display: grid; gap: 0.25rem; }
-  [data-draft-list] button, [data-review-list] button { width: 100%; padding: 0.58rem 0.65rem; overflow: hidden; border: 0; border-radius: 0.45rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; text-overflow: ellipsis; white-space: nowrap; transition: background 160ms ease, color 160ms ease, transform 160ms ease; }
-  [data-draft-list] button:hover, [data-review-list] button:hover { background: var(--color-surface); color: var(--color-text); transform: translateX(0.15rem); }
+  [data-draft-list] { display: grid; gap: 0.25rem; }
+  [data-draft-list] button { width: 100%; padding: 0.58rem 0.65rem; overflow: hidden; border: 0; border-radius: 0.45rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; text-overflow: ellipsis; white-space: nowrap; transition: background 160ms ease, color 160ms ease, transform 160ms ease; }
+  [data-draft-list] button:hover { background: var(--color-surface); color: var(--color-text); transform: translateX(0.15rem); }
   .create-menu { position: relative; width: fit-content; }
   .create-menu > summary { list-style: none; }
   .create-menu > summary::-webkit-details-marker { display: none; }

@@ -130,16 +130,12 @@ import { withBase } from '../../utils/paths';
       .join('');
     currentProfile.bio = bio;
     currentProfile.display_name = displayName;
-    const role = profile.role === 'admin' ? 'admin' : profile.role === 'editor' ? 'editor' : '';
+    const role = profile.role === 'admin' ? 'admin' : '';
     if (nameElement) nameElement.textContent = displayName;
     if (bioElement) bioElement.textContent = bio;
     if (roleElement)
       roleElement.textContent =
-        role === 'admin'
-          ? 'ADMINISTRATOR'
-          : role === 'editor'
-            ? 'EDITOR'
-            : 'REGISTERED MEMBER';
+        role === 'admin' ? 'ADMINISTRATOR' : 'REGISTERED MEMBER';
     if (avatarElement) {
       const avatarUrl = String(profile.avatar_url || '');
       avatarElement.classList.toggle('has-image', Boolean(avatarUrl));
