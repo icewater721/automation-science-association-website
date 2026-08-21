@@ -11,6 +11,7 @@ const docs = defineCollection({
     category: z.string().default('基础工具'),
     audience: z.array(z.string()).default([]),
     order: z.number().int().nonnegative(),
+    publishedAt: z.coerce.date().optional(),
     updatedAt: z.coerce.date(),
     keywords: z.array(z.string()).default([]),
     draft: z.boolean().default(false),

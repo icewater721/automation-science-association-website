@@ -3,9 +3,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
 ---
 
-<BaseLayout title="草稿箱 | 文档" description="创建和管理文档草稿。">
+<BaseLayout title="编辑文档 | 文档" description="创建和编辑文档。">
   <main class="draft-page" data-draft-page data-login-url={withBase('/login/')}>
-    <header><p>DOCUMENT WORKSPACE</p><h1>草稿箱</h1></header>
+    <header><p>DOCUMENT WORKSPACE</p><h1>编辑文档</h1></header>
     <p class="access-note" data-access-note>正在确认编辑权限……</p>
     <div class="workspace" data-workspace hidden>
       <form data-draft-form>
@@ -38,6 +38,7 @@ import { withBase } from '../../utils/paths';
         <p data-draft-note aria-live="polite"></p>
       </form>
       <aside>
+        <p class="aside-title">文档管理</p>
         <details class="create-menu">
           <summary class="icon-button" aria-label="新建或导入文档" title="新建或导入文档">+</summary>
           <div class="create-menu-popover">
@@ -223,11 +224,12 @@ import { withBase } from '../../utils/paths';
 </script>
 
 <style>
-  .draft-page { width: min(72rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 2.5rem 5rem; }
+  .draft-page { width: min(72rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 1rem 5rem; }
   header p { margin: 0; color: var(--color-accent); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.1em; }
   h1 { margin: 0.35rem 0 1.6rem; font-size: clamp(1.9rem, 4vw, 2.65rem); letter-spacing: -0.035em; }
   .workspace { display: grid; grid-template-columns: minmax(0, 48rem) 14rem; justify-content: center; gap: clamp(1.5rem, 4vw, 3rem); }
   aside { position: sticky; top: 2rem; display: grid; align-content: start; gap: 1.1rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: 0.8rem; background: color-mix(in srgb, var(--color-surface) 78%, transparent); box-shadow: 0 0.7rem 2rem color-mix(in srgb, #000 7%, transparent); }
+  .aside-title { color: var(--color-accent); }
   aside section { display: grid; gap: 0.4rem; }
   aside p { margin: 0; color: var(--color-text); font-size: 0.72rem; font-weight: 780; letter-spacing: 0.07em; }
   aside section + section { padding-top: 0.8rem; border-top: 1px solid var(--color-border); }
