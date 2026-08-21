@@ -11,7 +11,7 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
 ---
 
 <BaseLayout title="文档 | 人工智能学院科协" description="科协文档与学习资料。">
-  <main class="articles-page">
+  <main class="articles-page" data-articles-page data-read-url={withBase('/articles/read/')}>
     <div class="article-tools">
       <details class="category-filter" data-category-filter>
         <summary aria-label="筛选栏目" title="筛选栏目">
@@ -39,14 +39,12 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
 
 <script>
   import { supabase } from '../../lib/supabase';
-  const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-article-card]'));
   const emptyFilter = document.querySelector<HTMLElement>('[data-empty-filter]');
-  document.querySelectorAll<HTMLButtonElement>('[data-category]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const category = button.dataset.category ?? 'all';
+  const filterByCategory = (button: HTMLButtonElement) => {
+      const selectedCategory = button.dataset.category ?? 'all';
       let visible = 0;
-      cards.forEach((card) => {
-        const show = category === 'all' || card.dataset.category === category;
+      document.querySelectorAll<HTMLElement>('[data-article-card]').forEach((card) => {
+        const show = selectedCategory === 'all' || card.dataset.category === selectedCategory;
         card.hidden = !show;
         if (show) {
           visible += 1;
@@ -64,8 +62,43 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
       if (emptyFilter) emptyFilter.hidden = visible > 0;
       const filter = document.querySelector<HTMLDetailsElement>('[data-category-filter]');
       if (filter) filter.open = false;
-    });
-  });
+  };
+  document.querySelectorAll<HTMLButtonElement>('[data-category]').forEach((button) =>
+    button.addEventListener('click', () => filterByCategory(button)),
+  );
+  if (supabase) {
+    const { data: published } = await supabase.from('articles').select('id,title,summary,category,published_at').eq('status', 'published').order('published_at', { ascending: false });
+    const list = document.querySelector<HTMLElement>('.article-list');
+    const page = document.querySelector<HTMLElement>('[data-articles-page]');
+    for (const article of published ?? []) {
+      const link = document.createElement('a');
+      link.className = 'article-card';
+      link.dataset.articleCard = '';
+      link.dataset.category = article.category;
+      link.href = `${page?.dataset.readUrl ?? ''}?id=${encodeURIComponent(article.id)}`;
+      const category = document.createElement('span');
+      category.textContent = article.category;
+      const title = document.createElement('h2');
+      title.textContent = article.title;
+      const summary = document.createElement('p');
+      summary.textContent = article.summary;
+      const time = document.createElement('time');
+      const date = article.published_at ? new Date(article.published_at) : new Date();
+      time.dateTime = date.toISOString();
+      time.textContent = date.toLocaleDateString('zh-CN');
+      link.append(category, title, summary, time);
+      list?.prepend(link);
+      if (!document.querySelector(`[data-category="${CSS.escape(article.category)}"]`)) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.category = article.category;
+        button.ariaPressed = 'false';
+        button.textContent = article.category;
+        button.addEventListener('click', () => filterByCategory(button));
+        document.querySelector('.category-menu')?.append(button);
+      }
+    }
+  }
   const session = (await supabase?.auth.getSession())?.data.session;
   if (session && supabase) {
     const current = await supabase.from('profiles').select('role').eq('user_id', session.user.id).single();
