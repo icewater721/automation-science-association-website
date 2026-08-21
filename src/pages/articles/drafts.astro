@@ -21,8 +21,7 @@ import { withBase } from '../../utils/paths';
         <label>摘要 <textarea name="summary" maxlength="160" rows="3" required></textarea></label>
         <div class="content-field">
           <div class="content-field-heading"><span>正文</span></div>
-          <textarea name="content_markdown" required hidden></textarea>
-          <div class="rich-editor" contenteditable="true" spellcheck="false" data-gramm="false" data-gramm_editor="false" data-rich-editor role="textbox" aria-multiline="true" data-placeholder="开始写正文……"></div>
+          <textarea class="markdown-editor" name="content_markdown" rows="18" required spellcheck="false" data-gramm="false" data-gramm_editor="false" placeholder="使用 Markdown 语法开始写正文……"></textarea>
         </div>
         <div class="editor-actions">
           <button class="button button--quiet" type="submit" data-save-draft>保存草稿</button>
@@ -34,10 +33,7 @@ import { withBase } from '../../utils/paths';
       </form>
       <aside>
         <p class="aside-title">编辑工具</p>
-        <div class="format-tools" aria-label="正文格式工具">
-          <button type="button" data-command="bold"><svg viewBox="0 0 24 24"><path d="M7 4h6a4 4 0 0 1 0 8H7Zm0 8h7a4 4 0 0 1 0 8H7Z"></path></svg>加粗</button><button type="button" data-command="italic"><svg viewBox="0 0 24 24"><path d="M10 4h8M6 20h8M14 4 10 20"></path></svg>斜体</button>
-          <button type="button" data-action="divider"><svg viewBox="0 0 24 24"><path d="M4 12h16"></path></svg>分割线</button><button type="button" data-action="code"><svg viewBox="0 0 24 24"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-10-2 12"></path></svg>代码块</button>
-          <button type="button" data-action="comment"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H9l-5 3Z"></path></svg>注释</button><button type="button" data-action="link"><svg viewBox="0 0 24 24"><path d="m9 15 6-6m-8 9H6a4 4 0 0 1 0-8h3m6 0h3a4 4 0 0 1 0 8h-3"></path></svg>链接</button>
+        <div class="format-tools" aria-label="正文工具">
           <label class="toolbar-upload"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="m5 17 5-5 3 3 2-2 4 4"></path></svg>图片<input data-image-input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden /></label>
           <button type="button" data-command="undo"><svg viewBox="0 0 24 24"><path d="m9 7-5 5 5 5M5 12h8a6 6 0 0 1 6 6"></path></svg>上一步</button><button type="button" data-command="redo"><svg viewBox="0 0 24 24"><path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6"></path></svg>下一步</button>
         </div>
@@ -48,7 +44,6 @@ import { withBase } from '../../utils/paths';
 
 <script>
   import { supabase } from '../../lib/supabase';
-  import { renderMarkdown } from '../../utils/markdown';
   const page = document.querySelector<HTMLElement>('[data-draft-page]');
   const workspace = document.querySelector<HTMLElement>('[data-workspace]');
   const form = document.querySelector<HTMLFormElement>('[data-draft-form]');
@@ -165,8 +160,6 @@ import { withBase } from '../../utils/paths';
       const field = form.elements.namedItem(key);
       if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) field.value = String(value ?? '');
     }
-    if (richEditor) richEditor.innerHTML = renderMarkdown(String(draft.content_markdown ?? ''));
-    hydrateAtomicBlocks();
     const normalizedCategory = String(draft.category || '未分类') === '其他' ? '未分类' : String(draft.category || '未分类');
     const categoryInput = form.elements.namedItem('category');
     if (categoryInput instanceof HTMLInputElement) categoryInput.value = normalizedCategory;
@@ -238,7 +231,7 @@ import { withBase } from '../../utils/paths';
     }
   };
   const uploadAndInsertImage = async (file: File) => {
-    if (!file || !supabase || !session || !richEditor) return;
+    if (!file || !supabase || !session || !(markdownEditor instanceof HTMLTextAreaElement)) return;
     if (file.size > 8 * 1024 * 1024) {
       setNote('图片不能超过 8 MB。', true);
       return;
@@ -253,8 +246,11 @@ import { withBase } from '../../utils/paths';
     const url = supabase.storage.from('article-images').getPublicUrl(path).data.publicUrl;
     const safeUrl = url.replace(/["<>]/g, '');
     const safeAlt = file.name.replace(/\.[^.]+$/, '').replace(/["<>]/g, '');
-    insertHtmlAtCaret(`<p><br></p><figure class="editor-atomic editor-atomic--media" contenteditable="true"><img src="${safeUrl}" alt="${safeAlt}" contenteditable="false"><button type="button" contenteditable="false" data-delete-atomic aria-label="删除图片">×</button><figcaption contenteditable="true" data-placeholder="添加图片描述（可选）"></figcaption></figure><p><br></p>`);
-    syncMarkdown();
+    const start = markdownEditor.selectionStart;
+    const end = markdownEditor.selectionEnd;
+    const markdown = `\n![${safeAlt}](${safeUrl})\n`;
+    markdownEditor.setRangeText(markdown, start, end, 'end');
+    markdownEditor.focus();
     setNote('图片已插入正文。');
   };
   document.querySelector<HTMLInputElement>('[data-image-input]')?.addEventListener('change', async (event) => {
@@ -263,11 +259,10 @@ import { withBase } from '../../utils/paths';
     if (file) await uploadAndInsertImage(file);
     input.value = '';
   });
-  richEditor?.addEventListener('paste', (event) => {
+  if (markdownEditor instanceof HTMLTextAreaElement) markdownEditor.addEventListener('paste', (event) => {
     const image = [...event.clipboardData?.files ?? []].find((file) => file.type.startsWith('image/'));
     if (!image) return;
     event.preventDefault();
-    rememberSelection();
     void uploadAndInsertImage(image);
   });
   richEditor?.addEventListener('input', () => { rememberSelection(); syncMarkdown(); });
@@ -295,7 +290,7 @@ import { withBase } from '../../utils/paths';
     button.closest('.editor-atomic')?.remove();
     syncMarkdown();
   });
-  document.querySelectorAll<HTMLButtonElement>('[data-command]').forEach((button) => button.addEventListener('click', () => { restoreSelection(); document.execCommand(button.dataset.command ?? ''); rememberSelection(); syncMarkdown(); }));
+  document.querySelectorAll<HTMLButtonElement>('[data-command]').forEach((button) => button.addEventListener('click', () => { if (!(markdownEditor instanceof HTMLTextAreaElement)) return; markdownEditor.focus(); document.execCommand(button.dataset.command ?? ''); }));
   document.querySelector('[data-action="divider"]')?.addEventListener('click', () => { insertHtmlAtCaret('<p><br></p><div class="editor-atomic editor-atomic--divider" contenteditable="true"><hr contenteditable="false"><button type="button" contenteditable="false" data-delete-atomic aria-label="删除分割线">×</button></div><p><br></p>'); syncMarkdown(); });
   document.querySelector('[data-action="code"]')?.addEventListener('click', () => { insertHtmlAtCaret('<p><br></p><div class="editor-atomic editor-atomic--code" contenteditable="true"><span contenteditable="false">代码</span><pre contenteditable="true"><br></pre><button type="button" contenteditable="false" data-delete-atomic aria-label="删除代码块">×</button></div><p><br></p>'); syncMarkdown(); });
   document.querySelector('[data-action="link"]')?.addEventListener('click', () => { const selectedText = savedRange?.toString().trim() ?? ''; const text = selectedText || window.prompt('输入链接文字') || ''; if (!text) return; const url = window.prompt('输入链接地址', 'https://'); if (url) { restoreSelection(); document.execCommand('insertHTML', false, `<a href="${url.replace(/["<>]/g, '')}">${text.replace(/[<>]/g, '')}</a>`); syncMarkdown(); } });
@@ -381,6 +376,7 @@ import { withBase } from '../../utils/paths';
   .category-select button:hover { background: var(--color-surface); color: var(--color-accent); }
   .content-field { display: grid; gap: 0.4rem; }
   .content-field-heading { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; font-weight: 700; }
+  .markdown-editor { min-height: 23rem; padding: 1rem; font-family: 'Maple Mono', 'Maple Mono NF', 'Maple Mono CN', 'Cascadia Code', ui-monospace, monospace; font-size: 0.9rem; line-height: 1.75; resize: vertical; tab-size: 2; }
   .rich-editor { min-height: 23rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: 0.75rem; font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.95rem; letter-spacing: 0.01em; line-height: 1.8; outline: 0; transition: border-color 160ms ease, box-shadow 160ms ease; }
   .rich-editor:focus { border-color: var(--color-accent); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); }
   .rich-editor:empty::before { color: var(--color-text-muted); content: attr(data-placeholder); }
