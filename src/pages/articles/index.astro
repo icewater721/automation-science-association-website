@@ -36,18 +36,6 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
           {categories.map((category) => <button type="button" data-category={category} aria-pressed="false">{category}</button>)}
         </div>
       </details>
-      <a class="tool-item draft-link" href={withBase('/articles/drafts/')} data-draft-link hidden>
-        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4M4 20l4-1"></path></svg>
-        <span><strong>草稿箱</strong></span>
-      </a>
-      <section class="workspace-list" data-workspace-list hidden>
-        <p><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5Z"></path><path d="M8 9h8M8 13h8M8 17h5"></path></svg><span>我的草稿</span></p>
-        <div data-draft-list></div>
-      </section>
-      <section class="workspace-list" data-review-section hidden>
-        <p><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5Z"></path><path d="m8 12 2.2 2.2L16.5 8"></path></svg><span>待审核</span></p>
-        <div data-review-list></div>
-      </section>
     </aside>
   </main>
 </BaseLayout>
@@ -124,41 +112,6 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
       }
     }
   }
-  const session = (await supabase?.auth.getSession())?.data.session;
-  if (session && supabase) {
-    const current = await supabase.from('profiles').select('role').eq('user_id', session.user.id).single();
-    let role = String(current.data?.role ?? '');
-    if (current.error?.code === '42703') {
-      const legacy = await supabase.from('profiles').select('is_collaborator').eq('user_id', session.user.id).single();
-      role = legacy.data?.is_collaborator ? 'editor' : '';
-    }
-    if (role === 'editor' || role === 'admin') {
-      const draftLink = document.querySelector<HTMLElement>('[data-draft-link]');
-      if (draftLink) draftLink.hidden = false;
-      const workspaceList = document.querySelector<HTMLElement>('[data-workspace-list]');
-      if (workspaceList) workspaceList.hidden = false;
-      const { data: drafts } = await supabase.from('articles').select('id,title,status').eq('author_id', session.user.id).in('status', ['draft', 'review']).order('updated_at', { ascending: false });
-      const draftList = document.querySelector<HTMLElement>('[data-draft-list]');
-      draftList?.replaceChildren(...(drafts ?? []).map((draft) => {
-        const link = document.createElement('a');
-        link.href = `${draftLink?.getAttribute('href') ?? ''}?id=${encodeURIComponent(draft.id)}`;
-        link.textContent = draft.title || '未命名草稿';
-        return link;
-      }));
-      if (role === 'admin') {
-        const reviewSection = document.querySelector<HTMLElement>('[data-review-section]');
-        if (reviewSection) reviewSection.hidden = false;
-        const { data: reviews } = await supabase.from('articles').select('id,title').eq('status', 'review').order('updated_at', { ascending: false });
-        const reviewList = document.querySelector<HTMLElement>('[data-review-list]');
-        reviewList?.replaceChildren(...(reviews ?? []).map((draft) => {
-          const link = document.createElement('a');
-          link.href = `${draftLink?.getAttribute('href') ?? ''}?id=${encodeURIComponent(draft.id)}`;
-          link.textContent = draft.title || '未命名文档';
-          return link;
-        }));
-      }
-    }
-  }
 </script>
 
 <style>
@@ -174,16 +127,9 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
   .category-menu { display: grid; gap: 0.2rem; padding: 0.2rem 0.55rem 0.55rem; }
   .category-menu button { padding: 0.58rem 0.65rem; border: 0; border-radius: 0.4rem; background: transparent; color: color-mix(in srgb, var(--color-nav-text) 68%, transparent); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; transition: background 160ms ease, color 160ms ease, padding-left 160ms ease; }
   .category-menu button:hover, .category-menu button[aria-pressed='true'] { padding-left: 0.85rem; background: color-mix(in srgb, var(--color-nav-text) 8%, transparent); color: var(--color-nav-text); }
-  .draft-link { color: var(--color-nav-text); text-decoration: none; transition: color 180ms ease, background 180ms ease; }
-  .tool-item > summary:hover, .draft-link:hover { background: color-mix(in srgb, var(--color-nav-text) 7%, transparent); }
+  .tool-item > summary:hover { background: color-mix(in srgb, var(--color-nav-text) 7%, transparent); }
   .article-list { display: grid; gap: 0.7rem; }
-  .article-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.28rem 1.25rem; padding: 0.9rem 2.5rem 0.9rem 0.85rem; border: 1px solid var(--color-border); border-radius: 0.75rem; color: var(--color-text); text-decoration: none; animation: post-in 680ms both cubic-bezier(0.22, 1, 0.36, 1); animation-delay: calc(var(--post-index) * 55ms); transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }
-  .workspace-list { display: grid; gap: 0.35rem; padding: 0.65rem; }
-  .workspace-list > p { display: flex; align-items: center; gap: 0.55rem; margin: 0; color: var(--color-nav-text); font-size: 0.72rem; font-weight: 750; }
-  .workspace-list > p svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
-  .workspace-list div { display: grid; gap: 0.15rem; }
-  .workspace-list a { overflow: hidden; padding: 0.35rem 0.4rem; border-radius: 0.35rem; color: color-mix(in srgb, var(--color-nav-text) 62%, transparent); font-size: 0.78rem; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
-  .workspace-list a:hover { background: color-mix(in srgb, var(--color-nav-text) 7%, transparent); color: var(--color-nav-text); }
+  .article-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.28rem 1.25rem; padding: 0.9rem 2.5rem 0.9rem 0.85rem; border: 1px solid var(--color-border); border-radius: 1.05rem; color: var(--color-text); text-decoration: none; animation: post-in 680ms both cubic-bezier(0.22, 1, 0.36, 1); animation-delay: calc(var(--post-index) * 55ms); transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }
   .article-card::after { position: absolute; top: 50%; right: 0.9rem; color: var(--color-text-muted); content: '→'; opacity: 0; transform: translate(-0.35rem, -50%); transition: opacity 180ms ease, transform 180ms ease; }
   .article-card > span { grid-column: 1 / -1; width: fit-content; padding: 0.18rem 0.48rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: 0.66rem; font-weight: 720; letter-spacing: 0.06em; }
   .article-card h2 { margin: 0; font-size: clamp(1rem, 1.6vw, 1.22rem); font-weight: 660; transition: color 180ms ease; }

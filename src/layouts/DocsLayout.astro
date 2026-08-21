@@ -79,6 +79,7 @@ const visibleHeadings = headings.filter(
 
     <aside class="page-outline" aria-label="本页跳转">
       <p>文档目录</p>
+      <button class="back-to-top" type="button" data-back-to-top><span>↑</span> 回到顶部</button>
       {
         visibleHeadings.length > 0 ? (
           <nav>
@@ -109,10 +110,16 @@ const visibleHeadings = headings.filter(
       if (section.getBoundingClientRect().top <= marker) active = section;
       else break;
     }
-    outlineLinks.forEach((link) => link.classList.toggle('is-active', link.hash === `#${active.id}`));
+    outlineLinks.forEach((link) => {
+      const isActive = link.hash === `#${active.id}`;
+      link.classList.toggle('is-active', isActive);
+      if (isActive) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
   };
   updateActiveOutline();
   window.addEventListener('scroll', updateActiveOutline, { passive: true });
+  document.querySelector('[data-back-to-top]')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 </script>
 
 <style>
@@ -167,6 +174,9 @@ const visibleHeadings = headings.filter(
     gap: 0.2rem;
   }
 
+  .back-to-top { display: flex; width: 100%; align-items: center; gap: 0.45rem; margin: -0.25rem 0 0.65rem; padding: 0.45rem 0.7rem; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; }
+  .back-to-top:hover { background: var(--color-surface); color: var(--color-accent); }
+
   .page-outline a {
     padding: 0.42rem 0 0.42rem 0.7rem;
     border-left: 1px solid var(--color-border);
@@ -182,10 +192,11 @@ const visibleHeadings = headings.filter(
   }
 
   .page-outline a.is-active {
-    border-left-color: var(--color-accent);
-    background: color-mix(in srgb, var(--color-accent) 7%, transparent);
-    color: var(--color-text);
-    font-weight: 680;
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 0.5rem 0.5rem 0;
+    background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+    color: var(--color-accent);
+    font-weight: 750;
   }
 
   .page-outline a[data-depth='3'] {
