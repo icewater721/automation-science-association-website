@@ -23,7 +23,7 @@ import { withBase } from '../../utils/paths';
     const client = supabase;
     const result = await client.from('admin_requests').select('id,display_name,reason,created_at').eq('status', 'pending').order('created_at');
     list.ariaBusy = 'false';
-    if (result.error) list.innerHTML = '<p class="empty">权限申请加载失败。</p>';
+    if (result.error) list.innerHTML = `<p class="empty">${result.error.code === '42P01' || result.error.code === 'PGRST205' ? '权限申请功能尚未启用。' : '暂时无法读取权限申请。'}</p>`;
     else if (!result.data?.length) list.innerHTML = '<p class="empty">目前没有待处理申请。</p>';
     else list.replaceChildren(...result.data.map((request) => {
       const card = document.createElement('article'); card.innerHTML = '<div><span>管理员申请</span><h2></h2><p></p></div><div class="actions"><button data-reject>拒绝</button><button data-approve>通过</button></div>';
