@@ -5,6 +5,7 @@ import { withBase } from '../../utils/paths';
 
 <BaseLayout title="编辑文档 | 文档" description="创建和编辑文档。">
   <main class="draft-page" data-draft-page data-login-url={withBase('/login/')}>
+    <a class="back-link" href={withBase('/articles/')}>← <span>返回</span></a>
     <header><p>DOCUMENT WORKSPACE</p><h1>编辑文档</h1></header>
     <p class="access-note" data-access-note>正在确认编辑权限……</p>
     <div class="workspace" data-workspace hidden>
@@ -53,8 +54,6 @@ import { withBase } from '../../utils/paths';
             </label>
           </div>
         </details>
-        <section><p>我的草稿</p><div data-draft-list></div></section>
-        <section data-review-section hidden><p>待审核</p><div data-review-list></div></section>
       </aside>
     </div>
   </main>
@@ -88,10 +87,6 @@ import { withBase } from '../../utils/paths';
     if (workspace) workspace.hidden = false;
     if (accessNote) accessNote.hidden = true;
   } else if (accessNote) accessNote.textContent = '此功能仅对编辑和管理员开放。';
-  if (role === 'admin') {
-    const reviewSection = document.querySelector<HTMLElement>('[data-review-section]');
-    if (reviewSection) reviewSection.hidden = false;
-  }
 
   const setNote = (message: string, error = false) => {
     if (!note) return;
@@ -137,6 +132,11 @@ import { withBase } from '../../utils/paths';
   };
   if (role === 'editor' || role === 'admin') void loadDrafts();
   if (role === 'admin') void loadReviews();
+  const requestedDraftId = new URLSearchParams(window.location.search).get('id');
+  if (requestedDraftId && supabase && (role === 'editor' || role === 'admin')) {
+    const { data: requestedDraft } = await supabase.from('articles').select('id,title,category,summary,content_markdown,status,updated_at').eq('id', requestedDraftId).single();
+    if (requestedDraft) fillForm(requestedDraft);
+  }
   document.querySelector('[data-new-draft]')?.addEventListener('click', () => {
     form?.reset();
     const id = form?.elements.namedItem('id');
@@ -225,6 +225,8 @@ import { withBase } from '../../utils/paths';
 
 <style>
   .draft-page { width: min(72rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 1rem 5rem; }
+  .back-link { display: inline-flex; gap: 0.45rem; margin-bottom: 0.8rem; color: var(--color-text-muted); font-size: 0.8rem; text-decoration: none; transition: color 160ms ease, transform 160ms ease; }
+  .back-link:hover { color: var(--color-accent); transform: translateX(-0.15rem); }
   header p { margin: 0; color: var(--color-accent); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.1em; }
   h1 { margin: 0.35rem 0 1.6rem; font-size: clamp(1.9rem, 4vw, 2.65rem); letter-spacing: -0.035em; }
   .workspace { display: grid; grid-template-columns: minmax(0, 48rem) 14rem; justify-content: center; gap: clamp(1.5rem, 4vw, 3rem); }

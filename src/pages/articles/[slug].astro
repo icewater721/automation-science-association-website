@@ -29,11 +29,7 @@ const navigationItem = (item: (typeof entries)[number] | undefined) => item ? {
   description={entry.data.description}
   browserTitle={`${entry.data.title} | 文档`}
   headings={headings}
-  breadcrumbs={[
-    { title: '文档', href: withBase('/articles/') },
-    { title: entry.data.category },
-    { title: entry.data.title },
-  ]}
+  backHref={withBase('/articles/')}
   previous={navigationItem(entries[currentIndex - 1])}
   next={navigationItem(entries[currentIndex + 1])}
 >
