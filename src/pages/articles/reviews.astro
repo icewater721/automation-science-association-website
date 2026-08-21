@@ -70,15 +70,15 @@ import { withBase } from '../../utils/paths';
   header p { margin: 0; color: var(--color-accent); font-size: .68rem; font-weight: 750; letter-spacing: .1em; }
   h1 { margin: .28rem 0 0; font-size: clamp(1.9rem, 4vw, 2.7rem); }
   .list { display: grid; gap: .8rem; }
-  article { display: grid; gap: .35rem; padding: .9rem 1rem; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border)); border-left: 3px solid color-mix(in srgb, var(--color-accent) 48%, transparent); border-radius: 1.05rem; background: linear-gradient(110deg, color-mix(in srgb, var(--color-accent) 3%, transparent), transparent 45%); animation: card-in 560ms both cubic-bezier(.22, 1, .36, 1); transition: background 180ms ease, transform 180ms ease; }
-  article:hover { background: color-mix(in srgb, var(--color-text) 3.5%, transparent); transform: translateX(.25rem); }
-  article > span { width: fit-content; padding: .16rem .42rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: .66rem; }
-  article h2 { margin: 0; font-size: 1.05rem; }
-  article p, .empty, [data-access] { margin: 0; color: var(--color-text-muted); font-size: .76rem; }
-  .actions { display: flex; justify-content: flex-end; gap: .4rem; margin-top: .35rem; }
-  .actions a, .actions button { padding: .5rem .72rem; border: 0; border-radius: .6rem; background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; font-size: .74rem; text-decoration: none; }
-  .actions .return { color: #d25a5a; }
-  .actions .publish { background: var(--color-text); color: var(--color-page); }
+  .list :global(article) { display: grid; gap: .35rem; padding: .9rem 1rem; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border)); border-left: 3px solid color-mix(in srgb, var(--color-accent) 48%, transparent); border-radius: 1.05rem; background: linear-gradient(110deg, color-mix(in srgb, var(--color-accent) 3%, transparent), transparent 45%); animation: card-in 560ms both cubic-bezier(.22, 1, .36, 1); transition: background 180ms ease, transform 180ms ease; }
+  .list :global(article:hover) { background: color-mix(in srgb, var(--color-text) 3.5%, transparent); transform: translateX(.25rem); }
+  .list :global(article > span) { width: fit-content; padding: .16rem .42rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: .66rem; }
+  .list :global(article h2) { margin: 0; font-size: 1.05rem; }
+  .list :global(article p), .list :global(.empty), [data-access] { margin: 0; color: var(--color-text-muted); font-size: .76rem; }
+  .list :global(.actions) { display: flex; justify-content: flex-end; gap: .4rem; margin-top: .35rem; }
+  .list :global(.actions a), .list :global(.actions button) { padding: .5rem .72rem; border: 0; border-radius: .6rem; background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; font-size: .74rem; text-decoration: none; }
+  .list :global(.actions .return) { color: #d25a5a; }
+  .list :global(.actions .publish) { background: var(--color-text); color: var(--color-page); }
   .skeleton { display: grid; gap: .48rem; padding: .95rem 1rem; border: 1px solid var(--color-border); border-radius: 1.05rem; overflow: hidden; }
   .skeleton > * { display: block; height: .65rem; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--color-text) 4%, transparent) 20%, color-mix(in srgb, var(--color-text) 9%, transparent) 50%, color-mix(in srgb, var(--color-text) 4%, transparent) 80%); background-size: 220% 100%; animation: shimmer 1.35s ease-in-out infinite; }
   .skeleton i { width: 3.2rem; height: .85rem; } .skeleton b { width: 42%; height: .95rem; } .skeleton span { width: 65%; }
@@ -87,6 +87,6 @@ import { withBase } from '../../utils/paths';
   .toast { position: fixed; right: 1.4rem; bottom: 1.4rem; padding: .7rem .9rem; border-radius: .75rem; background: var(--color-nav); color: var(--color-nav-text); font-size: .78rem; box-shadow: 0 .8rem 2rem #0003; }
   .toast[data-error='true'] { color: #ef7777; }
   [hidden] { display: none !important; }
-  @media (max-width: 38rem) { .review-page { width: calc(100% - 2rem); margin-inline: 1rem; } .actions { justify-content: flex-start; flex-wrap: wrap; } }
-  @media (prefers-reduced-motion: reduce) { article, .skeleton > * { animation: none; } }
+  @media (max-width: 38rem) { .review-page { width: calc(100% - 2rem); margin-inline: 1rem; } .list :global(.actions) { justify-content: flex-start; flex-wrap: wrap; } }
+  @media (prefers-reduced-motion: reduce) { .list :global(article), .skeleton > * { animation: none; } }
 </style>
