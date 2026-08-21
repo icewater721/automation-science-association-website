@@ -29,7 +29,7 @@ import { withBase } from '../../utils/paths';
           <button class="button button--primary" type="button" data-publish hidden>发布</button>
           <button class="button button--danger" type="button" data-return hidden>退回</button>
         </div>
-        <p data-draft-note aria-live="polite"></p>
+        <p class="editor-toast" data-draft-note aria-live="polite" hidden></p>
       </form>
       <aside>
         <p class="aside-title">编辑工具</p>
@@ -149,10 +149,23 @@ import { withBase } from '../../utils/paths';
   }
   if (workspace) workspace.hidden = false;
 
+  let noteTimer: number | undefined;
   const setNote = (message: string, error = false) => {
     if (!note) return;
+    window.clearTimeout(noteTimer);
     note.textContent = message;
     note.dataset.error = String(error);
+    note.hidden = false;
+    note.animate(
+      [{ opacity: 0, transform: 'translateY(0.45rem)' }, { opacity: 1, transform: 'translateY(0)' }],
+      { duration: 180, easing: 'ease-out' },
+    );
+    noteTimer = window.setTimeout(() => {
+      note.animate(
+        [{ opacity: 1 }, { opacity: 0 }],
+        { duration: 160, easing: 'ease-in' },
+      ).finished.then(() => { note.hidden = true; });
+    }, error ? 4200 : 2200);
   };
   const fillForm = (draft: Record<string, unknown>) => {
     if (!form) return;
@@ -406,7 +419,8 @@ import { withBase } from '../../utils/paths';
   .button--primary:hover { background: var(--color-accent); }
   .button--danger { border-color: color-mix(in srgb, #c23b3b 35%, var(--color-border)); background: transparent; color: #c23b3b; }
   .button--danger:hover { background: color-mix(in srgb, #c23b3b 9%, transparent); }
-  [data-draft-note][data-error='true'] { color: #c23b3b; }
+  .editor-toast { position: fixed; z-index: 120; right: 1.4rem; bottom: 1.4rem; max-width: min(22rem, calc(100vw - 2rem)); margin: 0; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); border-radius: 0.75rem; background: var(--color-nav); color: var(--color-nav-text); box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 20%, transparent); font-size: 0.78rem; }
+  .editor-toast[data-error='true'] { border-color: color-mix(in srgb, #d95656 55%, var(--color-border)); color: #ef7777; }
   [hidden] { display: none !important; }
   @media (max-width: 60rem) { .draft-page { width: calc(100% - 2rem); } .workspace { grid-template-columns: 1fr; } aside { position: static; grid-row: 1; min-height: auto; max-height: none; padding: 0.35rem; border-left: 0; } }
 </style>
