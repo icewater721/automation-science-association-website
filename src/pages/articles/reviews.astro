@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../utils/paths';
+---
+
+<BaseLayout title="待审核 | 文档" description="审核待发布文档。">
+  <main class="review-page" data-page data-login={withBase('/login/')} data-list-url={withBase('/articles/')} data-edit={withBase('/articles/drafts/')}>
+    <a class="back" href={withBase('/articles/')}>← 返回</a>
+    <header><p>REVIEW QUEUE</p><h1>待审核</h1></header>
+    <p data-access>正在确认管理员权限……</p>
+    <div class="list" data-list hidden></div>
+    <p class="toast" data-toast hidden></p>
+  </main>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  const page = document.querySelector<HTMLElement>('[data-page]');
+  const editUrl = page?.dataset.edit ?? '/articles/drafts/';
+  const list = document.querySelector<HTMLElement>('[data-list]');
+  const access = document.querySelector<HTMLElement>('[data-access]');
+  const toast = document.querySelector<HTMLElement>('[data-toast]');
+  const session = (await supabase?.auth.getSession())?.data.session;
+  if (!session) window.location.replace(page?.dataset.login ?? '/');
+  let role = '';
+  if (session && supabase) {
+    const profile = await supabase.from('profiles').select('role').eq('user_id', session.user.id).single();
+    role = String(profile.data?.role ?? '');
+  }
+  const showToast = (message: string, error = false) => {
+    if (!toast) return;
+    toast.textContent = message; toast.dataset.error = String(error); toast.hidden = false;
+    window.setTimeout(() => { toast.hidden = true; }, error ? 4000 : 2200);
+  };
+  const setStatus = async (card: HTMLElement, id: string, status: 'draft' | 'published') => {
+    if (!supabase) return;
+    const updates: Record<string, string | null> = { status, updated_at: new Date().toISOString() };
+    if (status === 'published') updates.published_at = new Date().toISOString();
+    const result = await supabase.from('articles').update(updates).eq('id', id);
+    if (result.error) return showToast(result.error.message, true);
+    card.remove(); showToast(status === 'published' ? '文档已发布。' : '文档已退回草稿。');
+    if (list && !list.children.length) list.innerHTML = '<p class="empty">目前没有待审核文档。</p>';
+  };
+  if (role !== 'admin') {
+    if (access) access.textContent = '此页面仅管理员可访问。';
+  } else if (supabase && list) {
+    if (access) access.hidden = true;
+    list.hidden = false;
+    const { data, error } = await supabase.from('articles').select('id,title,category,summary,updated_at').eq('status', 'review').order('updated_at', { ascending: true });
+    if (error) list.innerHTML = '<p class="empty">审核队列加载失败。</p>';
+    else if (!data?.length) list.innerHTML = '<p class="empty">目前没有待审核文档。</p>';
+    else list.replaceChildren(...data.map((draft) => {
+      const card = document.createElement('article');
+      card.innerHTML = `<span>${draft.category}</span><h2></h2><p class="summary"></p><time></time><div class="actions"><a>查看并编辑</a><button class="return" type="button">退回</button><button class="publish" type="button">发布</button></div>`;
+      card.querySelector('h2')!.textContent = draft.title || '未命名文档';
+      card.querySelector<HTMLElement>('.summary')!.textContent = draft.summary || '暂无摘要';
+      card.querySelector('time')!.textContent = `提交于 ${new Date(draft.updated_at).toLocaleString('zh-CN')}`;
+      card.querySelector('a')!.setAttribute('href', `${editUrl}?id=${encodeURIComponent(draft.id)}`);
+      card.querySelector<HTMLButtonElement>('.return')!.addEventListener('click', () => void setStatus(card, draft.id, 'draft'));
+      card.querySelector<HTMLButtonElement>('.publish')!.addEventListener('click', () => void setStatus(card, draft.id, 'published'));
+      return card;
+    }));
+  }
+</script>
+
+<style>
+  .review-page { width: min(52rem, calc(100% - 3rem)); margin-inline: auto; padding-block: 1.2rem 5rem; }
+  .back { color: var(--color-text-muted); font-size: .8rem; text-decoration: none; }
+  header p { margin: 1.5rem 0 0; color: var(--color-accent); font-size: .7rem; font-weight: 750; letter-spacing: .1em; }
+  h1 { margin: .3rem 0 1.5rem; font-size: clamp(2rem, 5vw, 3rem); }
+  .list { display: grid; gap: .8rem; }
+  article { display: grid; gap: .35rem; padding: 1rem 1.1rem; border: 1px solid var(--color-border); border-radius: 1rem; }
+  article > span { width: fit-content; padding: .16rem .42rem; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 9%, transparent); color: var(--color-accent); font-size: .66rem; }
+  article h2 { margin: 0; font-size: 1.05rem; }
+  article p, article time, .empty, [data-access] { margin: 0; color: var(--color-text-muted); font-size: .76rem; }
+  .actions { display: flex; justify-content: flex-end; gap: .4rem; margin-top: .35rem; }
+  .actions a, .actions button { padding: .5rem .72rem; border: 0; border-radius: .6rem; background: var(--color-surface); color: var(--color-text); cursor: pointer; font: inherit; font-size: .74rem; text-decoration: none; }
+  .actions .return { color: #d25a5a; }
+  .actions .publish { background: var(--color-text); color: var(--color-page); }
+  .toast { position: fixed; right: 1.4rem; bottom: 1.4rem; padding: .7rem .9rem; border-radius: .75rem; background: var(--color-nav); color: var(--color-nav-text); font-size: .78rem; box-shadow: 0 .8rem 2rem #0003; }
+  .toast[data-error='true'] { color: #ef7777; }
+  [hidden] { display: none !important; }
+  @media (max-width: 38rem) { .actions { justify-content: flex-start; flex-wrap: wrap; } }
+</style>
