@@ -42,7 +42,7 @@ import { withBase } from '../../utils/paths';
           <button type="button" data-command="undo"><svg viewBox="0 0 24 24"><path d="m9 7-5 5 5 5M5 12h8a6 6 0 0 1 6 6"></path></svg>上一步</button><button type="button" data-command="redo"><svg viewBox="0 0 24 24"><path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6"></path></svg>下一步</button>
         </div>
         <details class="create-menu">
-          <summary class="icon-button" aria-label="新建或导入文档" title="新建或导入文档">+</summary>
+          <summary class="read-button" aria-label="读取或新建文档">读取</summary>
           <div class="create-menu-popover">
             <button type="button" data-new-draft>
               <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 3.5h8l4 4v13H6Z"></path><path d="M14 3.5v4h4"></path></svg>
@@ -70,6 +70,18 @@ import { withBase } from '../../utils/paths';
   const note = document.querySelector<HTMLElement>('[data-draft-note]');
   const markdownEditor = form?.elements.namedItem('content_markdown');
   const richEditor = document.querySelector<HTMLElement>('[data-rich-editor]');
+  let savedRange: Range | null = null;
+  const rememberSelection = () => {
+    const selection = window.getSelection();
+    if (selection?.rangeCount && richEditor?.contains(selection.anchorNode)) savedRange = selection.getRangeAt(0).cloneRange();
+  };
+  const restoreSelection = () => {
+    richEditor?.focus();
+    if (!savedRange) return;
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(savedRange);
+  };
   const markdownFromHtml = (html: string) => {
     const root = document.createElement('div');
     root.innerHTML = html;
@@ -78,6 +90,7 @@ import { withBase } from '../../utils/paths';
       if (!(node instanceof HTMLElement)) return '';
       if (node.classList.contains('editor-atomic')) {
         const media = node.querySelector<HTMLElement>('img,video,pre,hr');
+        if (media instanceof HTMLImageElement) media.alt = node.querySelector('figcaption')?.textContent?.trim() || media.alt || '图片';
         return media ? convert(media) : '';
       }
       if (node.matches('[data-delete-atomic]')) return '';
@@ -215,27 +228,30 @@ import { withBase } from '../../utils/paths';
       return;
     }
     const url = supabase.storage.from('article-images').getPublicUrl(path).data.publicUrl;
-    richEditor.focus();
+    restoreSelection();
     const safeUrl = url.replace(/["<>]/g, '');
     const safeAlt = file.name.replace(/\.[^.]+$/, '').replace(/["<>]/g, '');
-    document.execCommand('insertHTML', false, `<div class="editor-atomic editor-atomic--media" contenteditable="false"><img src="${safeUrl}" alt="${safeAlt}"><button type="button" data-delete-atomic aria-label="删除图片">×</button></div><p><br></p>`);
+    document.execCommand('insertHTML', false, `<figure class="editor-atomic editor-atomic--media" contenteditable="false"><img src="${safeUrl}" alt="${safeAlt}"><button type="button" data-delete-atomic aria-label="删除图片">×</button><figcaption contenteditable="true" data-placeholder="添加图片描述（可选）"></figcaption></figure><p><br></p>`);
     syncMarkdown();
     input.value = '';
     setNote('图片已插入正文。');
   });
-  richEditor?.addEventListener('input', syncMarkdown);
+  richEditor?.addEventListener('input', () => { rememberSelection(); syncMarkdown(); });
+  richEditor?.addEventListener('keyup', rememberSelection);
+  richEditor?.addEventListener('pointerup', rememberSelection);
+  document.querySelector('.format-tools')?.addEventListener('pointerdown', (event) => event.preventDefault());
   richEditor?.addEventListener('click', (event) => {
     const button = (event.target as HTMLElement).closest<HTMLElement>('[data-delete-atomic]');
     if (!button) return;
     button.closest('.editor-atomic')?.remove();
     syncMarkdown();
   });
-  document.querySelectorAll<HTMLButtonElement>('[data-command]').forEach((button) => button.addEventListener('click', () => { richEditor?.focus(); document.execCommand(button.dataset.command ?? ''); syncMarkdown(); }));
-  document.querySelector('[data-action="divider"]')?.addEventListener('click', () => { richEditor?.focus(); document.execCommand('insertHTML', false, '<div class="editor-atomic" contenteditable="false"><hr><button type="button" data-delete-atomic aria-label="删除分割线">×</button></div><p><br></p>'); syncMarkdown(); });
-  document.querySelector('[data-action="code"]')?.addEventListener('click', () => { richEditor?.focus(); document.execCommand('insertHTML', false, '<div class="editor-atomic" contenteditable="false"><pre contenteditable="true">在这里输入代码</pre><button type="button" data-delete-atomic aria-label="删除代码块">×</button></div><p><br></p>'); syncMarkdown(); });
-  document.querySelector('[data-action="link"]')?.addEventListener('click', () => { const url = window.prompt('输入链接地址'); if (url) { richEditor?.focus(); document.execCommand('createLink', false, url); syncMarkdown(); } });
-  document.querySelector('[data-action="comment"]')?.addEventListener('click', () => { richEditor?.focus(); document.execCommand('foreColor', false, '#7a8799'); document.execCommand('italic'); syncMarkdown(); });
-  document.querySelector('[data-action="video"]')?.addEventListener('click', () => { const url = window.prompt('输入视频地址'); if (url && richEditor) { richEditor.focus(); document.execCommand('insertHTML', false, `<div class="editor-atomic editor-atomic--media" contenteditable="false"><video controls src="${url.replace(/["<>]/g, '')}"></video><button type="button" data-delete-atomic aria-label="删除视频">×</button></div><p><br></p>`); syncMarkdown(); } });
+  document.querySelectorAll<HTMLButtonElement>('[data-command]').forEach((button) => button.addEventListener('click', () => { restoreSelection(); document.execCommand(button.dataset.command ?? ''); rememberSelection(); syncMarkdown(); }));
+  document.querySelector('[data-action="divider"]')?.addEventListener('click', () => { restoreSelection(); document.execCommand('insertHTML', false, '<div class="editor-atomic editor-atomic--divider" contenteditable="false"><hr><button type="button" data-delete-atomic aria-label="删除分割线">×</button></div><p><br></p>'); syncMarkdown(); });
+  document.querySelector('[data-action="code"]')?.addEventListener('click', () => { restoreSelection(); document.execCommand('insertHTML', false, '<div class="editor-atomic editor-atomic--code" contenteditable="false"><span>代码</span><pre contenteditable="true">在这里输入代码</pre><button type="button" data-delete-atomic aria-label="删除代码块">×</button></div><p><br></p>'); syncMarkdown(); });
+  document.querySelector('[data-action="link"]')?.addEventListener('click', () => { const url = window.prompt('输入链接地址'); if (url) { restoreSelection(); document.execCommand('createLink', false, url); syncMarkdown(); } });
+  document.querySelector('[data-action="comment"]')?.addEventListener('click', () => { restoreSelection(); document.execCommand('foreColor', false, '#7a8799'); document.execCommand('italic'); syncMarkdown(); });
+  document.querySelector('[data-action="video"]')?.addEventListener('click', () => { const url = window.prompt('输入视频地址'); if (url && richEditor) { restoreSelection(); document.execCommand('insertHTML', false, `<figure class="editor-atomic editor-atomic--media" contenteditable="false"><video controls src="${url.replace(/["<>]/g, '')}"></video><button type="button" data-delete-atomic aria-label="删除视频">×</button><figcaption contenteditable="true" data-placeholder="添加视频描述（可选）"></figcaption></figure><p><br></p>`); syncMarkdown(); } });
   document.querySelectorAll<HTMLButtonElement>('[data-category-option]').forEach((button) => button.addEventListener('click', () => { const value = button.dataset.categoryOption ?? '未分类'; const input = form?.elements.namedItem('category'); if (input instanceof HTMLInputElement) input.value = value; const label = document.querySelector<HTMLElement>('[data-category-value]'); if (label) label.textContent = value; const select = document.querySelector<HTMLDetailsElement>('[data-category-select]'); if (select) select.open = false; }));
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -296,9 +312,8 @@ import { withBase } from '../../utils/paths';
   .create-menu { position: relative; width: fit-content; }
   .create-menu > summary { list-style: none; }
   .create-menu > summary::-webkit-details-marker { display: none; }
-  .icon-button { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border: 1px solid var(--color-accent); border-radius: 50%; background: var(--color-accent); color: #fff; cursor: pointer; font-size: 1.4rem; line-height: 1; transition: filter 160ms ease, transform 180ms ease; }
-  .icon-button:hover { filter: brightness(1.08); }
-  .create-menu[open] .icon-button { transform: rotate(45deg); }
+  .read-button { padding: 0.55rem 0.75rem; border-radius: 0.55rem; color: var(--color-text-muted); cursor: pointer; font-size: 0.76rem; font-weight: 650; transition: background 160ms ease, color 160ms ease; }
+  .read-button:hover, .create-menu[open] .read-button { background: var(--color-surface); color: var(--color-accent); }
   .create-menu-popover { position: absolute; z-index: 4; top: calc(100% + 0.45rem); right: 0; display: grid; width: 12rem; padding: 0.45rem; border: 1px solid var(--color-border); border-radius: 0.6rem; background: var(--color-page); box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 15%, transparent); }
   .create-menu-popover button, .create-menu-popover label { display: flex; width: 100%; align-items: center; gap: 0.55rem; padding: 0.65rem; border: 0; border-radius: 0.4rem; background: transparent; color: var(--color-text); cursor: pointer; font: inherit; font-size: 0.75rem; font-weight: 650; text-align: left; transition: background 150ms ease, color 150ms ease; }
   .create-menu-popover button:hover, .create-menu-popover label:hover { background: var(--color-surface); color: var(--color-accent); }
@@ -321,12 +336,18 @@ import { withBase } from '../../utils/paths';
   .rich-editor { min-height: 23rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: 0.75rem; font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.95rem; letter-spacing: 0.01em; line-height: 1.8; outline: 0; transition: border-color 160ms ease, box-shadow 160ms ease; }
   .rich-editor:focus { border-color: var(--color-accent); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); }
   .rich-editor:empty::before { color: var(--color-text-muted); content: attr(data-placeholder); }
-  .rich-editor :global(em), .rich-editor :global(i) { padding-right: 0.08em; }
-  .rich-editor :global(img), .rich-editor :global(video) { display: block; width: min(22rem, 68%); max-height: 16rem; object-fit: contain; border-radius: 0.75rem; }
+  .rich-editor :global(em), .rich-editor :global(i) { display: inline-block; margin-right: 0.18em; padding-right: 0.04em; }
+  .rich-editor :global(img), .rich-editor :global(video) { display: block; width: 100%; max-height: 28rem; object-fit: contain; border-radius: 0.75rem; }
   .rich-editor :global(pre) { overflow: auto; padding: 0.8rem; border-radius: 0.6rem; background: var(--color-surface); }
-  .rich-editor :global(.editor-atomic) { position: relative; margin: 0.85rem 0; padding: 0.55rem; border: 1px solid var(--color-border); border-radius: 0.8rem; }
-  .rich-editor :global(.editor-atomic--media) { width: fit-content; max-width: 72%; }
-  .rich-editor :global(.editor-atomic--media img), .rich-editor :global(.editor-atomic--media video) { width: min(22rem, 100%); margin: 0; }
+  .rich-editor :global(.editor-atomic) { position: relative; margin: 1rem 0; padding: 0.55rem; border: 1px solid var(--color-border); border-radius: 0.9rem; }
+  .rich-editor :global(.editor-atomic--media) { width: min(36rem, 100%); margin-inline: auto; border: 0; }
+  .rich-editor :global(.editor-atomic--media img), .rich-editor :global(.editor-atomic--media video) { width: 100%; margin: 0; }
+  .rich-editor :global(figcaption) { min-height: 1.7rem; padding: 0.55rem 0.5rem 0; color: var(--color-text-muted); font-size: 0.78rem; text-align: center; outline: 0; }
+  .rich-editor :global(figcaption:empty::before) { content: attr(data-placeholder); }
+  .rich-editor :global(.editor-atomic--code) { padding-top: 2rem; background: var(--color-surface); }
+  .rich-editor :global(.editor-atomic--code > span) { position: absolute; top: 0.45rem; left: 0.7rem; color: var(--color-text-muted); font-size: 0.68rem; }
+  .rich-editor :global(.editor-atomic--code pre) { margin: 0; padding: 0.5rem; outline: 0; }
+  .rich-editor :global(.editor-atomic--divider) { padding: 0.9rem 2.4rem 0.9rem 0.7rem; }
   .rich-editor :global([data-delete-atomic]) { position: absolute; top: 0.35rem; right: 0.35rem; display: grid; width: 1.65rem; height: 1.65rem; place-items: center; border: 0; border-radius: 50%; background: color-mix(in srgb, #000 58%, transparent); color: #fff; cursor: pointer; font: inherit; line-height: 1; }
   .format-tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; }
   .format-tools button, .toolbar-upload { display: flex; width: 100%; min-height: 2.35rem; align-items: center; gap: 0.4rem; padding: 0.42rem 0.5rem; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.72rem; font-style: normal; font-weight: 560; line-height: 1; transition: background 150ms ease, color 150ms ease, transform 150ms ease; }
