@@ -78,7 +78,7 @@ const visibleHeadings = headings.filter(
     </article>
 
     <aside class="page-outline" aria-label="本页跳转">
-      <p>本页跳转</p>
+      <p>文档目录</p>
       {
         visibleHeadings.length > 0 ? (
           <nav>
@@ -95,6 +95,25 @@ const visibleHeadings = headings.filter(
     </aside>
   </main>
 </BaseLayout>
+
+<script>
+  const outlineLinks = [...document.querySelectorAll<HTMLAnchorElement>('.page-outline a')];
+  const sections = outlineLinks
+    .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+    .filter((section): section is HTMLElement => Boolean(section));
+  const updateActiveOutline = () => {
+    if (!sections.length) return;
+    const marker = Math.min(window.innerHeight * 0.3, 180);
+    let active = sections[0];
+    for (const section of sections) {
+      if (section.getBoundingClientRect().top <= marker) active = section;
+      else break;
+    }
+    outlineLinks.forEach((link) => link.classList.toggle('is-active', link.hash === `#${active.id}`));
+  };
+  updateActiveOutline();
+  window.addEventListener('scroll', updateActiveOutline, { passive: true });
+</script>
 
 <style>
   .docs-shell {
@@ -160,6 +179,13 @@ const visibleHeadings = headings.filter(
   .page-outline a:hover {
     border-left-color: var(--color-accent);
     color: var(--color-text);
+  }
+
+  .page-outline a.is-active {
+    border-left-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+    color: var(--color-text);
+    font-weight: 680;
   }
 
   .page-outline a[data-depth='3'] {
