@@ -3,9 +3,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
 ---
 
-<BaseLayout title="我的草稿 | 文档" description="管理我的文档草稿。">
-  <main class="manage-page" data-page data-login={withBase('/login/')} data-articles={withBase('/articles/')} data-edit={withBase('/articles/drafts/')}>
-    <header><p>DOCUMENT WORKSPACE</p><h1>我的草稿</h1></header>
+<BaseLayout title="我的文档 | 文档" description="管理草稿和已发布文档。">
+  <main class="manage-page" data-page data-login={withBase('/login/')} data-articles={withBase('/articles/')} data-edit={withBase('/articles/drafts/')} data-read={withBase('/articles/read/')}>
+    <header><p>DOCUMENT WORKSPACE</p><h1>我的文档</h1></header>
     <div class="list is-loading" data-list aria-busy="true">
       {Array.from({ length: 3 }, () => <div class="skeleton" aria-hidden="true"><i></i><b></b><span></span></div>)}
     </div>
@@ -33,28 +33,30 @@ import { withBase } from '../../utils/paths';
     if (!supabase || !session || !list) return;
     const client = supabase;
     const editUrl = page?.dataset.edit ?? '/articles/drafts/';
-    const { data, error } = await client.from('articles').select('id,title,category,status,updated_at').eq('author_id', session.user.id).eq('status', 'draft').order('updated_at', { ascending: false });
+    const readUrl = page?.dataset.read ?? '/articles/read/';
+    const { data, error } = await client.from('articles').select('id,title,category,status,updated_at').eq('author_id', session.user.id).in('status', ['draft', 'published']).order('updated_at', { ascending: false });
     list.classList.remove('is-loading'); list.ariaBusy = 'false';
-    if (error) { list.innerHTML = '<p class="empty">草稿加载失败。</p>'; return; }
-    if (!data?.length) { list.innerHTML = '<p class="empty">还没有草稿。</p>'; return; }
+    if (error) { list.innerHTML = '<p class="empty">文档加载失败。</p>'; return; }
+    if (!data?.length) { list.innerHTML = '<p class="empty">还没有文档。</p>'; return; }
     list.replaceChildren(...data.map((draft) => {
       const card = document.createElement('article');
-      card.innerHTML = `<div class="card-content"><h2></h2><p>${draft.category}</p></div><div class="actions"><a>继续编辑</a><button class="publish" type="button">发布</button><button class="delete" type="button">删除</button></div>`;
-      card.querySelector('h2')!.textContent = draft.title || '未命名草稿';
-      card.querySelector('a')!.setAttribute('href', `${editUrl}?id=${encodeURIComponent(draft.id)}`);
-      card.querySelector<HTMLButtonElement>('.publish')!.addEventListener('click', async () => {
+      const published = draft.status === 'published';
+      card.innerHTML = `<div class="card-content"><h2></h2><p>${draft.category}</p></div><div class="actions"><a>${published ? '查看' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<button class="delete" type="button">删除</button></div>`;
+      card.querySelector('h2')!.textContent = draft.title || (published ? '未命名文档' : '未命名草稿');
+      card.querySelector('a')!.setAttribute('href', `${published ? readUrl : editUrl}?id=${encodeURIComponent(draft.id)}`);
+      card.querySelector<HTMLButtonElement>('.publish')?.addEventListener('click', async () => {
         const now = new Date().toISOString();
         const result = await client.from('articles').update({ status: 'published', published_at: now, updated_at: now }).eq('id', draft.id);
         if (result.error) return showToast(result.error.message, true);
         card.remove(); showToast('文档已发布。');
-        if (!list.children.length) list.innerHTML = '<p class="empty">还没有草稿。</p>';
+        if (!list.children.length) list.innerHTML = '<p class="empty">还没有文档。</p>';
       });
       card.querySelector<HTMLButtonElement>('.delete')!.addEventListener('click', async () => {
-        if (!window.confirm(`确定删除“${draft.title || '未命名草稿'}”吗？此操作无法撤销。`)) return;
+        if (!window.confirm(`确定删除“${draft.title || (published ? '未命名文档' : '未命名草稿')}”吗？此操作无法撤销。`)) return;
         const result = await client.from('articles').delete().eq('id', draft.id);
         if (result.error) return showToast(result.error.message, true);
-        card.remove(); showToast('草稿已删除。');
-        if (!list.children.length) list.innerHTML = '<p class="empty">还没有草稿。</p>';
+        card.remove(); showToast(published ? '文档已删除。' : '草稿已删除。');
+        if (!list.children.length) list.innerHTML = '<p class="empty">还没有文档。</p>';
       });
       return card;
     }));

@@ -11,13 +11,14 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
 ---
 
 <BaseLayout title="文档 | 人工智能学院科协" description="科协文档与学习资料。">
-  <main class="articles-page" data-articles-page data-read-url={withBase('/articles/read/')}>
+  <main class="articles-page" data-articles-page data-read-url={withBase('/articles/read/')} data-default-avatar={withBase('/images/brand/asaw-logo.png')}>
     <section class="article-list" aria-live="polite">
       {articles.map((article, index) => (
         <a class="article-card" href={withBase(`/articles/${slugFor(article.id)}/`)} data-article-card data-category={article.data.category} style={`--post-index: ${index}`}>
           <span>{article.data.category}</span><h2>{article.data.title}</h2>
           <p>{article.data.description}</p>
           <div class="article-dates">
+            <span class="contributor"><img src={withBase('/images/brand/asaw-logo.png')} alt="" />科协编辑部</span>
             <time datetime={(article.data.publishedAt ?? article.data.updatedAt).toISOString()}>发布时间：{(article.data.publishedAt ?? article.data.updatedAt).toLocaleDateString('zh-CN')}</time>
             {article.data.publishedAt && article.data.updatedAt.getTime() > article.data.publishedAt.getTime() && <time datetime={article.data.updatedAt.toISOString()}>更新时间：{article.data.updatedAt.toLocaleDateString('zh-CN')}</time>}
           </div>
@@ -70,7 +71,9 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
     button.addEventListener('click', () => filterByCategory(button)),
   );
   if (supabase) {
-    const { data: published } = await supabase.from('articles').select('id,title,summary,category,published_at,updated_at').eq('status', 'published').order('published_at', { ascending: false });
+    const feed = await supabase.rpc('get_published_article_feed');
+    const fallback = feed.error ? await supabase.from('articles').select('id,title,summary,category,published_at,updated_at,author_id').eq('status', 'published').order('published_at', { ascending: false }) : null;
+    const published = feed.error ? fallback?.data : feed.data;
     const list = document.querySelector<HTMLElement>('.article-list');
     const page = document.querySelector<HTMLElement>('[data-articles-page]');
     for (const article of published ?? []) {
@@ -87,11 +90,17 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
       summary.textContent = article.summary;
       const dates = document.createElement('div');
       dates.className = 'article-dates';
+      const contributor = document.createElement('span');
+      contributor.className = 'contributor';
+      const avatar = document.createElement('img');
+      avatar.src = String(article.author_avatar_url || page?.dataset.defaultAvatar || '');
+      avatar.alt = '';
+      contributor.append(avatar, document.createTextNode(String(article.author_name || '科协成员')));
       const publishedTime = document.createElement('time');
       const publishedDate = article.published_at ? new Date(article.published_at) : new Date();
       publishedTime.dateTime = publishedDate.toISOString();
       publishedTime.textContent = `发布时间：${publishedDate.toLocaleDateString('zh-CN')}`;
-      dates.append(publishedTime);
+      dates.append(contributor, publishedTime);
       if (article.updated_at && new Date(article.updated_at).getTime() > publishedDate.getTime() + 1000) {
         const updatedTime = document.createElement('time');
         const updatedDate = new Date(article.updated_at);
@@ -135,6 +144,8 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
   :global(.article-card h2) { margin: 0; font-size: clamp(1rem, 1.6vw, 1.22rem); font-weight: 660; transition: color 180ms ease; }
   :global(.article-card p) { display: -webkit-box; grid-column: 1; max-width: 31rem; margin: 0; overflow: hidden; color: color-mix(in srgb, var(--color-text) 72%, transparent); font-size: 0.9rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; }
   :global(.article-dates) { grid-column: 1; display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; color: var(--color-text-muted); font-size: 0.68rem; }
+  :global(.contributor) { display: inline-flex; align-items: center; gap: .32rem; }
+  :global(.contributor img) { width: 1.15rem; height: 1.15rem; border: 1px solid var(--color-border); border-radius: 50%; object-fit: cover; }
   :global(.article-card:hover) { border-color: color-mix(in srgb, var(--color-accent) 68%, var(--color-border)); box-shadow: .65rem .4rem 1.3rem color-mix(in srgb, #000 13%, transparent); transform: translateX(0.25rem); }
   :global(.article-card:hover h2) { color: var(--color-accent); }
   :global(.article-card:hover::after) { opacity: 1; transform: translate(0, -50%); }

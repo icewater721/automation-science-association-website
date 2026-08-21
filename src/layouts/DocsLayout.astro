@@ -110,7 +110,7 @@ const visibleHeadings = headings.filter(
       else break;
     }
     outlineLinks.forEach((link) => {
-      const isActive = link.hash === `#${active.id}`;
+      const isActive = decodeURIComponent(link.hash.slice(1)) === active.id;
       link.classList.toggle('is-active', isActive);
       if (isActive) link.setAttribute('aria-current', 'location');
       else link.removeAttribute('aria-current');
