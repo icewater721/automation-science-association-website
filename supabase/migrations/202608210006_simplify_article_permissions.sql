@@ -24,6 +24,8 @@ drop policy if exists "Authors can update their drafts" on public.articles;
 drop policy if exists "Authors can delete their unpublished articles" on public.articles;
 drop policy if exists "Authors can delete their drafts" on public.articles;
 drop policy if exists "Authors can read their articles" on public.articles;
+drop policy if exists "Admins can create articles" on public.articles;
+drop policy if exists "Admins can delete articles" on public.articles;
 
 create policy "Admins can create articles"
 on public.articles for insert to authenticated
@@ -31,12 +33,15 @@ with check ((select public.is_admin()) and (select auth.uid()) = author_id);
 
 create policy "Admins can delete articles"
 on public.articles for delete to authenticated
-using (select public.is_admin());
+using ((select public.is_admin()));
 
 drop policy if exists "Editors can upload article images" on storage.objects;
 drop policy if exists "Authenticated users can upload article images" on storage.objects;
 drop policy if exists "Editors can manage their article images" on storage.objects;
 drop policy if exists "Editors can delete their article images" on storage.objects;
+drop policy if exists "Admins can upload article images" on storage.objects;
+drop policy if exists "Admins can update article images" on storage.objects;
+drop policy if exists "Admins can delete article images" on storage.objects;
 create policy "Admins can upload article images"
 on storage.objects for insert to authenticated
 with check (
@@ -75,7 +80,7 @@ using ((select auth.uid()) = user_id);
 
 create policy "Admins can read admin requests"
 on public.admin_requests for select to authenticated
-using (select public.is_admin());
+using ((select public.is_admin()));
 
 create policy "Users can apply for admin"
 on public.admin_requests for insert to authenticated
