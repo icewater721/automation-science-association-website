@@ -10,8 +10,7 @@ const loginPath = withBase('/login/');
 const profilePath = withBase('/profile/');
 const draftsPath = withBase('/articles/drafts/');
 const myDraftsPath = withBase('/articles/mine/');
-const adminApplyPath = withBase('/admin/apply/');
-const adminRequestsPath = withBase('/admin/requests/');
+const adminPath = withBase('/admin/');
 const isHomePage = pathname === homePath;
 const isArticlesPage = pathname.startsWith(articlesPath);
 ---
@@ -95,11 +94,10 @@ const isArticlesPage = pathname.startsWith(articlesPath);
             </span>
           </div>
           <a href={profilePath} role="menuitem">个人主页</a>
-          <a href={adminApplyPath} data-admin-apply role="menuitem" hidden>申请管理员权限</a>
+          <a href={adminPath} role="menuitem">权限入口</a>
           <div class="editor-menu" data-editor-menu hidden>
             <a href={draftsPath} role="menuitem">草稿箱</a>
             <a href={myDraftsPath} role="menuitem">我的草稿</a>
-            <a href={adminRequestsPath} role="menuitem">权限申请</a>
           </div>
           <button type="button" data-menu-sign-out role="menuitem">退出登录</button>
         </div>
@@ -178,9 +176,6 @@ const isArticlesPage = pathname.startsWith(articlesPath);
     if (profile?.role === 'admin') {
       const editorMenu = document.querySelector<HTMLElement>('[data-editor-menu]');
       if (editorMenu) editorMenu.hidden = false;
-    } else {
-      const applyLink = document.querySelector<HTMLElement>('[data-admin-apply]');
-      if (applyLink) applyLink.hidden = false;
     }
     const menuAvatar =
       document.querySelector<HTMLImageElement>('[data-menu-avatar]');

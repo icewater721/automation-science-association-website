@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../utils/paths';
+---
+
+<BaseLayout title="权限入口 | 文档" description="进入权限申请或管理页面。">
+  <main
+    class="access-gate"
+    data-page
+    data-login={withBase('/login/')}
+    data-apply={withBase('/admin/apply/')}
+    data-requests={withBase('/admin/requests/')}
+  >
+    <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+  </main>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  const page = document.querySelector<HTMLElement>('[data-page]');
+  const session = (await supabase?.auth.getSession())?.data.session;
+  if (!session) window.location.replace(page?.dataset.login ?? '/');
+  if (session && supabase) {
+    const profile = await supabase.from('profiles').select('role').eq('user_id', session.user.id).single();
+    window.location.replace(profile.data?.role === 'admin' ? page?.dataset.requests ?? '/' : page?.dataset.apply ?? '/');
+  }
+</script>
+
+<style>
+  .access-gate { display: flex; gap: .35rem; margin: 2rem 0 0 clamp(2rem, 5vw, 4.5rem); }
+  .access-gate span { width: .42rem; height: .42rem; border-radius: 50%; background: var(--color-accent); animation: pulse 1s infinite ease-in-out; }
+  .access-gate span:nth-child(2) { animation-delay: .12s; }
+  .access-gate span:nth-child(3) { animation-delay: .24s; }
+  @keyframes pulse { 0%, 100% { opacity: .18; transform: translateY(0); } 50% { opacity: .8; transform: translateY(-.2rem); } }
+  @media (prefers-reduced-motion: reduce) { .access-gate span { animation: none; opacity: .45; } }
+</style>
