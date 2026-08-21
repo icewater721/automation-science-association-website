@@ -11,11 +11,12 @@ import { withBase } from '../../utils/paths';
       <form data-draft-form>
         <input type="hidden" name="id" />
         <label>标题 <input name="title" maxlength="60" required /></label>
-        <label>栏目
-          <span class="select-shell">
-            <select name="category"><option>基础工具</option><option>竞赛经验</option><option>项目记录</option><option>科协动态</option><option>其他</option></select>
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"></path></svg>
-          </span>
+        <label class="category-field">栏目
+          <input type="hidden" name="category" value="基础工具" />
+          <details class="category-select" data-category-select>
+            <summary><span data-category-value>基础工具</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"></path></svg></summary>
+            <div><button type="button" data-category-option="基础工具">基础工具</button><button type="button" data-category-option="竞赛经验">竞赛经验</button><button type="button" data-category-option="项目记录">项目记录</button><button type="button" data-category-option="科协动态">科协动态</button><button type="button" data-category-option="未分类">未分类</button></div>
+          </details>
         </label>
         <label>摘要 <textarea name="summary" maxlength="160" rows="3" required></textarea></label>
         <div class="editor-actions">
@@ -33,16 +34,19 @@ import { withBase } from '../../utils/paths';
               <input data-image-input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
             </label>
           </div>
-          <textarea class="markdown-editor" name="content_markdown" rows="24" required></textarea>
+          <textarea name="content_markdown" required hidden></textarea>
+          <div class="rich-editor" contenteditable="true" data-rich-editor role="textbox" aria-multiline="true" data-placeholder="开始写正文……"></div>
         </div>
         <p data-draft-note aria-live="polite"></p>
       </form>
       <aside>
         <p class="aside-title">编辑工具</p>
         <div class="format-tools" aria-label="正文格式工具">
-          <button type="button" data-format="heading">H</button><button type="button" data-format="bold"><strong>B</strong></button><button type="button" data-format="italic"><em>I</em></button>
-          <button type="button" data-format="list">≡</button><button type="button" data-format="quote">“</button><button type="button" data-format="divider">—</button>
-          <button type="button" data-format="code">&lt;/&gt;</button><button type="button" data-format="link">↗</button>
+          <button type="button" data-command="bold">加粗</button><button type="button" data-command="italic">斜体</button>
+          <button type="button" data-command="insertHorizontalRule">分割线</button><button type="button" data-block="pre">代码块</button>
+          <button type="button" data-action="comment">注释</button><button type="button" data-action="link">链接</button>
+          <label class="toolbar-upload">插入图片<input data-toolbar-image type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden /></label><button type="button" data-action="video">视频</button>
+          <button type="button" data-command="undo">上一步</button><button type="button" data-command="redo">下一步</button>
         </div>
         <details class="create-menu">
           <summary class="icon-button" aria-label="新建或导入文档" title="新建或导入文档">+</summary>
@@ -65,12 +69,41 @@ import { withBase } from '../../utils/paths';
 
 <script>
   import { supabase } from '../../lib/supabase';
+  import { renderMarkdown } from '../../utils/markdown';
   const page = document.querySelector<HTMLElement>('[data-draft-page]');
   const workspace = document.querySelector<HTMLElement>('[data-workspace]');
   const form = document.querySelector<HTMLFormElement>('[data-draft-form]');
   const draftList = document.querySelector<HTMLElement>('[data-draft-list]');
   const note = document.querySelector<HTMLElement>('[data-draft-note]');
   const markdownEditor = form?.elements.namedItem('content_markdown');
+  const richEditor = document.querySelector<HTMLElement>('[data-rich-editor]');
+  const markdownFromHtml = (html: string) => {
+    const root = document.createElement('div');
+    root.innerHTML = html;
+    const convert = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
+      if (!(node instanceof HTMLElement)) return '';
+      const content = [...node.childNodes].map(convert).join('');
+      const tag = node.tagName.toLowerCase();
+      if (tag === 'strong' || tag === 'b') return `**${content}**`;
+      if (tag === 'em' || tag === 'i') return `*${content}*`;
+      if (tag === 'a') return `[${content}](${node.getAttribute('href') ?? ''})`;
+      if (tag === 'img') return `\n![${node.getAttribute('alt') ?? '图片'}](${node.getAttribute('src') ?? ''})\n`;
+      if (tag === 'video') return `\n[视频](${node.getAttribute('src') ?? ''})\n`;
+      if (tag === 'pre') return `\n\`\`\`\n${node.textContent ?? ''}\n\`\`\`\n`;
+      if (tag === 'blockquote') return `\n> ${content}\n`;
+      if (tag === 'hr') return '\n---\n';
+      if (tag === 'li') return `- ${content}\n`;
+      if (/^h[1-3]$/.test(tag)) return `\n${'#'.repeat(Number(tag[1]))} ${content}\n`;
+      if (tag === 'br') return '\n';
+      if (tag === 'p' || tag === 'div') return `${content}\n\n`;
+      return content;
+    };
+    return [...root.childNodes].map(convert).join('').replace(/\n{3,}/g, '\n\n').trim();
+  };
+  const syncMarkdown = () => {
+    if (markdownEditor instanceof HTMLTextAreaElement && richEditor) markdownEditor.value = markdownFromHtml(richEditor.innerHTML);
+  };
   const closeCreateMenu = () => {
     const menu = document.querySelector<HTMLDetailsElement>('.create-menu');
     if (menu) menu.open = false;
@@ -99,6 +132,12 @@ import { withBase } from '../../utils/paths';
       const field = form.elements.namedItem(key);
       if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) field.value = String(value ?? '');
     }
+    if (richEditor) richEditor.innerHTML = renderMarkdown(String(draft.content_markdown ?? ''));
+    const normalizedCategory = String(draft.category || '未分类') === '其他' ? '未分类' : String(draft.category || '未分类');
+    const categoryInput = form.elements.namedItem('category');
+    if (categoryInput instanceof HTMLInputElement) categoryInput.value = normalizedCategory;
+    const categoryValue = document.querySelector<HTMLElement>('[data-category-value]');
+    if (categoryValue) categoryValue.textContent = normalizedCategory;
     const reviewing = draft.status === 'review';
     const saveButton = document.querySelector<HTMLElement>('[data-save-draft]');
     const submitButton = document.querySelector<HTMLElement>('[data-submit-review]');
@@ -141,6 +180,7 @@ import { withBase } from '../../utils/paths';
     form?.reset();
     const id = form?.elements.namedItem('id');
     if (id instanceof HTMLInputElement) id.value = '';
+    if (richEditor) richEditor.innerHTML = '';
     document.querySelectorAll<HTMLElement>('[data-save-draft],[data-submit-review]').forEach((button) => (button.hidden = false));
     document.querySelectorAll<HTMLElement>('[data-publish],[data-return]').forEach((button) => (button.hidden = true));
     closeCreateMenu();
@@ -153,6 +193,7 @@ import { withBase } from '../../utils/paths';
     const content = form.elements.namedItem('content_markdown');
     const title = form.elements.namedItem('title');
     if (content instanceof HTMLTextAreaElement) content.value = markdown;
+    if (richEditor) richEditor.innerHTML = renderMarkdown(markdown);
     const heading = markdown.match(/^#\s+(.+)$/m)?.[1];
     if (heading && title instanceof HTMLInputElement && !title.value) title.value = heading.slice(0, 60);
     input.value = '';
@@ -161,7 +202,7 @@ import { withBase } from '../../utils/paths';
   document.querySelector<HTMLInputElement>('[data-image-input]')?.addEventListener('change', async (event) => {
     const input = event.currentTarget as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file || !supabase || !session || !(markdownEditor instanceof HTMLTextAreaElement)) return;
+    if (!file || !supabase || !session || !richEditor) return;
     if (file.size > 8 * 1024 * 1024) {
       setNote('图片不能超过 8 MB。', true);
       input.value = '';
@@ -176,28 +217,25 @@ import { withBase } from '../../utils/paths';
       return;
     }
     const url = supabase.storage.from('article-images').getPublicUrl(path).data.publicUrl;
-    const start = markdownEditor.selectionStart;
-    const end = markdownEditor.selectionEnd;
-    const imageMarkdown = `\n![${file.name.replace(/\.[^.]+$/, '')}](${url})\n`;
-    markdownEditor.setRangeText(imageMarkdown, start, end, 'end');
-    markdownEditor.focus();
+    richEditor.focus();
+    document.execCommand('insertImage', false, url);
+    richEditor.querySelectorAll<HTMLImageElement>(`img[src="${CSS.escape(url)}"]`).forEach((image) => (image.alt = file.name.replace(/\.[^.]+$/, '')));
+    syncMarkdown();
     input.value = '';
     setNote('图片已插入正文。');
   });
-  const applyFormat = (format: string) => {
-    if (!(markdownEditor instanceof HTMLTextAreaElement)) return;
-    const start = markdownEditor.selectionStart;
-    const end = markdownEditor.selectionEnd;
-    const selected = markdownEditor.value.slice(start, end);
-    const formats: Record<string, [string, string]> = { heading: ['## ', ''], bold: ['**', '**'], italic: ['*', '*'], list: ['- ', ''], quote: ['> ', ''], divider: ['\n---\n', ''], code: ['`', '`'], link: ['[', '](https://)'] };
-    const [before, after] = formats[format] ?? ['', ''];
-    markdownEditor.setRangeText(`${before}${selected}${after}`, start, end, 'select');
-    markdownEditor.focus();
-  };
-  document.querySelectorAll<HTMLButtonElement>('[data-format]').forEach((button) => button.addEventListener('click', () => applyFormat(button.dataset.format ?? '')));
+  richEditor?.addEventListener('input', syncMarkdown);
+  document.querySelectorAll<HTMLButtonElement>('[data-command]').forEach((button) => button.addEventListener('click', () => { richEditor?.focus(); document.execCommand(button.dataset.command ?? ''); syncMarkdown(); }));
+  document.querySelector('[data-block]')?.addEventListener('click', () => { richEditor?.focus(); document.execCommand('formatBlock', false, 'pre'); syncMarkdown(); });
+  document.querySelector('[data-action="link"]')?.addEventListener('click', () => { const url = window.prompt('输入链接地址'); if (url) { richEditor?.focus(); document.execCommand('createLink', false, url); syncMarkdown(); } });
+  document.querySelector('[data-action="comment"]')?.addEventListener('click', () => { richEditor?.focus(); document.execCommand('foreColor', false, '#7a8799'); document.execCommand('italic'); syncMarkdown(); });
+  document.querySelector('[data-action="video"]')?.addEventListener('click', () => { const url = window.prompt('输入视频地址'); if (url && richEditor) { richEditor.focus(); document.execCommand('insertHTML', false, `<video controls src="${url.replace(/["<>]/g, '')}"></video><p><br></p>`); syncMarkdown(); } });
+  document.querySelector<HTMLInputElement>('[data-toolbar-image]')?.addEventListener('change', (event) => { const source = event.currentTarget as HTMLInputElement; const target = document.querySelector<HTMLInputElement>('[data-image-input]'); if (!source.files?.[0] || !target) return; const transfer = new DataTransfer(); transfer.items.add(source.files[0]); target.files = transfer.files; target.dispatchEvent(new Event('change')); source.value = ''; });
+  document.querySelectorAll<HTMLButtonElement>('[data-category-option]').forEach((button) => button.addEventListener('click', () => { const value = button.dataset.categoryOption ?? '未分类'; const input = form?.elements.namedItem('category'); if (input instanceof HTMLInputElement) input.value = value; const label = document.querySelector<HTMLElement>('[data-category-value]'); if (label) label.textContent = value; const select = document.querySelector<HTMLDetailsElement>('[data-category-select]'); if (select) select.open = false; }));
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!supabase || !session) return;
+    syncMarkdown();
     const values = Object.fromEntries(new FormData(form));
     const id = String(values.id || '');
     const payload = { title: String(values.title), category: String(values.category), summary: String(values.summary), content_markdown: String(values.content_markdown), status: 'draft', updated_at: new Date().toISOString() };
@@ -214,6 +252,7 @@ import { withBase } from '../../utils/paths';
     if (!(id instanceof HTMLInputElement) || !id.value) return setNote('请先保存草稿。', true);
     const updates: Record<string, string | null> = { status, updated_at: new Date().toISOString() };
     if (status === 'review') {
+      syncMarkdown();
       if (!form.reportValidity()) return;
       const values = Object.fromEntries(new FormData(form));
       updates.title = String(values.title);
@@ -241,7 +280,7 @@ import { withBase } from '../../utils/paths';
   header p { margin: 0; color: var(--color-accent); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.1em; }
   h1 { margin: 0.35rem 0 1.6rem; font-size: clamp(1.9rem, 4vw, 2.65rem); letter-spacing: -0.035em; }
   .workspace { display: grid; grid-template-columns: minmax(0, 48rem) 14rem; justify-content: center; gap: clamp(1.5rem, 4vw, 3rem); }
-  aside { position: sticky; top: 2rem; display: grid; align-content: start; gap: 1.1rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: 0.8rem; background: color-mix(in srgb, var(--color-surface) 78%, transparent); box-shadow: 0 0.7rem 2rem color-mix(in srgb, #000 7%, transparent); }
+  aside { position: sticky; top: 2rem; display: grid; align-content: start; gap: 1.1rem; padding: 0.35rem; }
   .aside-title { color: var(--color-accent); }
   aside section { display: grid; gap: 0.4rem; }
   aside p { margin: 0; color: var(--color-text); font-size: 0.72rem; font-weight: 780; letter-spacing: 0.07em; }
@@ -264,19 +303,27 @@ import { withBase } from '../../utils/paths';
   input, select, textarea { width: 100%; padding: 0.75rem 0.85rem; border: 1px solid var(--color-border); border-radius: 0.75rem; background: color-mix(in srgb, var(--color-surface) 55%, var(--color-page)); font: inherit; transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease; }
   input:hover, textarea:hover, select:hover { border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border)); }
   input:focus, textarea:focus, select:focus { border-color: var(--color-accent); background: var(--color-page); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); outline: 0; }
-  .select-shell { position: relative; display: block; }
-  .select-shell select { appearance: none; padding: 0.8rem 2.6rem 0.8rem 0.9rem; border: 0; border-radius: 0.8rem; background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface)); cursor: pointer; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 24%, var(--color-border)); transition: box-shadow 160ms ease, background 160ms ease; }
-  .select-shell select:hover, .select-shell select:focus { border-color: var(--color-accent); box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--color-accent) 10%, transparent); outline: 0; }
-  .select-shell svg { position: absolute; top: 50%; right: 0.85rem; width: 1rem; height: 1rem; fill: none; stroke: var(--color-text-muted); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; transform: translateY(-50%); pointer-events: none; }
+  .category-select { position: relative; width: clamp(7rem, 20%, 9rem); }
+  .category-select > summary { display: flex; align-items: center; justify-content: space-between; padding: 0.72rem 0.8rem; border: 1px solid var(--color-border); border-radius: 0.75rem; cursor: pointer; list-style: none; font-weight: 500; transition: border-color 160ms ease, box-shadow 160ms ease; }
+  .category-select > summary::-webkit-details-marker { display: none; }
+  .category-select > summary:hover, .category-select[open] > summary { border-color: var(--color-accent); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); }
+  .category-select svg { width: 0.9rem; fill: none; stroke: currentColor; stroke-width: 1.8; }
+  .category-select > div { position: absolute; z-index: 5; top: calc(100% + 0.4rem); left: 0; display: grid; width: 9rem; padding: 0.4rem; border: 1px solid var(--color-border); border-radius: 0.8rem; background: var(--color-page); box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 13%, transparent); }
+  .category-select button { padding: 0.58rem 0.65rem; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; }
+  .category-select button:hover { background: var(--color-surface); color: var(--color-accent); }
   .content-field { display: grid; gap: 0.4rem; }
   .content-field-heading { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; font-weight: 700; }
   .insert-image-button { display: flex; width: auto; align-items: center; gap: 0.35rem; padding: 0.38rem 0.55rem; border-radius: 0.4rem; color: var(--color-text-muted); cursor: pointer; font-size: 0.72rem; font-weight: 650; transition: background 150ms ease, color 150ms ease; }
   .insert-image-button:hover { background: var(--color-surface); color: var(--color-accent); }
   .insert-image-button svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
-  .markdown-editor { min-height: 23rem; font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.95rem; letter-spacing: 0.01em; line-height: 1.8; resize: vertical; }
-  .format-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; }
-  .format-tools button { display: grid; width: 100%; height: 2.5rem; place-items: center; padding: 0; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.82rem; transition: background 150ms ease, color 150ms ease, transform 150ms ease; }
-  .format-tools button:hover { background: var(--color-surface); color: var(--color-accent); transform: translateY(-0.08rem); }
+  .rich-editor { min-height: 23rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: 0.75rem; font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.95rem; letter-spacing: 0.01em; line-height: 1.8; outline: 0; transition: border-color 160ms ease, box-shadow 160ms ease; }
+  .rich-editor:focus { border-color: var(--color-accent); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); }
+  .rich-editor:empty::before { color: var(--color-text-muted); content: attr(data-placeholder); }
+  .rich-editor :global(img), .rich-editor :global(video) { display: block; max-width: 100%; margin: 1rem 0; border-radius: 0.75rem; }
+  .rich-editor :global(pre) { overflow: auto; padding: 0.8rem; border-radius: 0.6rem; background: var(--color-surface); }
+  .format-tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; }
+  .format-tools button, .toolbar-upload { display: grid; width: 100%; min-height: 2.35rem; place-items: center; padding: 0.35rem; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.74rem; font-weight: 600; transition: background 150ms ease, color 150ms ease, transform 150ms ease; }
+  .format-tools button:hover, .toolbar-upload:hover { background: var(--color-surface); color: var(--color-accent); transform: translateY(-0.08rem); }
   .editor-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 0.45rem; }
   .button { width: auto; padding: 0.62rem 0.9rem; border: 1px solid transparent; border-radius: 999px; cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 680; transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease; }
   .button:hover { transform: translateY(-0.1rem); }

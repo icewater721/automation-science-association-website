@@ -78,8 +78,7 @@ const visibleHeadings = headings.filter(
     </article>
 
     <aside class="page-outline" aria-label="本页跳转">
-      <p>文档目录</p>
-      <button class="back-to-top" type="button" data-back-to-top><span>↑</span> 回到顶部</button>
+      <div class="outline-heading"><p>文档目录</p><button class="back-to-top" type="button" data-back-to-top title="回到顶部" aria-label="回到顶部">↑</button></div>
       {
         visibleHeadings.length > 0 ? (
           <nav>
@@ -162,19 +161,21 @@ const visibleHeadings = headings.filter(
   }
 
   .navigation-title,
-  .page-outline > p {
+  .outline-heading > p {
     margin: 0 0 0.9rem;
     font-size: 0.78rem;
     font-weight: 750;
     letter-spacing: 0.08em;
   }
 
+  .outline-heading { display: flex; align-items: center; justify-content: space-between; }
+
   .page-outline nav {
     display: grid;
     gap: 0.2rem;
   }
 
-  .back-to-top { display: flex; width: 100%; align-items: center; gap: 0.45rem; margin: -0.25rem 0 0.65rem; padding: 0.45rem 0.7rem; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; }
+  .back-to-top { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; margin: 0 0 0.9rem; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.9rem; }
   .back-to-top:hover { background: var(--color-surface); color: var(--color-accent); }
 
   .page-outline a {
