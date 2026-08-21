@@ -8,11 +8,6 @@ import { withBase } from '../../utils/paths';
     <header><p>DOCUMENT WORKSPACE</p><h1>草稿箱</h1></header>
     <p class="access-note" data-access-note>正在确认编辑权限……</p>
     <div class="workspace" data-workspace hidden>
-      <aside>
-        <button type="button" data-new-draft>新建文档</button>
-        <p>我的草稿</p><div data-draft-list></div>
-        <div data-review-section hidden><p>待审核</p><div data-review-list></div></div>
-      </aside>
       <form data-draft-form>
         <input type="hidden" name="id" />
         <label>标题 <input name="title" maxlength="60" required /></label>
@@ -21,30 +16,38 @@ import { withBase } from '../../utils/paths';
         </label>
         <label>摘要 <textarea name="summary" maxlength="160" rows="3" required></textarea></label>
         <div class="editor-actions">
-          <label class="import-button">读取 Markdown<input data-md-input type="file" accept=".md,.markdown,text/markdown" hidden /></label>
-          <span><button type="submit" data-save-draft>保存草稿</button><button type="button" data-submit-review>提交审核</button><button type="button" data-publish hidden>发布</button><button type="button" data-return hidden>退回</button></span>
+          <button class="button button--quiet" type="submit" data-save-draft>保存草稿</button>
+          <button class="button button--primary" type="button" data-submit-review>提交审核</button>
+          <button class="button button--primary" type="button" data-publish hidden>发布</button>
+          <button class="button button--danger" type="button" data-return hidden>退回</button>
         </div>
-        <div class="editor-grid">
-          <label>正文 <textarea class="markdown-editor" name="content_markdown" rows="24" required></textarea></label>
-          <section class="markdown-preview" aria-label="Markdown 预览"><p>预览会显示在这里。</p></section>
-        </div>
+        <label>正文 <textarea class="markdown-editor" name="content_markdown" rows="24" required></textarea></label>
         <p data-draft-note aria-live="polite"></p>
       </form>
+      <aside>
+        <div class="draft-create-actions">
+          <button class="icon-button" type="button" data-new-draft aria-label="新建文档" title="新建文档">+</button>
+          <label class="import-button" title="读取 Markdown">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 14v5h14v-5"></path></svg>
+            <span>读取 Markdown</span>
+            <input data-md-input type="file" accept=".md,.markdown,text/markdown" hidden />
+          </label>
+        </div>
+        <section><p>我的草稿</p><div data-draft-list></div></section>
+        <section data-review-section hidden><p>待审核</p><div data-review-list></div></section>
+      </aside>
     </div>
   </main>
 </BaseLayout>
 
 <script>
   import { supabase } from '../../lib/supabase';
-  import { renderMarkdown } from '../../utils/markdown';
   const page = document.querySelector<HTMLElement>('[data-draft-page]');
   const workspace = document.querySelector<HTMLElement>('[data-workspace]');
   const accessNote = document.querySelector<HTMLElement>('[data-access-note]');
   const form = document.querySelector<HTMLFormElement>('[data-draft-form]');
   const draftList = document.querySelector<HTMLElement>('[data-draft-list]');
   const note = document.querySelector<HTMLElement>('[data-draft-note]');
-  const preview = document.querySelector<HTMLElement>('.markdown-preview');
-  const contentField = form?.elements.namedItem('content_markdown');
   const session = (await supabase?.auth.getSession())?.data.session;
   if (!session) window.location.replace(page?.dataset.loginUrl ?? '/');
 
@@ -70,10 +73,6 @@ import { withBase } from '../../utils/paths';
     note.textContent = message;
     note.dataset.error = String(error);
   };
-  const updatePreview = () => {
-    if (preview && contentField instanceof HTMLTextAreaElement)
-      preview.innerHTML = renderMarkdown(contentField.value);
-  };
   const fillForm = (draft: Record<string, unknown>) => {
     if (!form) return;
     for (const [key, value] of Object.entries(draft)) {
@@ -86,7 +85,6 @@ import { withBase } from '../../utils/paths';
     if (saveButton) saveButton.hidden = reviewing;
     if (submitButton) submitButton.hidden = reviewing;
     document.querySelectorAll<HTMLElement>('[data-publish],[data-return]').forEach((button) => (button.hidden = !reviewing || role !== 'admin'));
-    updatePreview();
   };
   const loadDrafts = async () => {
     if (!supabase || !session || !draftList) return;
@@ -120,7 +118,6 @@ import { withBase } from '../../utils/paths';
     if (id instanceof HTMLInputElement) id.value = '';
     document.querySelectorAll<HTMLElement>('[data-save-draft],[data-submit-review]').forEach((button) => (button.hidden = false));
     document.querySelectorAll<HTMLElement>('[data-publish],[data-return]').forEach((button) => (button.hidden = true));
-    updatePreview();
   });
   document.querySelector<HTMLInputElement>('[data-md-input]')?.addEventListener('change', async (event) => {
     const input = event.currentTarget as HTMLInputElement;
@@ -133,10 +130,7 @@ import { withBase } from '../../utils/paths';
     const heading = markdown.match(/^#\s+(.+)$/m)?.[1];
     if (heading && title instanceof HTMLInputElement && !title.value) title.value = heading.slice(0, 60);
     input.value = '';
-    updatePreview();
   });
-  if (contentField instanceof HTMLTextAreaElement)
-    contentField.addEventListener('input', updatePreview);
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!supabase || !session) return;
@@ -168,7 +162,6 @@ import { withBase } from '../../utils/paths';
     if (error) return setNote(error.message, true);
     setNote(status === 'review' ? '已提交审核。' : status === 'published' ? '文档已发布。' : '已退回草稿。');
     form.reset();
-    updatePreview();
     void loadDrafts();
     void loadReviews();
   };
@@ -178,26 +171,37 @@ import { withBase } from '../../utils/paths';
 </script>
 
 <style>
-  .draft-page { width: min(88rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 3rem 5rem; }
+  .draft-page { width: min(72rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 2.5rem 5rem; }
   header p { margin: 0; color: var(--color-accent); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.1em; }
-  h1 { margin: 0.4rem 0 2rem; font-size: clamp(2.5rem, 6vw, 4.5rem); }
-  .workspace { display: grid; grid-template-columns: 14rem minmax(0, 1fr); gap: 2rem; }
-  aside { display: grid; align-content: start; gap: 0.5rem; }
-  aside p { margin: 0.7rem 0 0; color: var(--color-text-muted); font-size: 0.72rem; }
-  aside button, [data-draft-list] button { width: 100%; padding: 0.7rem; border: 1px solid var(--color-border); background: transparent; cursor: pointer; text-align: left; }
-  [data-draft-list] { display: grid; gap: 0.4rem; }
+  h1 { margin: 0.35rem 0 1.6rem; font-size: clamp(1.9rem, 4vw, 2.65rem); letter-spacing: -0.035em; }
+  .workspace { display: grid; grid-template-columns: minmax(0, 48rem) 14rem; justify-content: center; gap: clamp(1.5rem, 4vw, 3rem); }
+  aside { position: sticky; top: 2rem; display: grid; align-content: start; gap: 1rem; }
+  aside section { display: grid; gap: 0.4rem; }
+  aside p { margin: 0; color: var(--color-text-muted); font-size: 0.7rem; font-weight: 720; letter-spacing: 0.06em; }
+  [data-draft-list], [data-review-list] { display: grid; gap: 0.25rem; }
+  [data-draft-list] button, [data-review-list] button { width: 100%; padding: 0.58rem 0.65rem; overflow: hidden; border: 0; border-radius: 0.45rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; text-overflow: ellipsis; white-space: nowrap; transition: background 160ms ease, color 160ms ease, transform 160ms ease; }
+  [data-draft-list] button:hover, [data-review-list] button:hover { background: var(--color-surface); color: var(--color-text); transform: translateX(0.15rem); }
+  .draft-create-actions { display: flex; align-items: center; gap: 0.45rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--color-border); }
+  .icon-button { display: grid; width: 2.35rem; height: 2.35rem; flex: none; place-items: center; border: 1px solid var(--color-border); border-radius: 50%; background: transparent; color: var(--color-text); cursor: pointer; font-size: 1.35rem; line-height: 1; transition: border-color 160ms ease, background 160ms ease, transform 160ms ease; }
+  .icon-button:hover { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 8%, transparent); transform: rotate(90deg); }
+  .import-button { display: flex; min-width: 0; align-items: center; gap: 0.4rem; padding: 0.58rem 0.65rem; border: 0; border-radius: 0.45rem; color: var(--color-text-muted); cursor: pointer; font-size: 0.72rem; font-weight: 650; transition: background 160ms ease, color 160ms ease; }
+  .import-button:hover { background: var(--color-surface); color: var(--color-text); }
+  .import-button svg { width: 1rem; height: 1rem; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+  .import-button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   form { display: grid; gap: 1rem; }
   label { display: grid; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; }
   input, select, textarea { width: 100%; padding: 0.7rem; border: 1px solid var(--color-border); border-radius: 0.4rem; background: var(--color-page); font: inherit; }
   .markdown-editor { font-family: ui-monospace, 'Cascadia Code', monospace; line-height: 1.65; resize: vertical; }
-  .editor-actions { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-  .editor-actions span { display: flex; gap: 0.45rem; }
-  .editor-actions button, .import-button { display: inline-block; width: auto; padding: 0.65rem 0.9rem; border: 1px solid var(--color-border); background: transparent; cursor: pointer; font: inherit; }
-  .editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
-  .markdown-preview { min-height: 38.5rem; padding: 1rem 1.2rem; border: 1px solid var(--color-border); border-radius: 0.4rem; overflow-wrap: anywhere; line-height: 1.8; }
-  .markdown-preview :global(h1), .markdown-preview :global(h2), .markdown-preview :global(h3) { margin: 1.5rem 0 0.7rem; }
-  .markdown-preview :global(pre) { overflow: auto; padding: 0.8rem; background: var(--color-surface); }
+  .editor-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 0.45rem; }
+  .button { width: auto; padding: 0.62rem 0.9rem; border: 1px solid transparent; border-radius: 999px; cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 680; transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease; }
+  .button:hover { transform: translateY(-0.1rem); }
+  .button--quiet { border-color: var(--color-border); background: transparent; }
+  .button--quiet:hover { border-color: var(--color-text-muted); }
+  .button--primary { background: var(--color-text); color: var(--color-page); }
+  .button--primary:hover { background: var(--color-accent); }
+  .button--danger { border-color: color-mix(in srgb, #c23b3b 35%, var(--color-border)); background: transparent; color: #c23b3b; }
+  .button--danger:hover { background: color-mix(in srgb, #c23b3b 9%, transparent); }
   [data-draft-note][data-error='true'] { color: #c23b3b; }
   [hidden] { display: none !important; }
-  @media (max-width: 60rem) { .draft-page { width: calc(100% - 2rem); } .workspace, .editor-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 60rem) { .draft-page { width: calc(100% - 2rem); } .workspace { grid-template-columns: 1fr; } aside { position: static; grid-row: 1; } }
 </style>
