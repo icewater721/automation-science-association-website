@@ -33,3 +33,25 @@ $$;
 
 revoke all on function public.get_published_article_feed() from public;
 grant execute on function public.get_published_article_feed() to anon, authenticated;
+
+create or replace function public.get_site_contributor()
+returns table (
+  display_name text,
+  avatar_url text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    coalesce(nullif(profile.display_name, ''), '科协成员'),
+    profile.avatar_url
+  from public.profiles profile
+  where profile.role = 'admin'
+  order by profile.created_at
+  limit 1;
+$$;
+
+revoke all on function public.get_site_contributor() from public;
+grant execute on function public.get_site_contributor() to anon, authenticated;

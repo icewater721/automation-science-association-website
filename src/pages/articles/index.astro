@@ -18,7 +18,7 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
           <span>{article.data.category}</span><h2>{article.data.title}</h2>
           <p>{article.data.description}</p>
           <div class="article-dates">
-            <span class="contributor"><img src={withBase('/images/brand/asaw-logo.png')} alt="" />科协编辑部</span>
+            <span class="contributor" data-historical-contributor><img src={withBase('/images/brand/asaw-logo.png')} alt="" /><b>科协成员</b></span>
             <time datetime={(article.data.publishedAt ?? article.data.updatedAt).toISOString()}>发布时间：{(article.data.publishedAt ?? article.data.updatedAt).toLocaleDateString('zh-CN')}</time>
             {article.data.publishedAt && article.data.updatedAt.getTime() > article.data.publishedAt.getTime() && <time datetime={article.data.updatedAt.toISOString()}>更新时间：{article.data.updatedAt.toLocaleDateString('zh-CN')}</time>}
           </div>
@@ -71,6 +71,16 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
     button.addEventListener('click', () => filterByCategory(button)),
   );
   if (supabase) {
+    const historical = await supabase.rpc('get_site_contributor');
+    const siteContributor = historical.data?.[0];
+    if (!historical.error && siteContributor) {
+      document.querySelectorAll<HTMLElement>('[data-historical-contributor]').forEach((element) => {
+        const image = element.querySelector<HTMLImageElement>('img');
+        const name = element.querySelector<HTMLElement>('b');
+        if (image && siteContributor.avatar_url) image.src = String(siteContributor.avatar_url);
+        if (name) name.textContent = String(siteContributor.display_name || '科协成员');
+      });
+    }
     const feed = await supabase.rpc('get_published_article_feed');
     const fallback = feed.error ? await supabase.from('articles').select('id,title,summary,category,published_at,updated_at,author_id').eq('status', 'published').order('published_at', { ascending: false }) : null;
     const published = feed.error ? fallback?.data : feed.data;
@@ -145,6 +155,7 @@ const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? 
   :global(.article-card p) { display: -webkit-box; grid-column: 1; max-width: 31rem; margin: 0; overflow: hidden; color: color-mix(in srgb, var(--color-text) 72%, transparent); font-size: 0.9rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; }
   :global(.article-dates) { grid-column: 1; display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; color: var(--color-text-muted); font-size: 0.68rem; }
   :global(.contributor) { display: inline-flex; align-items: center; gap: .32rem; }
+  :global(.contributor b) { font: inherit; font-weight: 500; }
   :global(.contributor img) { width: 1.15rem; height: 1.15rem; border: 1px solid var(--color-border); border-radius: 50%; object-fit: cover; }
   :global(.article-card:hover) { border-color: color-mix(in srgb, var(--color-accent) 68%, var(--color-border)); box-shadow: .65rem .4rem 1.3rem color-mix(in srgb, #000 13%, transparent); transform: translateX(0.25rem); }
   :global(.article-card:hover h2) { color: var(--color-accent); }
