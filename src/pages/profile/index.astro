@@ -10,6 +10,7 @@ import { withBase } from '../../utils/paths';
     data-loading="true"
     aria-busy="true"
     data-login-url={withBase('/login/')}
+    data-read-url={withBase('/articles/read/')}
   >
     <section class="identity-card">
       <div
@@ -71,10 +72,8 @@ import { withBase } from '../../utils/paths';
 
     <section class="profile-section">
       <header><p>PUBLICATIONS</p><h2>我发布的文档</h2></header>
-      <div class="empty-state">
-        <strong>还没有文档</strong><span
-          >获得编辑权限并发布文档后，它们会出现在这里。</span
-        >
+      <div class="publication-list" data-publications aria-busy="true">
+        <div class="publication-skeleton" aria-hidden="true"><i></i><b></b></div>
       </div>
     </section>
   </main>
@@ -92,6 +91,7 @@ import { withBase } from '../../utils/paths';
   const coverElement = document.querySelector<HTMLElement>('[data-cover]');
   const note = document.querySelector<HTMLElement>('[data-profile-note]');
   const roleElement = document.querySelector<HTMLElement>('[data-profile-role]');
+  const publications = document.querySelector<HTMLElement>('[data-publications]');
   const avatarInput = document.querySelector<HTMLInputElement>(
     '[data-avatar-input]',
   );
@@ -173,6 +173,35 @@ import { withBase } from '../../utils/paths';
   if (profileError && note) {
     note.textContent = '个人资料加载失败，请稍后重试。';
     note.dataset.error = 'true';
+  }
+  if (supabase && userId && publications) {
+    const { data: published, error: publicationError } = await supabase
+      .from('articles')
+      .select('id,title,summary,category,published_at')
+      .eq('author_id', userId)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+    publications.ariaBusy = 'false';
+    if (publicationError) {
+      publications.innerHTML = '<p class="publication-empty">暂时无法读取已发布文档。</p>';
+    } else if (!published?.length) {
+      publications.innerHTML = '<p class="publication-empty">还没有发布文档。</p>';
+    } else {
+      const readUrl = page?.dataset.readUrl ?? '/articles/read/';
+      publications.replaceChildren(...published.map((publication) => {
+        const link = document.createElement('a');
+        link.className = 'publication-card';
+        link.href = `${readUrl}?id=${encodeURIComponent(publication.id)}`;
+        const category = document.createElement('span'); category.textContent = publication.category;
+        const title = document.createElement('h3'); title.textContent = publication.title || '未命名文档';
+        const summary = document.createElement('p'); summary.textContent = publication.summary || '暂无摘要';
+        const time = document.createElement('time');
+        const date = publication.published_at ? new Date(publication.published_at) : new Date();
+        time.dateTime = date.toISOString(); time.textContent = `发布时间：${date.toLocaleDateString('zh-CN')}`;
+        link.append(category, title, summary, time);
+        return link;
+      }));
+    }
   }
   window.requestAnimationFrame(() => {
     if (!page) return;
@@ -566,18 +595,19 @@ import { withBase } from '../../utils/paths';
     margin: 0;
     font-size: 1.35rem;
   }
-  .empty-state {
+  .publication-list {
     display: grid;
-    gap: 0.45rem;
+    gap: 0.7rem;
     margin-top: 1.2rem;
-    padding: 1.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.7rem;
   }
-  .empty-state span {
-    color: var(--color-text-muted);
-    font-size: 0.88rem;
-  }
+  .publication-list :global(.publication-card) { display: grid; gap: .3rem; padding: 1rem 1.1rem; border: 1px solid var(--color-border); border-radius: 1rem; background: color-mix(in srgb, var(--color-surface) 65%, var(--color-page)); color: var(--color-text); text-decoration: none; transition: border-color 180ms ease, transform 180ms ease; }
+  .publication-list :global(.publication-card:hover) { border-color: var(--color-accent); transform: translateY(-.12rem); }
+  .publication-list :global(.publication-card > span) { width: fit-content; color: var(--color-accent); font-size: .66rem; font-weight: 720; }
+  .publication-list :global(h3) { margin: 0; font-size: 1.05rem; }
+  .publication-list :global(p), .publication-list :global(time), .publication-list :global(.publication-empty) { margin: 0; color: var(--color-text-muted); font-size: .78rem; }
+  .publication-skeleton { display: grid; gap: .55rem; padding: 1.2rem; border: 1px solid var(--color-border); border-radius: 1rem; }
+  .publication-skeleton > * { display: block; width: 52%; height: .7rem; border-radius: 999px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-text) 9%, transparent), transparent); background-size: 220% 100%; animation: publication-loading 1.3s infinite; } .publication-skeleton b { width: 72%; }
+  @keyframes publication-loading { to { background-position: -220% 0; } }
   .profile-note {
     min-height: 1.2em;
     margin: 0.65rem 0 0;
