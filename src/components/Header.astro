@@ -94,8 +94,8 @@ const isArticlesPage = pathname.startsWith(articlesPath);
           <a href={profilePath} role="menuitem">个人主页</a>
           <div class="editor-menu" data-editor-menu hidden>
             <a href={draftsPath} role="menuitem">草稿箱</a>
-            <section><p>我的草稿</p><div data-menu-drafts></div></section>
-            <section data-menu-review-section hidden><p>待审核</p><div data-menu-reviews></div></section>
+            <details open><summary>我的草稿</summary><div data-menu-drafts><span>暂无草稿</span></div></details>
+            <details data-menu-review-section hidden><summary>待审核</summary><div data-menu-reviews><span>暂无待审核文档</span></div></details>
           </div>
           <button type="button" data-menu-sign-out role="menuitem">退出登录</button>
         </div>
@@ -178,7 +178,7 @@ const isArticlesPage = pathname.startsWith(articlesPath);
       const draftsUrl = memberMenu?.dataset.draftsUrl ?? '';
       const { data: drafts } = await supabase!.from('articles').select('id,title').eq('author_id', session.user.id).in('status', ['draft', 'review']).order('updated_at', { ascending: false });
       const draftContainer = document.querySelector<HTMLElement>('[data-menu-drafts]');
-      draftContainer?.replaceChildren(...(drafts ?? []).map((draft) => {
+      if (draftContainer && drafts?.length) draftContainer.replaceChildren(...drafts.map((draft) => {
         const link = document.createElement('a');
         link.href = `${draftsUrl}?id=${encodeURIComponent(draft.id)}`;
         link.textContent = draft.title || '未命名草稿';
@@ -189,7 +189,7 @@ const isArticlesPage = pathname.startsWith(articlesPath);
         if (reviewSection) reviewSection.hidden = false;
         const { data: reviews } = await supabase!.from('articles').select('id,title').eq('status', 'review').order('updated_at', { ascending: false });
         const reviewContainer = document.querySelector<HTMLElement>('[data-menu-reviews]');
-        reviewContainer?.replaceChildren(...(reviews ?? []).map((draft) => {
+        if (reviewContainer && reviews?.length) reviewContainer.replaceChildren(...reviews.map((draft) => {
           const link = document.createElement('a');
           link.href = `${draftsUrl}?id=${encodeURIComponent(draft.id)}`;
           link.textContent = draft.title || '未命名文档';
@@ -511,12 +511,13 @@ const isArticlesPage = pathname.startsWith(articlesPath);
 
   .editor-menu { display: grid; padding-block: 0.25rem; }
   .editor-menu[hidden] { display: none; }
-  .editor-menu > a, .editor-menu section > p { display: block; margin: 0; padding: 0.46rem 0.55rem; color: var(--color-nav-text); font-size: 0.78rem; font-weight: 500; text-decoration: none; }
+  .editor-menu > a, .editor-menu details > summary { display: block; margin: 0; padding: 0.46rem 0.55rem; border-radius: 0.45rem; color: var(--color-nav-text); cursor: pointer; font-size: 0.78rem; font-weight: 500; list-style: none; text-decoration: none; }
+  .editor-menu details > summary::-webkit-details-marker { display: none; }
   .editor-menu > a { border-radius: 0.45rem; }
   .editor-menu > a:hover { background: color-mix(in srgb, var(--color-nav-text) 9%, transparent); }
-  .editor-menu section div { display: grid; padding: 0 0.35rem 0.3rem 0.75rem; }
-  .editor-menu section div a { overflow: hidden; padding: 0.26rem 0; color: color-mix(in srgb, var(--color-nav-text) 62%, transparent); font-size: 0.72rem; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
-  .editor-menu section div a:hover { color: var(--color-nav-text); }
+  .editor-menu details div { display: grid; padding: 0 0.35rem 0.2rem 0.75rem; }
+  .editor-menu details div a, .editor-menu details div > span { overflow: hidden; padding: 0.22rem 0; color: color-mix(in srgb, var(--color-nav-text) 62%, transparent); font-size: 0.72rem; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+  .editor-menu details div a:hover { color: var(--color-nav-text); }
 
   @media (max-width: 48rem) {
     .site-sidebar {

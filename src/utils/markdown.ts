@@ -44,6 +44,19 @@ export const renderMarkdown = (markdown: string) => {
       output.push(`${escapeHtml(line)}\n`);
       continue;
     }
+    if (/^\s*---+\s*$/.test(line)) {
+      flushParagraph();
+      closeList();
+      output.push('<hr>');
+      continue;
+    }
+    const quote = line.match(/^>\s+(.+)$/);
+    if (quote) {
+      flushParagraph();
+      closeList();
+      output.push(`<blockquote>${inline(quote[1] ?? '')}</blockquote>`);
+      continue;
+    }
     const heading = line.match(/^(#{1,3})\s+(.+)$/);
     if (heading) {
       flushParagraph();
