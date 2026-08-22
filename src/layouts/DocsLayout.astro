@@ -1,6 +1,7 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
+import { withBase } from '../utils/paths';
 
 interface Props {
   title: string;
@@ -50,6 +51,11 @@ const visibleHeadings = headings.filter(
       <header>
         <p class="eyebrow">基础工具</p>
         <h1>{title}</h1>
+        <div class="contributor" data-historical-contributor>
+          <img src={withBase('/images/brand/asaw-logo.png')} alt="" />
+          <span>贡献者</span>
+          <strong>科协成员</strong>
+        </div>
         <p class="description">{description}</p>
       </header>
       <div class="docs-content">
@@ -97,6 +103,20 @@ const visibleHeadings = headings.filter(
 </BaseLayout>
 
 <script>
+  import { supabase } from '../lib/supabase';
+
+  if (supabase) {
+    const contributorResult = await supabase.rpc('get_site_contributor');
+    const contributor = contributorResult.data?.[0];
+    const contributorElement = document.querySelector<HTMLElement>('[data-historical-contributor]');
+    if (!contributorResult.error && contributor && contributorElement) {
+      const image = contributorElement.querySelector<HTMLImageElement>('img');
+      const name = contributorElement.querySelector<HTMLElement>('strong');
+      if (image && contributor.avatar_url) image.src = String(contributor.avatar_url);
+      if (name) name.textContent = String(contributor.display_name || '科协成员');
+    }
+  }
+
   const outlineLinks = [...document.querySelectorAll<HTMLAnchorElement>('.page-outline a')];
   const sections = outlineLinks
     .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
@@ -104,10 +124,13 @@ const visibleHeadings = headings.filter(
   const updateActiveOutline = () => {
     if (!sections.length) return;
     const marker = Math.min(window.innerHeight * 0.3, 180);
-    let active = sections[0];
-    for (const section of sections) {
-      if (section.getBoundingClientRect().top <= marker) active = section;
-      else break;
+    const atPageBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+    let active = atPageBottom ? sections.at(-1)! : sections[0];
+    if (!atPageBottom) {
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= marker) active = section;
+        else break;
+      }
     }
     outlineLinks.forEach((link) => {
       const isActive = decodeURIComponent(link.hash.slice(1)) === active.id;
@@ -250,6 +273,26 @@ const visibleHeadings = headings.filter(
     font-size: clamp(2.2rem, 5vw, 3.8rem);
     letter-spacing: -0.045em;
   }
+
+  .contributor {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.9rem;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+
+  .contributor img {
+    width: 1.55rem;
+    height: 1.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .contributor span { color: var(--color-text-muted); }
+  .contributor strong { color: var(--color-text); font-weight: 600; }
 
   .description {
     max-width: 42rem;
