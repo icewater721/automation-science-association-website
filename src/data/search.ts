@@ -6,6 +6,8 @@ export interface SearchEntry {
   category: string;
   url: string;
   keywords: string[];
+  date?: string | null;
+  searchText?: string;
 }
 
 // Sprint 1 先索引当前已经存在的页面。后续新闻、通知和活动的数据模型

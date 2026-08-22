@@ -38,13 +38,13 @@ draft: false
 ## 自动生成内容
 
 - Astro 会自动为公开 Markdown 生成文章页面。
-- 静态搜索索引会读取公开 Content Collections，无需手工更新 `search.ts`。
+- 静态搜索索引会读取公开 Content Collections 的元数据与正文，无需手工更新 `search.ts`。
 - 文章右侧目录根据 Markdown 标题生成。
 - 不要直接修改 `.astro/` 或 `dist/`。
 
 ## 数据库文章
 
-管理员在网站编辑器中创建和发布。分类、权限与数据结构由 `supabase/migrations/` 管理。动态文章当前不会自动进入静态全站搜索。
+管理员在网站编辑器中创建和发布。分类、权限与数据结构由 `supabase/migrations/` 管理。已发布文章会在访客打开搜索时从 Supabase 载入，并与静态索引合并；草稿不会进入公开搜索。
 
 ## 提交前检查
 

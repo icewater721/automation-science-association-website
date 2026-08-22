@@ -13,38 +13,101 @@ const { placement = 'content' } = Astro.props;
   data-search-root
   data-placement={placement}
   data-search-index-url={withBase('/search-index.json')}
+  data-article-read-url={withBase('/articles/read/')}
 >
-  <form class="search-form" role="search" data-search-form>
-    <label class="visually-hidden" for="site-search-input">搜索全站内容</label>
-    <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
+  <button
+    class="search-trigger"
+    type="button"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    data-search-trigger
+  >
+    <svg aria-hidden="true" viewBox="0 0 24 24">
       <circle cx="11" cy="11" r="6.5"></circle>
       <path d="m16 16 4 4"></path>
     </svg>
-    <input
-      id="site-search-input"
-      type="search"
-      name="q"
-      placeholder="搜索全站"
-      autocomplete="off"
-      aria-controls="site-search-results"
-      aria-expanded="false"
-      data-search-input
-    />
-  </form>
+    <span>搜索全站</span>
+  </button>
 
-  <div class="search-panel" id="site-search-results" hidden data-search-panel>
-    <p class="search-status" aria-live="polite" data-search-status></p>
-    <ul class="search-results" data-search-results></ul>
+  <div class="search-overlay" hidden data-search-overlay>
+    <section
+      class="search-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-label="全站搜索"
+      data-search-dialog
+    >
+      <form class="search-form" role="search" data-search-form>
+        <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="m16 16 4 4"></path>
+        </svg>
+        <label class="visually-hidden" for="site-search-dialog-input"
+          >搜索全站内容</label
+        >
+        <input
+          id="site-search-dialog-input"
+          type="search"
+          name="q"
+          placeholder="键入开始搜索"
+          autocomplete="off"
+          aria-controls="site-search-results"
+          data-search-input
+        />
+        <button
+          class="search-close"
+          type="button"
+          aria-label="关闭搜索"
+          title="关闭搜索"
+          data-search-close
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24"
+            ><path d="m6 6 12 12M18 6 6 18"></path></svg
+          >
+        </button>
+      </form>
+
+      <div class="search-content">
+        <div class="search-summary">
+          <p class="search-status" aria-live="polite" data-search-status>
+            正在加载最新内容…
+          </p>
+          <span data-search-order>按时间从新到旧</span>
+        </div>
+        <ul class="search-results" id="site-search-results" data-search-results>
+        </ul>
+      </div>
+      <footer class="search-help" aria-hidden="true">
+        <span><kbd>↑</kbd><kbd>↓</kbd> 选择</span>
+        <span><kbd>Enter</kbd> 打开</span>
+        <span><kbd>Esc</kbd> 关闭</span>
+      </footer>
+    </section>
   </div>
 </div>
 
 <script>
+  import { supabase } from '../lib/supabase';
+
   interface SearchEntry {
     title: string;
     description: string;
     category: string;
     url: string;
     keywords: string[];
+    date?: string | null;
+    searchText?: string;
+    source?: 'static' | 'dynamic';
+  }
+
+  interface PublishedArticle {
+    id: string;
+    title: string;
+    summary: string;
+    category: string;
+    published_at: string | null;
+    updated_at: string | null;
+    content_markdown: string;
   }
 
   const setupSearch = () => {
@@ -52,81 +115,176 @@ const { placement = 'content' } = Astro.props;
     if (!root || root.dataset.ready === 'true') return;
     root.dataset.ready = 'true';
 
+    const trigger = root.querySelector<HTMLButtonElement>(
+      '[data-search-trigger]',
+    );
+    const overlay = root.querySelector<HTMLElement>('[data-search-overlay]');
+    const dialog = root.querySelector<HTMLElement>('[data-search-dialog]');
     const form = root.querySelector<HTMLFormElement>('[data-search-form]');
     const input = root.querySelector<HTMLInputElement>('[data-search-input]');
-    const panel = root.querySelector<HTMLElement>('[data-search-panel]');
+    const closeButton = root.querySelector<HTMLButtonElement>(
+      '[data-search-close]',
+    );
     const status = root.querySelector<HTMLElement>('[data-search-status]');
+    const orderLabel = root.querySelector<HTMLElement>('[data-search-order]');
     const results = root.querySelector<HTMLUListElement>(
       '[data-search-results]',
     );
-    if (!form || !input || !panel || !status || !results) return;
+    if (
+      !trigger ||
+      !overlay ||
+      !dialog ||
+      !form ||
+      !input ||
+      !closeButton ||
+      !status ||
+      !orderLabel ||
+      !results
+    )
+      return;
 
-    let index: SearchEntry[] | null = null;
+    let entries: SearchEntry[] | null = null;
     let timer: number | undefined;
+    let activeIndex = -1;
 
-    const loadIndex = async () => {
-      if (index) return index;
+    const dateValue = (entry: SearchEntry) => {
+      const value = entry.date ? Date.parse(entry.date) : 0;
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const loadStaticEntries = async () => {
       const response = await fetch(
         root.dataset.searchIndexUrl ?? '/search-index.json',
       );
-      if (!response.ok) throw new Error('无法加载搜索索引');
-      index = (await response.json()) as SearchEntry[];
-      return index;
+      if (!response.ok) throw new Error('无法加载静态搜索索引');
+      return ((await response.json()) as SearchEntry[]).map((entry) => ({
+        ...entry,
+        source: 'static' as const,
+      }));
     };
 
-    const closePanel = () => {
-      panel.hidden = true;
-      input.setAttribute('aria-expanded', 'false');
+    const loadDynamicEntries = async (): Promise<SearchEntry[]> => {
+      if (!supabase) return [];
+      const response = await supabase
+        .from('articles')
+        .select(
+          'id,title,summary,category,published_at,updated_at,content_markdown',
+        )
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+      if (response.error) throw response.error;
+      const articles = (response.data ?? []) as PublishedArticle[];
+      return articles.map((article) => ({
+        title: article.title,
+        description: article.summary,
+        category: article.category,
+        url: `${root.dataset.articleReadUrl ?? ''}?id=${encodeURIComponent(article.id)}`,
+        keywords: [],
+        date: article.published_at ?? article.updated_at,
+        searchText: article.content_markdown,
+        source: 'dynamic' as const,
+      }));
     };
 
-    const openPanel = () => {
-      panel.hidden = false;
-      input.setAttribute('aria-expanded', 'true');
+    const loadEntries = async () => {
+      if (entries) return entries;
+      const [staticResult, dynamicResult] = await Promise.allSettled([
+        loadStaticEntries(),
+        loadDynamicEntries(),
+      ]);
+      if (
+        staticResult.status === 'rejected' &&
+        dynamicResult.status === 'rejected'
+      ) {
+        throw new Error('全部搜索数据加载失败');
+      }
+      const combined = [
+        ...(staticResult.status === 'fulfilled' ? staticResult.value : []),
+        ...(dynamicResult.status === 'fulfilled' ? dynamicResult.value : []),
+      ];
+      entries = [
+        ...new Map(combined.map((entry) => [entry.url, entry])).values(),
+      ];
+      return entries;
     };
 
-    const renderResults = (entries: SearchEntry[], query: string) => {
+    const formatDate = (entry: SearchEntry) => {
+      if (!entry.date || !dateValue(entry)) return '时间未记录';
+      return new Date(entry.date).toLocaleDateString('zh-CN');
+    };
+
+    const updateActiveResult = (nextIndex: number) => {
+      const links = [...results.querySelectorAll<HTMLAnchorElement>('a')];
+      if (!links.length) return;
+      activeIndex = (nextIndex + links.length) % links.length;
+      links.forEach((link, index) =>
+        link.classList.toggle('is-active', index === activeIndex),
+      );
+      links[activeIndex]?.focus({ preventScroll: true });
+      links[activeIndex]?.scrollIntoView({ block: 'nearest' });
+    };
+
+    const renderResults = (matched: SearchEntry[], query: string) => {
       results.replaceChildren();
-      openPanel();
+      activeIndex = -1;
+      orderLabel.textContent = query
+        ? '按匹配度排序，同分时最新优先'
+        : '按时间从新到旧';
 
-      if (entries.length === 0) {
-        status.textContent = `没有找到与“${query}”相关的内容`;
+      if (!matched.length) {
+        status.textContent = query
+          ? `没有找到与“${query}”相关的内容`
+          : '当前没有可搜索的公开内容';
         return;
       }
 
-      status.textContent = `找到 ${entries.length} 条相关内容`;
-      for (const entry of entries) {
+      status.textContent = query
+        ? `找到 ${matched.length} 条相关内容`
+        : `最新公开内容 · ${matched.length} 条`;
+      for (const entry of matched) {
         const item = document.createElement('li');
         const link = document.createElement('a');
-        const category = document.createElement('span');
+        const heading = document.createElement('span');
         const title = document.createElement('strong');
+        const category = document.createElement('span');
         const description = document.createElement('span');
+        const meta = document.createElement('span');
+        const date = document.createElement('time');
 
         link.href = entry.url;
+        heading.className = 'result-heading';
         category.className = 'result-category';
         category.textContent = entry.category;
         title.textContent = entry.title;
         description.className = 'result-description';
         description.textContent = entry.description;
-        link.append(category, title, description);
+        meta.className = 'result-meta';
+        date.dateTime = entry.date ?? '';
+        date.textContent = formatDate(entry);
+        meta.append(category, date);
+        heading.append(title);
+        link.append(heading, description, meta);
         item.append(link);
         results.append(item);
       }
     };
 
     const search = async () => {
-      const query = input.value.trim().toLocaleLowerCase('zh-CN');
-      if (!query) {
-        closePanel();
-        return;
-      }
-
+      const rawQuery = input.value.trim();
+      const query = rawQuery.toLocaleLowerCase('zh-CN');
       status.textContent = '正在搜索…';
-      results.replaceChildren();
-      openPanel();
-
       try {
-        const entries = await loadIndex();
-        const matches = entries
+        const allEntries = await loadEntries();
+        if (!query) {
+          renderResults(
+            [...allEntries]
+              .sort((a, b) => dateValue(b) - dateValue(a))
+              .slice(0, 50),
+            '',
+          );
+          return;
+        }
+        const matched = allEntries
           .map((entry) => {
             const title = entry.title.toLocaleLowerCase('zh-CN');
             const category = entry.category.toLocaleLowerCase('zh-CN');
@@ -134,41 +292,83 @@ const { placement = 'content' } = Astro.props;
             const keywords = entry.keywords
               .join(' ')
               .toLocaleLowerCase('zh-CN');
+            const searchText = (entry.searchText ?? '').toLocaleLowerCase(
+              'zh-CN',
+            );
             const score =
               (title.includes(query) ? 4 : 0) +
               (category.includes(query) ? 2 : 0) +
               (description.includes(query) ? 1 : 0) +
-              (keywords.includes(query) ? 1 : 0);
+              (keywords.includes(query) ? 1 : 0) +
+              (searchText.includes(query) ? 1 : 0);
             return { entry, score };
           })
           .filter(({ score }) => score > 0)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 6)
+          .sort(
+            (a, b) =>
+              b.score - a.score || dateValue(b.entry) - dateValue(a.entry),
+          )
+          .slice(0, 50)
           .map(({ entry }) => entry);
-
-        renderResults(matches, input.value.trim());
+        renderResults(matched, rawQuery);
       } catch {
         results.replaceChildren();
         status.textContent = '搜索暂时不可用，请稍后重试。';
       }
     };
 
+    const openSearch = () => {
+      overlay.hidden = false;
+      document.body.classList.add('search-is-open');
+      trigger.ariaExpanded = 'true';
+      window.setTimeout(() => input.focus(), 0);
+      void search();
+    };
+
+    const closeSearch = () => {
+      overlay.hidden = true;
+      document.body.classList.remove('search-is-open');
+      trigger.ariaExpanded = 'false';
+      activeIndex = -1;
+      trigger.focus();
+    };
+
+    trigger.addEventListener('click', openSearch);
+    closeButton.addEventListener('click', closeSearch);
+    overlay.addEventListener('pointerdown', (event) => {
+      if (event.target === overlay) closeSearch();
+    });
     input.addEventListener('input', () => {
       window.clearTimeout(timer);
-      timer = window.setTimeout(search, 160);
+      timer = window.setTimeout(search, 140);
     });
     input.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        closePanel();
-        input.blur();
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        updateActiveResult(activeIndex + 1);
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        updateActiveResult(activeIndex - 1);
+      } else if (event.key === 'Escape') {
+        closeSearch();
+      }
+    });
+    results.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        updateActiveResult(activeIndex + (event.key === 'ArrowDown' ? 1 : -1));
+      } else if (event.key === 'Escape') {
+        closeSearch();
       }
     });
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      search();
+      const active = results.querySelector<HTMLAnchorElement>('a.is-active');
+      if (active) active.click();
+      else void search();
     });
-    document.addEventListener('pointerdown', (event) => {
-      if (!root.contains(event.target as Node)) closePanel();
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !overlay.hidden) closeSearch();
     });
   };
 
@@ -176,92 +376,160 @@ const { placement = 'content' } = Astro.props;
   document.addEventListener('astro:page-load', setupSearch);
 </script>
 
-<style>
+<style is:global>
   .site-search {
-    position: relative;
-    width: min(30rem, 100%);
+    width: 100%;
+  }
+
+  .search-trigger {
+    display: flex;
+    width: 100%;
+    height: 2.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--color-nav-text) 28%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-nav-text) 8%, transparent);
+    color: color-mix(in srgb, var(--color-nav-text) 72%, transparent);
+    cursor: text;
+    font: inherit;
+    text-align: left;
+    transition:
+      border-color 150ms ease,
+      background 150ms ease,
+      color 150ms ease;
+  }
+
+  .search-trigger:hover,
+  .search-trigger:focus-visible {
+    border-color: var(--color-accent);
+    color: var(--color-nav-text);
+  }
+
+  .search-trigger svg,
+  .search-icon {
+    width: 1.05rem;
+    height: 1.05rem;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 1.8;
+  }
+
+  .search-overlay {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: start center;
+    padding: clamp(4rem, 14vh, 8rem) 1rem 2rem;
+    background: rgb(15 18 22 / 34%);
+    backdrop-filter: blur(8px);
+  }
+
+  .search-overlay[hidden] {
+    display: none;
+  }
+
+  .search-dialog {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: min(58rem, calc(100vw - 2rem));
+    max-height: min(44rem, calc(100vh - 7rem));
+    overflow: hidden;
+    border: 1px solid
+      color-mix(in srgb, var(--color-accent) 66%, var(--color-border));
+    border-radius: 1rem;
+    background: var(--color-page);
+    color: var(--color-text);
+    box-shadow:
+      0 1.5rem 5rem rgb(0 0 0 / 28%),
+      0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent);
   }
 
   .search-form {
     position: relative;
     display: flex;
     align-items: center;
+    border-bottom: 1px solid var(--color-border);
   }
 
   .search-icon {
     position: absolute;
-    left: 0.8rem;
-    width: 1rem;
-    height: 1rem;
+    left: 1.35rem;
+  }
+
+  .site-search input {
+    width: 100%;
+    height: 4.2rem;
+    padding: 0 4.2rem 0 3.3rem;
+    border: 0;
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    font-size: 1.05rem;
+    outline: none;
+  }
+
+  .site-search input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .search-close {
+    position: absolute;
+    right: 1rem;
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+  }
+
+  .search-close:hover {
+    color: var(--color-accent);
+  }
+  .search-close svg {
+    width: 1.1rem;
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
-    stroke-width: 1.8;
-    pointer-events: none;
+    stroke-width: 2;
   }
 
-  input {
-    width: 100%;
-    height: 2.5rem;
-    padding: 0 0.85rem 0 2.35rem;
-    border: 1px solid color-mix(in srgb, var(--color-nav-text) 28%, transparent);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--color-nav-text) 8%, transparent);
-    color: var(--color-nav-text);
-    font: inherit;
+  .search-content {
+    min-height: 12rem;
+    overflow: auto;
+    padding: 0.5rem 0.7rem 0.9rem;
   }
 
-  input::placeholder {
-    color: color-mix(in srgb, var(--color-nav-text) 66%, transparent);
-  }
-
-  input:focus {
-    border-color: var(--color-accent);
-    outline: none;
-    box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--color-accent) 36%, transparent);
-  }
-
-  .search-panel {
-    position: absolute;
-    z-index: 20;
-    top: calc(100% + 0.7rem);
-    right: auto;
-    bottom: auto;
-    left: 0;
-    width: min(26rem, calc(100vw - 2rem));
-    padding: 0.65rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.85rem;
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 18%);
-  }
-
-  .site-search[data-placement='sidebar'] {
-    width: 100%;
-  }
-
-  .site-search[data-placement='sidebar'] .search-panel {
+  .search-summary {
+    position: sticky;
+    z-index: 1;
     top: 0;
-    bottom: auto;
-    left: calc(100% + 1.1rem);
-  }
-
-  .search-panel[hidden] {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 0.7rem;
+    background: color-mix(in srgb, var(--color-page) 94%, transparent);
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+    backdrop-filter: blur(10px);
   }
 
   .search-status {
     margin: 0;
-    padding: 0.5rem 0.6rem;
-    color: var(--color-text-muted);
-    font-size: 0.82rem;
   }
 
   .search-results {
     display: grid;
-    gap: 0.25rem;
+    gap: 0.2rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -269,29 +537,68 @@ const { placement = 'content' } = Astro.props;
 
   .search-results a {
     display: grid;
-    gap: 0.2rem;
-    padding: 0.7rem;
-    border-radius: 0.6rem;
+    gap: 0.42rem;
+    padding: 0.85rem 0.9rem;
+    border-radius: 0.7rem;
+    color: var(--color-text);
     text-decoration: none;
   }
 
   .search-results a:hover,
-  .search-results a:focus-visible {
+  .search-results a:focus-visible,
+  .search-results a.is-active {
     background: color-mix(
       in srgb,
-      var(--color-accent) 10%,
+      var(--color-accent) 9%,
       var(--color-surface)
     );
+    outline: none;
   }
 
-  .result-category {
-    color: var(--color-accent);
-    font-size: 0.75rem;
+  .result-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
   }
-
+  .result-heading strong {
+    font-size: 0.98rem;
+  }
   .result-description {
     color: var(--color-text-muted);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+  .result-meta {
+    display: flex;
+    gap: 0.65rem;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+  }
+  .result-category {
+    color: var(--color-accent);
+  }
+
+  .search-help {
+    display: flex;
+    justify-content: center;
+    gap: 1.4rem;
+    padding: 0.7rem 1rem;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.68rem;
+  }
+
+  .search-help span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+  }
+  .site-search kbd {
+    padding: 0.12rem 0.28rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    background: var(--color-surface);
+    font: inherit;
   }
 
   .visually-hidden {
@@ -305,9 +612,28 @@ const { placement = 'content' } = Astro.props;
     border: 0;
   }
 
-  @media (max-width: 36rem) {
-    .site-search {
+  body.search-is-open {
+    overflow: hidden;
+  }
+
+  @media (max-width: 42rem) {
+    .search-overlay {
+      padding: 0;
+    }
+    .search-dialog {
       width: 100%;
+      max-height: 100%;
+      min-height: 100%;
+      border: 0;
+      border-radius: 0;
+    }
+    .search-summary {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .search-help {
+      display: none;
     }
   }
 </style>
