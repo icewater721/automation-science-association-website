@@ -72,30 +72,37 @@ input {
   top: 0.55rem;
   right: 0.55rem;
   z-index: 1;
-  min-width: 3.4rem;
-  padding: 0.36rem 0.58rem;
-  border: 1px solid color-mix(in srgb, var(--color-text) 20%, var(--color-border));
-  border-radius: 0.45rem;
-  background: color-mix(in srgb, var(--color-page) 88%, transparent);
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  line-height: 1.2;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+  transition: color 150ms ease, transform 150ms ease;
+}
+
+.code-copy-button svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .code-copy-button:hover {
-  border-color: var(--color-accent);
   color: var(--color-accent);
+  transform: translateY(-0.08rem);
 }
 
 .code-copy-button[data-state='success'] {
-  border-color: color-mix(in srgb, #22a06b 55%, var(--color-border));
   color: #22a06b;
 }
 
 .code-copy-button[data-state='error'] {
-  border-color: color-mix(in srgb, #d64b4b 55%, var(--color-border));
   color: #d64b4b;
 }
