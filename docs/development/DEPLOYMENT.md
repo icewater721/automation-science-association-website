@@ -41,7 +41,7 @@ Sprint 4 结束时最新迁移为：
 202608220002_article_categories.sql
 ```
 
-其线上执行状态仍需 Product Owner 确认。
+Product Owner 已于 2026-08-22 确认该迁移已在线上 Supabase 项目执行。
 
 ## 发布前检查
 
