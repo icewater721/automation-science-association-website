@@ -99,10 +99,12 @@ import { withBase } from '../../utils/paths';
   article header > p:first-child { margin: 0 0 0.65rem; color: var(--color-accent); font-size: 0.75rem; font-weight: 750; letter-spacing: 0.08em; }
   h1 { margin: 0; font-size: clamp(2.3rem, 5vw, 4rem); letter-spacing: -0.045em; }
   [data-summary] { max-width: 48rem; color: var(--color-text-muted); line-height: 1.75; }
-  .content { padding-top: 1.5rem; font-size: 1rem; line-height: 1.85; }
+  .content { padding-top: 1.5rem; font-family: var(--font-body); font-size: 1rem; line-height: 1.85; }
   .content :global(h1), .content :global(h2), .content :global(h3) { margin: 2.4rem 0 0.8rem; }
   .content :global(a) { color: var(--color-accent); }
-  .content :global(pre) { overflow: auto; padding: 1rem; border: 1px solid color-mix(in srgb, var(--color-text) 24%, var(--color-border)); border-radius: 0.8rem; background: color-mix(in srgb, var(--color-text) 9%, var(--color-page)); color: var(--color-text); font-family: 'Maple Mono', 'Maple Mono NF', 'Maple Mono CN', 'Cascadia Code', ui-monospace, monospace; }
+  .content :global(code) { font-family: inherit; }
+  .content :global(pre) { overflow: auto; padding: 1rem; border: 1px solid color-mix(in srgb, var(--color-text) 24%, var(--color-border)); border-radius: 0.8rem; background: color-mix(in srgb, var(--color-text) 9%, var(--color-page)); color: var(--color-text); font-family: var(--font-code); }
+  .content :global(pre code) { font-family: inherit; }
   .content :global(h1), .content :global(h2), .content :global(h3) { scroll-margin-top: 2rem; }
   .page-outline { position: sticky; top: 2rem; grid-column: 2; align-self: start; }
   .outline-heading { display: flex; align-items: center; justify-content: space-between; }
