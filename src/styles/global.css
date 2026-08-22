@@ -37,7 +37,6 @@ body {
   background: var(--color-page);
   color: var(--color-text);
   font-family: var(--font-body);
-
 }
 
 @media (max-width: 48rem) {
@@ -60,4 +59,43 @@ input {
 :focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: 3px;
+}
+
+.docs-content pre.has-code-copy,
+.content pre.has-code-copy {
+  position: relative;
+  padding-top: 2.8rem;
+}
+
+.code-copy-button {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 1;
+  min-width: 3.4rem;
+  padding: 0.36rem 0.58rem;
+  border: 1px solid color-mix(in srgb, var(--color-text) 20%, var(--color-border));
+  border-radius: 0.45rem;
+  background: color-mix(in srgb, var(--color-page) 88%, transparent);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  line-height: 1.2;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.code-copy-button:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.code-copy-button[data-state='success'] {
+  border-color: color-mix(in srgb, #22a06b 55%, var(--color-border));
+  color: #22a06b;
+}
+
+.code-copy-button[data-state='error'] {
+  border-color: color-mix(in srgb, #d64b4b 55%, var(--color-border));
+  color: #d64b4b;
 }

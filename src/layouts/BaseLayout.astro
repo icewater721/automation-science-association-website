@@ -36,5 +36,48 @@ const { title, description } = Astro.props;
   <body>
     <Header />
     <slot />
+    <script>
+      const decorateCodeBlock = (pre: HTMLPreElement) => {
+        if (pre.dataset.copyReady === 'true') return;
+        pre.dataset.copyReady = 'true';
+        pre.classList.add('has-code-copy');
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'code-copy-button';
+        button.textContent = '复制';
+        button.setAttribute('aria-label', '复制代码');
+        button.addEventListener('click', async () => {
+          const code = pre.querySelector('code')?.textContent ?? '';
+          try {
+            await navigator.clipboard.writeText(code);
+            button.textContent = '已复制';
+            button.dataset.state = 'success';
+          } catch {
+            button.textContent = '复制失败';
+            button.dataset.state = 'error';
+          }
+          window.setTimeout(() => {
+            button.textContent = '复制';
+            delete button.dataset.state;
+          }, 1600);
+        });
+        pre.append(button);
+      };
+
+      const decorateArticleCodeBlocks = (root: ParentNode) => {
+        if (root instanceof HTMLPreElement && root.matches('.docs-content pre, .content pre')) decorateCodeBlock(root);
+        root.querySelectorAll<HTMLPreElement>('.docs-content pre, .content pre').forEach(decorateCodeBlock);
+      };
+
+      decorateArticleCodeBlocks(document);
+      new MutationObserver((records) => {
+        for (const record of records) {
+          for (const node of record.addedNodes) {
+            if (node instanceof Element) decorateArticleCodeBlocks(node);
+          }
+        }
+      }).observe(document.body, { childList: true, subtree: true });
+    </script>
   </body>
 </html>
