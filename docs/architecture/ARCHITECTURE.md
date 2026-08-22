@@ -1,95 +1,82 @@
-# MVP 系统架构
+# 当前系统架构
 
-## 架构原则
+## 架构结论
 
-- 静态优先：能在构建时完成的工作不放到浏览器或服务器运行。
-- 内容与展示分离：开发者修改内容文件，组件只负责展示。
-- 渐进增强：没有客户端 JavaScript时，核心内容仍然可阅读。
-- 最小依赖：只为已确认的需求增加技术和包。
+ASAW 采用“静态前端 + 托管后端服务”的混合架构。
+
+- Astro 构建并输出静态页面。
+- GitHub Pages 托管站点，不运行项目自有服务器。
+- Supabase 提供身份认证、Postgres 数据库和对象存储。
+- 仓库 Markdown 与 Supabase 文章共同构成内容来源。
 
 ## 构建与访问流程
 
 ```mermaid
 flowchart LR
-    A[开发者更新 Markdown 与配置] --> B[Astro Content Collections 校验]
-    B --> C[Astro 构建]
-    C --> D[生成 dist 静态文件]
-    D --> E[静态服务器或 CDN]
-    E --> F[学生浏览器]
-    F --> G[HTML 与 CSS 直接展示]
-    F --> H[少量脚本处理主题和移动导航]
+    A[Markdown / Astro 源码] --> B[Astro Check 与构建]
+    B --> C[GitHub Pages 静态站点]
+    C --> D[访客浏览器]
+    D --> E[静态页面与搜索索引]
+    D --> F[Supabase Auth]
+    D --> G[Supabase Postgres]
+    D --> H[Supabase Storage]
 ```
 
 ## 运行时边界
 
 ```text
 构建阶段
-├── 读取内容
-├── 校验内容字段
-├── 渲染 Astro 组件
-└── 输出静态文件
+├── 校验 Content Collections
+├── 生成内置文档路由
+├── 生成静态搜索索引
+└── 输出 dist
 
 浏览器阶段
-├── 展示静态页面
-├── 切换并保存主题
-└── 控制移动端导航
+├── 页面、主题、搜索和复制交互
+├── 邮箱 OTP 登录与会话
+├── 读取/修改个人资料
+├── 读取公开文章
+└── 管理员草稿、发布、审核和图片上传
 
-不存在
-├── 应用后端
-├── 数据库
-├── 登录会话
-└── 内容发布 API
+托管服务阶段（Supabase）
+├── Auth 身份认证
+├── Postgres 数据与约束
+├── RLS 行级权限
+├── Security Definer 函数
+└── Storage 对象权限
 ```
 
-## 建议目录结构
+## 安全边界
+
+- 前端只使用 Supabase URL 与 publishable key；它们是公开客户端配置。
+- secret/service-role key、SMTP 密钥和用户验证码不得写入前端或仓库。
+- 隐藏按钮不是权限控制；所有写操作必须由 RLS、约束或受控函数再次验证。
+- 数据库变更记录在 `supabase/migrations/`，并需确认已应用到线上项目。
+- 文章 HTML 只允许来自受控 Markdown 渲染流程，不直接信任用户输入的 HTML。
+
+## 内容模型
 
 ```text
-src/
-├── components/
-│   ├── Header.astro
-│   ├── Hero.astro
-│   ├── Updates.astro
-│   ├── About.astro
-│   ├── PlatformEntry.astro
-│   ├── Footer.astro
-│   └── ThemeToggle.astro
-├── content/
-│   └── updates/
-├── layouts/
-│   └── BaseLayout.astro
-├── pages/
-│   └── index.astro
-├── styles/
-│   ├── global.css
-│   └── tokens.css
-└── content.config.ts
+内置内容
+└── src/content/docs/*.md
+    ├── 构建时生成文章页面
+    └── 进入静态搜索索引
 
-public/
-└── images/
-    └── brand/
+动态内容
+└── Supabase articles
+    ├── 草稿：仅管理员管理
+    ├── 已发布：公开读取
+    ├── 图片：article-images bucket
+    └── 贡献者：profiles
 ```
 
 ## 主题架构
 
-```text
-系统主题偏好
-      ↓
-有无本地手动选择？
-  ├── 有 → 使用本地选择
-  └── 无 → 使用系统选择
-      ↓
-在根元素设置 data-theme
-      ↓
-CSS 语义变量切换
-      ↓
-页面主体与导航栏使用同色系轻微分层
-```
+首次访问默认浅色。用户点击侧栏主题按钮在浅色和深色之间切换，选择保存在 `localStorage`，根元素通过 `data-theme` 驱动语义化 CSS 变量。
 
-组件不能直接依赖“黑色”或“白色”这样的物理颜色，而应使用“页面背景”“主要文字”“导航背景”“导航文字”“边框”和“点缀”等语义变量。
+## 未来扩展原则
 
-## 未来扩展路径
-
-- 增加详情页：从内容集合生成静态路由。
-- 接入 CMS：替换内容加载来源，保留展示组件和字段模型。
-- 增加内部发布：单独设计认证、权限、审计、数据库和 API，不塞入当前静态架构。
-- 接入独立竞赛平台：继续使用明确的外部链接，不共享业务数据库。
+- 继续保持 Astro 静态托管，不因少量动态数据引入自建服务器。
+- 需要可信服务端密钥、复杂任务或第三方回调时，再评估 Edge Functions 或独立后端。
+- 独立竞赛平台保持业务与数据库边界，仅由门户提供链接。
+- 动态文章搜索、评论和活动模块须先补 User Story、数据模型与权限设计。

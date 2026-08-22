@@ -1,46 +1,50 @@
-# 新增和修改文档
+# 新增和修改内置文档
 
-网站公开文档保存在 `src/content/docs/`。正文使用 Markdown，目录层级由文件夹决定。
+网站内置公开文档保存在 `src/content/docs/`，正文使用 Markdown。用户通过网站发布的动态文章保存在 Supabase，不按本说明直接修改。
 
-## 修改已有文档
+## 修改已有 Markdown
 
-1. 在 `src/content/docs/` 中找到对应的 `.md` 文件。
-2. 修改正文，并同步更新文件顶部的 `updatedAt`。
-3. 启动本地网站，在对应页面检查标题、链接、代码块和目录跳转。
-4. 完成检查后再提交 Git 记录。
+1. 在 `src/content/docs/` 找到对应 `.md`。
+2. 修改正文并更新顶部 `updatedAt`。
+3. 本地检查标题、链接、目录、代码块和复制按钮。
+4. 运行质量检查后提交。
 
-## 新增文档
+## 新增 Markdown
 
-在所属分类文件夹中新建 `.md` 文件。文件名使用简短的小写英文和连字符，例如 `git-github.md`。
-
-每篇文档顶部需要填写：
+在合适文件夹中新建小写英文加连字符的文件，例如 `git-github.md`。基本字段：
 
 ```yaml
 ---
 title: 页面标题
 description: 一句话说明页面解决什么问题
 kind: document
+category: 工具使用
 audience:
   - 适用读者
 order: 20
-updatedAt: 2026-08-18
+updatedAt: 2026-08-22
 keywords:
   - 搜索关键词
 draft: false
 ---
 ```
 
-- `kind` 使用 `document`；分类说明页使用 `category`。
-- `order` 决定同一分类中的阅读顺序。
-- 尚未公开的内容将 `draft` 设为 `true`。
-- 引用外部资料时，可以增加 `sourceUrl`，正文中也应给出清楚的来源链接。
+- `kind` 使用 `document`。
+- `category` 使用当前文章分类之一。
+- `order` 决定同一组内的阅读顺序。
+- 未完成内容将 `draft` 设为 `true`。
+- 外部资料应标明来源链接。
 
-## 当前维护注意事项
+## 自动生成内容
 
-- 新文档页面会由 Astro 自动生成，不需要手写 HTML。
-- 新增基础工具文档后，目前仍需同步更新 `DocsLayout.astro` 的左侧目录和 `search.ts` 的搜索条目。
-- 不要直接修改 `.astro/` 或 `dist/`，它们是工具生成的目录。
-- 不要上传账号密码、访问令牌或学生隐私信息。
+- Astro 会自动为公开 Markdown 生成文章页面。
+- 静态搜索索引会读取公开 Content Collections，无需手工更新 `search.ts`。
+- 文章右侧目录根据 Markdown 标题生成。
+- 不要直接修改 `.astro/` 或 `dist/`。
+
+## 数据库文章
+
+管理员在网站编辑器中创建和发布。分类、权限与数据结构由 `supabase/migrations/` 管理。动态文章当前不会自动进入静态全站搜索。
 
 ## 提交前检查
 
@@ -50,4 +54,4 @@ pnpm format:check
 pnpm build
 ```
 
-三项都通过后，再进入 Review 或提交代码。
+不要上传账号密码、OTP、SMTP 密钥、service-role key 或学生隐私信息。
