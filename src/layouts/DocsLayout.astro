@@ -52,9 +52,8 @@ const visibleHeadings = headings.filter(
         <p class="eyebrow">基础工具</p>
         <h1>{title}</h1>
         <div class="contributor" data-historical-contributor>
-          <img src={withBase('/images/brand/asaw-logo.png')} alt="" />
           <span>贡献者</span>
-          <strong>科协成员</strong>
+          <img src={withBase('/images/brand/asaw-logo.png')} alt="贡献者头像" />
         </div>
         <p class="description">{description}</p>
       </header>
@@ -111,9 +110,7 @@ const visibleHeadings = headings.filter(
     const contributorElement = document.querySelector<HTMLElement>('[data-historical-contributor]');
     if (!contributorResult.error && contributor && contributorElement) {
       const image = contributorElement.querySelector<HTMLImageElement>('img');
-      const name = contributorElement.querySelector<HTMLElement>('strong');
       if (image && contributor.avatar_url) image.src = String(contributor.avatar_url);
-      if (name) name.textContent = String(contributor.display_name || '科协成员');
     }
   }
 
@@ -292,7 +289,6 @@ const visibleHeadings = headings.filter(
   }
 
   .contributor span { color: var(--color-text-muted); }
-  .contributor strong { color: var(--color-text); font-weight: 600; }
 
   .description {
     max-width: 42rem;
