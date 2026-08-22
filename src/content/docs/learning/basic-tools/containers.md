@@ -2,7 +2,7 @@
 title: 容器：获得一致的运行环境
 description: 认识镜像和容器，并理解容器适合解决什么问题。
 kind: document
-category: 基础工具
+category: 工具使用
 audience:
   - 开发环境初学者
 order: 40

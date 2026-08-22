@@ -6,7 +6,7 @@ import { withBase } from '../../utils/paths';
 const articles = (await getCollection('docs', ({ data }) =>
   data.kind === 'document' && !data.draft,
 )).sort((a, b) => b.data.updatedAt.getTime() - a.data.updatedAt.getTime());
-const categories = [...new Set(articles.map((article) => article.data.category))];
+const categories = ['技术分享', '工具使用', '竞赛经验', '项目记录', '公告', '未分类'];
 const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? id;
 ---
 
