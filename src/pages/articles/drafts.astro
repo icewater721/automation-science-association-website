@@ -4,36 +4,96 @@ import { withBase } from '../../utils/paths';
 ---
 
 <BaseLayout title="编辑文档 | 文档" description="创建和编辑文档。">
-  <main class="draft-page" data-draft-page data-login-url={withBase('/login/')} data-articles-url={withBase('/articles/')}>
+  <main
+    class="draft-page"
+    data-draft-page
+    data-login-url={withBase('/login/')}
+    data-articles-url={withBase('/articles/')}
+  >
     <a class="back-link" href={withBase('/articles/')}>← <span>返回</span></a>
     <header><p>DOCUMENT WORKSPACE</p><h1>编辑文档</h1></header>
     <div class="workspace" data-workspace hidden>
       <form data-draft-form>
         <input type="hidden" name="id" />
         <label>标题 <input name="title" maxlength="60" required /></label>
-        <label class="category-field">栏目
+        <label class="category-field"
+          >栏目
           <input type="hidden" name="category" value="未分类" />
           <details class="category-select" data-category-select>
-            <summary><span data-category-value>未分类</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"></path></svg></summary>
-            <div><button type="button" data-category-option="技术分享">技术分享</button><button type="button" data-category-option="工具使用">工具使用</button><button type="button" data-category-option="竞赛经验">竞赛经验</button><button type="button" data-category-option="项目记录">项目记录</button><button type="button" data-category-option="公告">公告</button><button type="button" data-category-option="未分类">未分类</button></div>
+            <summary
+              ><span data-category-value>未分类</span><svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"></path></svg
+              ></summary
+            >
+            <div>
+              <button type="button" data-category-option="技术分享"
+                >技术分享</button
+              ><button type="button" data-category-option="工具使用"
+                >工具使用</button
+              ><button type="button" data-category-option="竞赛经验"
+                >竞赛经验</button
+              ><button type="button" data-category-option="项目记录"
+                >项目记录</button
+              ><button type="button" data-category-option="公告">公告</button
+              ><button type="button" data-category-option="未分类"
+                >未分类</button
+              >
+            </div>
           </details>
         </label>
-        <label>摘要 <textarea name="summary" maxlength="160" rows="3" required></textarea></label>
+        <label
+          >摘要 <textarea name="summary" maxlength="160" rows="3" required
+          ></textarea></label
+        >
         <div class="content-field">
           <div class="content-field-heading"><span>正文</span></div>
-          <textarea class="markdown-editor" name="content_markdown" rows="18" required spellcheck="false" data-gramm="false" data-gramm_editor="false" placeholder="使用 Markdown 语法开始写正文……"></textarea>
+          <textarea
+            class="markdown-editor"
+            name="content_markdown"
+            rows="18"
+            required
+            spellcheck="false"
+            data-gramm="false"
+            data-gramm_editor="false"
+            placeholder="使用 Markdown 语法开始写正文……"></textarea>
         </div>
         <div class="editor-actions">
-          <button class="button button--quiet" type="submit" data-save-draft>保存草稿</button>
-          <button class="button button--primary" type="button" data-publish hidden>发布</button>
+          <button class="button button--quiet" type="submit" data-save-draft
+            >保存草稿</button
+          >
+          <button
+            class="button button--primary"
+            type="button"
+            data-publish
+            hidden>发布</button
+          >
         </div>
         <p class="editor-toast" data-draft-note aria-live="polite" hidden></p>
       </form>
       <aside>
         <p class="aside-title">编辑工具</p>
         <div class="format-tools" aria-label="正文工具">
-          <label class="toolbar-upload"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="m5 17 5-5 3 3 2-2 4 4"></path></svg>图片<input data-image-input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden /></label>
-          <button type="button" data-command="undo"><svg viewBox="0 0 24 24"><path d="m9 7-5 5 5 5M5 12h8a6 6 0 0 1 6 6"></path></svg>上一步</button><button type="button" data-command="redo"><svg viewBox="0 0 24 24"><path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6"></path></svg>下一步</button>
+          <label class="toolbar-upload"
+            ><svg viewBox="0 0 24 24"
+              ><rect x="3" y="4" width="18" height="16" rx="2"></rect><path
+                d="m5 17 5-5 3 3 2-2 4 4"></path></svg
+            >图片<input
+              data-image-input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              hidden
+            /></label
+          >
+          <button type="button" data-command="undo"
+            ><svg viewBox="0 0 24 24"
+              ><path d="m9 7-5 5 5 5M5 12h8a6 6 0 0 1 6 6"></path></svg
+            >上一步</button
+          ><button type="button" data-command="redo"
+            ><svg viewBox="0 0 24 24"
+              ><path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6"></path></svg
+            >下一步</button
+          >
         </div>
       </aside>
     </div>
@@ -52,7 +112,8 @@ import { withBase } from '../../utils/paths';
   let savedRange: Range | null = null;
   const rememberSelection = () => {
     const selection = window.getSelection();
-    if (selection?.rangeCount && richEditor?.contains(selection.anchorNode)) savedRange = selection.getRangeAt(0).cloneRange();
+    if (selection?.rangeCount && richEditor?.contains(selection.anchorNode))
+      savedRange = selection.getRangeAt(0).cloneRange();
   };
   const restoreSelection = () => {
     richEditor?.focus();
@@ -69,7 +130,11 @@ import { withBase } from '../../utils/paths';
       if (!(node instanceof HTMLElement)) return '';
       if (node.classList.contains('editor-atomic')) {
         const media = node.querySelector<HTMLElement>('img,video,pre,hr');
-        if (media instanceof HTMLImageElement) media.alt = node.querySelector('figcaption')?.textContent?.trim() || media.alt || '图片';
+        if (media instanceof HTMLImageElement)
+          media.alt =
+            node.querySelector('figcaption')?.textContent?.trim() ||
+            media.alt ||
+            '图片';
         return media ? convert(media) : '';
       }
       if (node.matches('[data-delete-atomic]')) return '';
@@ -77,58 +142,79 @@ import { withBase } from '../../utils/paths';
       const tag = node.tagName.toLowerCase();
       if (tag === 'strong' || tag === 'b') return `**${content}**`;
       if (tag === 'em' || tag === 'i') return `*${content}*`;
-      if (tag === 'a') return `[${content}](${node.getAttribute('href') ?? ''})`;
-      if (tag === 'img') return `\n![${node.getAttribute('alt') ?? '图片'}](${node.getAttribute('src') ?? ''})\n`;
-      if (tag === 'video') return `\n[视频](${node.getAttribute('src') ?? ''})\n`;
+      if (tag === 'a')
+        return `[${content}](${node.getAttribute('href') ?? ''})`;
+      if (tag === 'img')
+        return `\n![${node.getAttribute('alt') ?? '图片'}](${node.getAttribute('src') ?? ''})\n`;
+      if (tag === 'video')
+        return `\n[视频](${node.getAttribute('src') ?? ''})\n`;
       if (tag === 'pre') return `\n\`\`\`\n${node.textContent ?? ''}\n\`\`\`\n`;
       if (tag === 'blockquote') return `\n> ${content}\n`;
       if (tag === 'hr') return '\n---\n';
       if (tag === 'li') return `- ${content}\n`;
-      if (/^h[1-3]$/.test(tag)) return `\n${'#'.repeat(Number(tag[1]))} ${content}\n`;
+      if (/^h[1-3]$/.test(tag))
+        return `\n${'#'.repeat(Number(tag[1]))} ${content}\n`;
       if (tag === 'br') return '\n';
       if (tag === 'p' || tag === 'div') return `${content}\n\n`;
       return content;
     };
-    return [...root.childNodes].map(convert).join('').replace(/\n{3,}/g, '\n\n').trim();
+    return [...root.childNodes]
+      .map(convert)
+      .join('')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
   };
   const syncMarkdown = () => {
-    if (markdownEditor instanceof HTMLTextAreaElement && richEditor) markdownEditor.value = markdownFromHtml(richEditor.innerHTML);
+    if (markdownEditor instanceof HTMLTextAreaElement && richEditor)
+      markdownEditor.value = markdownFromHtml(richEditor.innerHTML);
   };
   const hydrateAtomicBlocks = () => {
     if (!richEditor) return;
-    richEditor.querySelectorAll<HTMLElement>('img,video,pre,hr').forEach((element) => {
-      if (element.closest('.editor-atomic')) return;
-      const isMedia = element.matches('img,video');
-      const wrapper = document.createElement(isMedia ? 'figure' : 'div');
-      wrapper.className = `editor-atomic${isMedia ? ' editor-atomic--media' : element.tagName === 'PRE' ? ' editor-atomic--code' : ' editor-atomic--divider'}`;
-      wrapper.contentEditable = 'true';
-      const parent = element.parentElement;
-      if (parent?.tagName === 'P' && parent.childNodes.length === 1) parent.replaceWith(wrapper);
-      else element.replaceWith(wrapper);
-      if (element.tagName === 'PRE') {
-        const label = document.createElement('span');
-        label.textContent = '代码';
-        wrapper.append(label);
-        element.contentEditable = 'true';
-      }
-      if (element.matches('img,video,hr')) element.contentEditable = 'false';
-      wrapper.append(element);
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.dataset.deleteAtomic = '';
-      remove.ariaLabel = '删除内容块';
-      remove.textContent = '×';
-      wrapper.append(remove);
-      remove.contentEditable = 'false';
-      if (isMedia) {
-        const caption = document.createElement('figcaption');
-        caption.contentEditable = 'true';
-        caption.dataset.placeholder = element.tagName === 'IMG' ? '添加图片描述（可选）' : '添加视频描述（可选）';
-        wrapper.append(caption);
-      }
-      if (!wrapper.previousElementSibling) wrapper.before(Object.assign(document.createElement('p'), { innerHTML: '<br>' }));
-      if (!wrapper.nextElementSibling) wrapper.after(Object.assign(document.createElement('p'), { innerHTML: '<br>' }));
-    });
+    richEditor
+      .querySelectorAll<HTMLElement>('img,video,pre,hr')
+      .forEach((element) => {
+        if (element.closest('.editor-atomic')) return;
+        const isMedia = element.matches('img,video');
+        const wrapper = document.createElement(isMedia ? 'figure' : 'div');
+        wrapper.className = `editor-atomic${isMedia ? ' editor-atomic--media' : element.tagName === 'PRE' ? ' editor-atomic--code' : ' editor-atomic--divider'}`;
+        wrapper.contentEditable = 'true';
+        const parent = element.parentElement;
+        if (parent?.tagName === 'P' && parent.childNodes.length === 1)
+          parent.replaceWith(wrapper);
+        else element.replaceWith(wrapper);
+        if (element.tagName === 'PRE') {
+          const label = document.createElement('span');
+          label.textContent = '代码';
+          wrapper.append(label);
+          element.contentEditable = 'true';
+        }
+        if (element.matches('img,video,hr')) element.contentEditable = 'false';
+        wrapper.append(element);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.dataset.deleteAtomic = '';
+        remove.ariaLabel = '删除内容块';
+        remove.textContent = '×';
+        wrapper.append(remove);
+        remove.contentEditable = 'false';
+        if (isMedia) {
+          const caption = document.createElement('figcaption');
+          caption.contentEditable = 'true';
+          caption.dataset.placeholder =
+            element.tagName === 'IMG'
+              ? '添加图片描述（可选）'
+              : '添加视频描述（可选）';
+          wrapper.append(caption);
+        }
+        if (!wrapper.previousElementSibling)
+          wrapper.before(
+            Object.assign(document.createElement('p'), { innerHTML: '<br>' }),
+          );
+        if (!wrapper.nextElementSibling)
+          wrapper.after(
+            Object.assign(document.createElement('p'), { innerHTML: '<br>' }),
+          );
+      });
   };
   const closeCreateMenu = () => {
     const menu = document.querySelector<HTMLDetailsElement>('.create-menu');
@@ -139,13 +225,22 @@ import { withBase } from '../../utils/paths';
 
   let role = '';
   if (session && supabase) {
-    const current = await supabase.from('profiles').select('role').eq('user_id', session.user.id).single();
+    const current = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .single();
     if (current.error?.code === '42703') {
-      const legacy = await supabase.from('profiles').select('is_collaborator').eq('user_id', session.user.id).single();
+      const legacy = await supabase
+        .from('profiles')
+        .select('is_collaborator')
+        .eq('user_id', session.user.id)
+        .single();
       role = legacy.data?.is_collaborator ? 'editor' : '';
     } else role = String(current.data?.role ?? '');
   }
-  if (role !== 'admin') window.location.replace(page?.dataset.articlesUrl ?? '/articles/');
+  if (role !== 'admin')
+    window.location.replace(page?.dataset.articlesUrl ?? '/articles/');
   if (workspace) workspace.hidden = false;
 
   let noteTimer: number | undefined;
@@ -156,46 +251,80 @@ import { withBase } from '../../utils/paths';
     note.dataset.error = String(error);
     note.hidden = false;
     note.animate(
-      [{ opacity: 0, transform: 'translateY(0.45rem)' }, { opacity: 1, transform: 'translateY(0)' }],
+      [
+        { opacity: 0, transform: 'translateY(0.45rem)' },
+        { opacity: 1, transform: 'translateY(0)' },
+      ],
       { duration: 180, easing: 'ease-out' },
     );
-    noteTimer = window.setTimeout(() => {
-      note.animate(
-        [{ opacity: 1 }, { opacity: 0 }],
-        { duration: 160, easing: 'ease-in' },
-      ).finished.then(() => { note.hidden = true; });
-    }, error ? 4200 : 2200);
+    noteTimer = window.setTimeout(
+      () => {
+        note
+          .animate([{ opacity: 1 }, { opacity: 0 }], {
+            duration: 160,
+            easing: 'ease-in',
+          })
+          .finished.then(() => {
+            note.hidden = true;
+          });
+      },
+      error ? 4200 : 2200,
+    );
   };
   const fillForm = (draft: Record<string, unknown>) => {
     if (!form) return;
     for (const [key, value] of Object.entries(draft)) {
       const field = form.elements.namedItem(key);
-      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) field.value = String(value ?? '');
+      if (
+        field instanceof HTMLInputElement ||
+        field instanceof HTMLTextAreaElement ||
+        field instanceof HTMLSelectElement
+      )
+        field.value = String(value ?? '');
     }
-    const normalizedCategory = String(draft.category || '未分类') === '其他' ? '未分类' : String(draft.category || '未分类');
+    const normalizedCategory =
+      String(draft.category || '未分类') === '其他'
+        ? '未分类'
+        : String(draft.category || '未分类');
     const categoryInput = form.elements.namedItem('category');
-    if (categoryInput instanceof HTMLInputElement) categoryInput.value = normalizedCategory;
-    const categoryValue = document.querySelector<HTMLElement>('[data-category-value]');
+    if (categoryInput instanceof HTMLInputElement)
+      categoryInput.value = normalizedCategory;
+    const categoryValue = document.querySelector<HTMLElement>(
+      '[data-category-value]',
+    );
     if (categoryValue) categoryValue.textContent = normalizedCategory;
     const publishButton = document.querySelector<HTMLElement>('[data-publish]');
     if (publishButton) publishButton.hidden = role !== 'admin';
   };
   const loadDrafts = async () => {
     if (!supabase || !session || !draftList) return;
-    const { data, error } = await supabase.from('articles').select('id,title,category,summary,content_markdown,status,updated_at').eq('author_id', session.user.id).eq('status', 'draft').order('updated_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('articles')
+      .select('id,title,category,summary,content_markdown,status,updated_at')
+      .eq('author_id', session.user.id)
+      .eq('status', 'draft')
+      .order('updated_at', { ascending: false });
     if (error) return setNote('草稿数据库尚未启用。', true);
-    draftList.replaceChildren(...(data ?? []).map((draft) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = draft.title || '未命名草稿';
-      button.addEventListener('click', () => fillForm(draft));
-      return button;
-    }));
+    draftList.replaceChildren(
+      ...(data ?? []).map((draft) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = draft.title || '未命名草稿';
+        button.addEventListener('click', () => fillForm(draft));
+        return button;
+      }),
+    );
   };
   void loadDrafts();
-  const requestedDraftId = new URLSearchParams(window.location.search).get('id');
+  const requestedDraftId = new URLSearchParams(window.location.search).get(
+    'id',
+  );
   if (requestedDraftId && supabase) {
-    const { data: requestedDraft } = await supabase.from('articles').select('id,title,category,summary,content_markdown,status,updated_at').eq('id', requestedDraftId).single();
+    const { data: requestedDraft } = await supabase
+      .from('articles')
+      .select('id,title,category,summary,content_markdown,status,updated_at')
+      .eq('id', requestedDraftId)
+      .single();
     if (requestedDraft) fillForm(requestedDraft);
   }
   document.querySelector('[data-new-draft]')?.addEventListener('click', () => {
@@ -226,19 +355,28 @@ import { withBase } from '../../utils/paths';
     }
   };
   const uploadAndInsertImage = async (file: File) => {
-    if (!file || !supabase || !session || !(markdownEditor instanceof HTMLTextAreaElement)) return;
+    if (
+      !file ||
+      !supabase ||
+      !session ||
+      !(markdownEditor instanceof HTMLTextAreaElement)
+    )
+      return;
     if (file.size > 8 * 1024 * 1024) {
       setNote('图片不能超过 8 MB。', true);
       return;
     }
     const extension = file.name.split('.').pop()?.toLowerCase() || 'webp';
     const path = `${session.user.id}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-    const { error } = await supabase.storage.from('article-images').upload(path, file);
+    const { error } = await supabase.storage
+      .from('article-images')
+      .upload(path, file);
     if (error) {
       setNote(error.message, true);
       return;
     }
-    const url = supabase.storage.from('article-images').getPublicUrl(path).data.publicUrl;
+    const url = supabase.storage.from('article-images').getPublicUrl(path)
+      .data.publicUrl;
     const safeUrl = url.replace(/["<>]/g, '');
     const safeAlt = file.name.replace(/\.[^.]+$/, '').replace(/["<>]/g, '');
     const start = markdownEditor.selectionStart;
@@ -248,29 +386,47 @@ import { withBase } from '../../utils/paths';
     markdownEditor.focus();
     setNote('图片已插入正文。');
   };
-  document.querySelector<HTMLInputElement>('[data-image-input]')?.addEventListener('change', async (event) => {
-    const input = event.currentTarget as HTMLInputElement;
-    const file = input.files?.[0];
-    if (file) await uploadAndInsertImage(file);
-    input.value = '';
+  document
+    .querySelector<HTMLInputElement>('[data-image-input]')
+    ?.addEventListener('change', async (event) => {
+      const input = event.currentTarget as HTMLInputElement;
+      const file = input.files?.[0];
+      if (file) await uploadAndInsertImage(file);
+      input.value = '';
+    });
+  if (markdownEditor instanceof HTMLTextAreaElement)
+    markdownEditor.addEventListener('paste', (event) => {
+      const image = [...(event.clipboardData?.files ?? [])].find((file) =>
+        file.type.startsWith('image/'),
+      );
+      if (!image) return;
+      event.preventDefault();
+      void uploadAndInsertImage(image);
+    });
+  richEditor?.addEventListener('input', () => {
+    rememberSelection();
+    syncMarkdown();
   });
-  if (markdownEditor instanceof HTMLTextAreaElement) markdownEditor.addEventListener('paste', (event) => {
-    const image = [...event.clipboardData?.files ?? []].find((file) => file.type.startsWith('image/'));
-    if (!image) return;
-    event.preventDefault();
-    void uploadAndInsertImage(image);
-  });
-  richEditor?.addEventListener('input', () => { rememberSelection(); syncMarkdown(); });
   richEditor?.addEventListener('keyup', rememberSelection);
   richEditor?.addEventListener('pointerup', rememberSelection);
-  document.querySelector('.format-tools')?.addEventListener('pointerdown', (event) => event.preventDefault());
+  document
+    .querySelector('.format-tools')
+    ?.addEventListener('pointerdown', (event) => event.preventDefault());
   richEditor?.addEventListener('keydown', (event) => {
     if (event.key !== ' ') return;
     const selection = window.getSelection();
-    const anchor = selection?.anchorNode instanceof HTMLElement ? selection.anchorNode : selection?.anchorNode?.parentElement;
+    const anchor =
+      selection?.anchorNode instanceof HTMLElement
+        ? selection.anchorNode
+        : selection?.anchorNode?.parentElement;
     const block = anchor?.closest<HTMLElement>('p,div');
     const marker = block?.textContent?.trim().match(/^(#{1,3})$/)?.[1];
-    if (!marker || block === richEditor || block?.classList.contains('editor-atomic')) return;
+    if (
+      !marker ||
+      block === richEditor ||
+      block?.classList.contains('editor-atomic')
+    )
+      return;
     event.preventDefault();
     block.textContent = '';
     document.execCommand('formatBlock', false, `h${marker.length}`);
@@ -280,25 +436,106 @@ import { withBase } from '../../utils/paths';
   richEditor?.addEventListener('click', (event) => {
     const link = (event.target as HTMLElement).closest('a');
     if (link) event.preventDefault();
-    const button = (event.target as HTMLElement).closest<HTMLElement>('[data-delete-atomic]');
+    const button = (event.target as HTMLElement).closest<HTMLElement>(
+      '[data-delete-atomic]',
+    );
     if (!button) return;
     button.closest('.editor-atomic')?.remove();
     syncMarkdown();
   });
-  document.querySelectorAll<HTMLButtonElement>('[data-command]').forEach((button) => button.addEventListener('click', () => { if (!(markdownEditor instanceof HTMLTextAreaElement)) return; markdownEditor.focus(); document.execCommand(button.dataset.command ?? ''); }));
-  document.querySelector('[data-action="divider"]')?.addEventListener('click', () => { insertHtmlAtCaret('<p><br></p><div class="editor-atomic editor-atomic--divider" contenteditable="true"><hr contenteditable="false"><button type="button" contenteditable="false" data-delete-atomic aria-label="删除分割线">×</button></div><p><br></p>'); syncMarkdown(); });
-  document.querySelector('[data-action="code"]')?.addEventListener('click', () => { insertHtmlAtCaret('<p><br></p><div class="editor-atomic editor-atomic--code" contenteditable="true"><span contenteditable="false">代码</span><pre contenteditable="true"><br></pre><button type="button" contenteditable="false" data-delete-atomic aria-label="删除代码块">×</button></div><p><br></p>'); syncMarkdown(); });
-  document.querySelector('[data-action="link"]')?.addEventListener('click', () => { const selectedText = savedRange?.toString().trim() ?? ''; const text = selectedText || window.prompt('输入链接文字') || ''; if (!text) return; const url = window.prompt('输入链接地址', 'https://'); if (url) { restoreSelection(); document.execCommand('insertHTML', false, `<a href="${url.replace(/["<>]/g, '')}">${text.replace(/[<>]/g, '')}</a>`); syncMarkdown(); } });
-  document.querySelector('[data-action="comment"]')?.addEventListener('click', () => { restoreSelection(); document.execCommand('foreColor', false, '#7a8799'); document.execCommand('italic'); syncMarkdown(); });
-  document.querySelectorAll<HTMLButtonElement>('[data-category-option]').forEach((button) => button.addEventListener('click', () => { const value = button.dataset.categoryOption ?? '未分类'; const input = form?.elements.namedItem('category'); if (input instanceof HTMLInputElement) input.value = value; const label = document.querySelector<HTMLElement>('[data-category-value]'); if (label) label.textContent = value; const select = document.querySelector<HTMLDetailsElement>('[data-category-select]'); if (select) select.open = false; }));
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-command]')
+    .forEach((button) =>
+      button.addEventListener('click', () => {
+        if (!(markdownEditor instanceof HTMLTextAreaElement)) return;
+        markdownEditor.focus();
+        document.execCommand(button.dataset.command ?? '');
+      }),
+    );
+  document
+    .querySelector('[data-action="divider"]')
+    ?.addEventListener('click', () => {
+      insertHtmlAtCaret(
+        '<p><br></p><div class="editor-atomic editor-atomic--divider" contenteditable="true"><hr contenteditable="false"><button type="button" contenteditable="false" data-delete-atomic aria-label="删除分割线">×</button></div><p><br></p>',
+      );
+      syncMarkdown();
+    });
+  document
+    .querySelector('[data-action="code"]')
+    ?.addEventListener('click', () => {
+      insertHtmlAtCaret(
+        '<p><br></p><div class="editor-atomic editor-atomic--code" contenteditable="true"><span contenteditable="false">代码</span><pre contenteditable="true"><br></pre><button type="button" contenteditable="false" data-delete-atomic aria-label="删除代码块">×</button></div><p><br></p>',
+      );
+      syncMarkdown();
+    });
+  document
+    .querySelector('[data-action="link"]')
+    ?.addEventListener('click', () => {
+      const selectedText = savedRange?.toString().trim() ?? '';
+      const text = selectedText || window.prompt('输入链接文字') || '';
+      if (!text) return;
+      const url = window.prompt('输入链接地址', 'https://');
+      if (url) {
+        restoreSelection();
+        document.execCommand(
+          'insertHTML',
+          false,
+          `<a href="${url.replace(/["<>]/g, '')}">${text.replace(/[<>]/g, '')}</a>`,
+        );
+        syncMarkdown();
+      }
+    });
+  document
+    .querySelector('[data-action="comment"]')
+    ?.addEventListener('click', () => {
+      restoreSelection();
+      document.execCommand('foreColor', false, '#7a8799');
+      document.execCommand('italic');
+      syncMarkdown();
+    });
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-category-option]')
+    .forEach((button) =>
+      button.addEventListener('click', () => {
+        const value = button.dataset.categoryOption ?? '未分类';
+        const input = form?.elements.namedItem('category');
+        if (input instanceof HTMLInputElement) input.value = value;
+        const label = document.querySelector<HTMLElement>(
+          '[data-category-value]',
+        );
+        if (label) label.textContent = value;
+        const select = document.querySelector<HTMLDetailsElement>(
+          '[data-category-select]',
+        );
+        if (select) select.open = false;
+      }),
+    );
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!supabase || !session) return;
     syncMarkdown();
     const values = Object.fromEntries(new FormData(form));
     const id = String(values.id || '');
-    const payload = { title: String(values.title), category: String(values.category), summary: String(values.summary), content_markdown: String(values.content_markdown), status: 'draft', updated_at: new Date().toISOString() };
-    const result = id ? await supabase.from('articles').update(payload).eq('id', id).select('id').single() : await supabase.from('articles').insert({ ...payload, author_id: session.user.id }).select('id').single();
+    const payload = {
+      title: String(values.title),
+      category: String(values.category),
+      summary: String(values.summary),
+      content_markdown: String(values.content_markdown),
+      status: 'draft',
+      updated_at: new Date().toISOString(),
+    };
+    const result = id
+      ? await supabase
+          .from('articles')
+          .update(payload)
+          .eq('id', id)
+          .select('id')
+          .single()
+      : await supabase
+          .from('articles')
+          .insert({ ...payload, author_id: session.user.id })
+          .select('id')
+          .single();
     if (result.error) return setNote(result.error.message, true);
     const idField = form.elements.namedItem('id');
     if (idField instanceof HTMLInputElement) idField.value = result.data.id;
@@ -309,92 +546,579 @@ import { withBase } from '../../utils/paths';
     if (!supabase || !form) return;
     if (role !== 'admin') return setNote('只有管理员可以发布文档。', true);
     const id = form.elements.namedItem('id');
-    if (!(id instanceof HTMLInputElement) || !id.value) return setNote('请先保存草稿。', true);
+    if (!(id instanceof HTMLInputElement) || !id.value)
+      return setNote('请先保存草稿。', true);
     syncMarkdown();
     if (!form.reportValidity()) return;
     const values = Object.fromEntries(new FormData(form));
     const now = new Date().toISOString();
-    const updates = { status: 'published', updated_at: now, published_at: now, title: String(values.title), category: String(values.category), summary: String(values.summary), content_markdown: String(values.content_markdown) };
-    const { error } = await supabase.from('articles').update(updates).eq('id', id.value);
+    const updates = {
+      status: 'published',
+      updated_at: now,
+      published_at: now,
+      title: String(values.title),
+      category: String(values.category),
+      summary: String(values.summary),
+      content_markdown: String(values.content_markdown),
+    };
+    const { error } = await supabase
+      .from('articles')
+      .update(updates)
+      .eq('id', id.value);
     if (error) return setNote(error.message, true);
     setNote('文档已发布。');
     form.reset();
     void loadDrafts();
   };
-  document.querySelector('[data-publish]')?.addEventListener('click', () => void publishDraft());
+  document
+    .querySelector('[data-publish]')
+    ?.addEventListener('click', () => void publishDraft());
 </script>
 
 <style>
-  .draft-page { width: min(72rem, calc(100% - 4rem)); margin-inline: auto; padding-block: 1rem 5rem; }
-  .back-link { display: inline-flex; gap: 0.45rem; margin-bottom: 0.8rem; color: var(--color-text-muted); font-size: 0.8rem; text-decoration: none; transition: color 160ms ease, transform 160ms ease; }
-  .back-link:hover { color: var(--color-accent); transform: translateX(-0.15rem); }
-  header p { margin: 0; color: var(--color-accent); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.1em; }
-  h1 { margin: 0.35rem 0 1.6rem; font-size: clamp(1.9rem, 4vw, 2.65rem); letter-spacing: -0.035em; }
-  .workspace { display: grid; grid-template-columns: minmax(0, 48rem) 14rem; justify-content: center; gap: clamp(1.5rem, 4vw, 3rem); }
-  aside { position: sticky; top: 0; display: grid; min-height: 100vh; max-height: 100vh; align-self: start; align-content: start; gap: 1.1rem; overflow-y: auto; padding: 2rem 0.35rem 1rem 1rem; border-left: 1px solid var(--color-border); }
-  .aside-title { color: var(--color-accent); }
-  aside section { display: grid; gap: 0.4rem; }
-  aside p { margin: 0; color: var(--color-text); font-size: 0.72rem; font-weight: 780; letter-spacing: 0.07em; }
-  aside section + section { padding-top: 0.8rem; border-top: 1px solid var(--color-border); }
-  [data-draft-list] { display: grid; gap: 0.25rem; }
-  [data-draft-list] button { width: 100%; padding: 0.58rem 0.65rem; overflow: hidden; border: 0; border-radius: 0.45rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; text-overflow: ellipsis; white-space: nowrap; transition: background 160ms ease, color 160ms ease, transform 160ms ease; }
-  [data-draft-list] button:hover { background: var(--color-surface); color: var(--color-text); transform: translateX(0.15rem); }
-  .create-menu { position: relative; width: fit-content; }
-  .create-menu > summary { list-style: none; }
-  .create-menu > summary::-webkit-details-marker { display: none; }
-  .read-button { padding: 0.55rem 0.75rem; border-radius: 0.55rem; color: var(--color-text-muted); cursor: pointer; font-size: 0.76rem; font-weight: 650; transition: background 160ms ease, color 160ms ease; }
-  .read-button:hover, .create-menu[open] .read-button { background: var(--color-surface); color: var(--color-accent); }
-  .create-menu-popover { position: absolute; z-index: 4; top: calc(100% + 0.45rem); right: 0; display: grid; width: 12rem; padding: 0.45rem; border: 1px solid var(--color-border); border-radius: 0.6rem; background: var(--color-page); box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 15%, transparent); }
-  .create-menu-popover button, .create-menu-popover label { display: flex; width: 100%; align-items: center; gap: 0.55rem; padding: 0.65rem; border: 0; border-radius: 0.4rem; background: transparent; color: var(--color-text); cursor: pointer; font: inherit; font-size: 0.75rem; font-weight: 650; text-align: left; transition: background 150ms ease, color 150ms ease; }
-  .create-menu-popover button:hover, .create-menu-popover label:hover { background: var(--color-surface); color: var(--color-accent); }
-  .create-menu-popover svg { width: 1.05rem; height: 1.05rem; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
-  form { display: grid; gap: 1rem; }
-  label { display: grid; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; }
-  input, select, textarea { width: 100%; padding: 0.75rem 0.85rem; border: 1px solid var(--color-border); border-radius: 0.75rem; background: color-mix(in srgb, var(--color-surface) 55%, var(--color-page)); font: inherit; transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease; }
-  input:hover, textarea:hover, select:hover { border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border)); }
-  input:focus, textarea:focus, select:focus { border-color: var(--color-accent); background: var(--color-page); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); outline: 0; }
-  .category-select { position: relative; width: clamp(7rem, 20%, 9rem); }
-  .category-select > summary { display: flex; align-items: center; justify-content: space-between; padding: 0.72rem 0.8rem; border: 1px solid var(--color-border); border-radius: 0.75rem; cursor: pointer; list-style: none; font-weight: 500; transition: border-color 160ms ease, box-shadow 160ms ease; }
-  .category-select > summary::-webkit-details-marker { display: none; }
-  .category-select > summary:hover, .category-select[open] > summary { border-color: var(--color-accent); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); }
-  .category-select svg { width: 0.9rem; fill: none; stroke: currentColor; stroke-width: 1.8; }
-  .category-select > div { position: absolute; z-index: 5; top: calc(100% + 0.4rem); left: 0; display: grid; width: 9rem; padding: 0.4rem; border: 1px solid var(--color-border); border-radius: 0.8rem; background: var(--color-page); box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 13%, transparent); }
-  .category-select button { padding: 0.58rem 0.65rem; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text); cursor: pointer; font: inherit; font-size: 0.78rem; text-align: left; }
-  .category-select button:hover { background: var(--color-surface); color: var(--color-accent); }
-  .content-field { display: grid; gap: 0.4rem; }
-  .content-field-heading { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; font-weight: 700; }
-  .markdown-editor { min-height: 23rem; padding: 1rem; font-family: 'Maple Mono', 'Maple Mono NF', 'Maple Mono CN', 'Cascadia Code', ui-monospace, monospace; font-size: 0.9rem; line-height: 1.75; resize: vertical; tab-size: 2; }
-  .rich-editor { min-height: 23rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: 0.75rem; font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.95rem; letter-spacing: 0.01em; line-height: 1.8; outline: 0; transition: border-color 160ms ease, box-shadow 160ms ease; }
-  .rich-editor:focus { border-color: var(--color-accent); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent) 12%, transparent); }
-  .rich-editor:empty::before { color: var(--color-text-muted); content: attr(data-placeholder); }
-  .rich-editor :global(em), .rich-editor :global(i) { display: inline-block; margin-right: 0.24em; padding-right: 0.08em; font-style: oblique 9deg; }
-  .rich-editor :global(img), .rich-editor :global(video) { display: block; width: 100%; max-height: 28rem; object-fit: contain; border-radius: 0.75rem; }
-  .rich-editor :global(pre) { overflow: auto; padding: 0.8rem; border-radius: 0.6rem; background: transparent; color: var(--color-text); font-family: 'Maple Mono', 'Maple Mono NF', 'Maple Mono CN', 'Cascadia Code', ui-monospace, monospace; font-size: 0.88rem; line-height: 1.65; }
-  .rich-editor :global(.editor-atomic) { position: relative; margin: 1rem 0; padding: 0.55rem; border: 1px solid var(--color-border); border-radius: 0.9rem; }
-  .rich-editor :global(.editor-atomic--media) { width: min(36rem, 100%); margin-inline: auto; border: 0; }
-  .rich-editor :global(.editor-atomic--media img), .rich-editor :global(.editor-atomic--media video) { width: 100%; margin: 0; }
-  .rich-editor :global(figcaption) { min-height: 1.7rem; padding: 0.55rem 0.5rem 0; color: var(--color-text-muted); font-size: 0.78rem; text-align: center; outline: 0; }
-  .rich-editor :global(figcaption:empty::before) { content: attr(data-placeholder); }
-  .rich-editor :global(.editor-atomic--code) { padding-top: 2rem; border-color: color-mix(in srgb, var(--color-text) 24%, var(--color-border)); background: color-mix(in srgb, var(--color-text) 9%, var(--color-page)); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-text) 7%, transparent); }
-  .rich-editor :global(.editor-atomic--code > span) { position: absolute; top: 0.45rem; left: 0.7rem; color: var(--color-text-muted); font-size: 0.68rem; }
-  .rich-editor :global(.editor-atomic--code pre) { margin: 0; padding: 0.5rem; outline: 0; }
-  .rich-editor :global(.editor-atomic--divider) { padding: 0.9rem 2.4rem 0.9rem 0.7rem; }
-  .rich-editor :global([data-delete-atomic]) { position: absolute; top: 0.35rem; right: 0.35rem; display: grid; width: 1.65rem; height: 1.65rem; place-items: center; border: 0; border-radius: 50%; background: color-mix(in srgb, #000 58%, transparent); color: #fff; cursor: pointer; font: inherit; line-height: 1; }
-  .format-tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; }
-  .format-tools button, .toolbar-upload { display: flex; width: 100%; min-height: 2.35rem; align-items: center; gap: 0.4rem; padding: 0.42rem 0.5rem; border: 0; border-radius: 0.55rem; background: transparent; color: var(--color-text-muted); cursor: pointer; font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif; font-size: 0.72rem; font-style: normal; font-weight: 560; line-height: 1; transition: background 150ms ease, color 150ms ease, transform 150ms ease; }
-  .format-tools svg { width: 1rem; height: 1rem; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
-  .format-tools button:hover, .toolbar-upload:hover { background: var(--color-surface); color: var(--color-accent); transform: translateY(-0.08rem); }
-  .editor-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 0.45rem; }
-  .button { width: auto; padding: 0.62rem 0.9rem; border: 1px solid transparent; border-radius: 999px; cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 680; transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease; }
-  .button:hover { transform: translateY(-0.1rem); }
-  .button--quiet { border-color: var(--color-border); background: transparent; }
-  .button--quiet:hover { border-color: var(--color-text-muted); }
-  .button--primary { background: var(--color-text); color: var(--color-page); }
-  .button--primary:hover { background: var(--color-accent); }
-  .button--danger { border-color: color-mix(in srgb, #c23b3b 35%, var(--color-border)); background: transparent; color: #c23b3b; }
-  .button--danger:hover { background: color-mix(in srgb, #c23b3b 9%, transparent); }
-  .editor-toast { position: fixed; z-index: 120; right: 1.4rem; bottom: 1.4rem; max-width: min(22rem, calc(100vw - 2rem)); margin: 0; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); border-radius: 0.75rem; background: var(--color-nav); color: var(--color-nav-text); box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 20%, transparent); font-size: 0.78rem; }
-  .editor-toast[data-error='true'] { border-color: color-mix(in srgb, #d95656 55%, var(--color-border)); color: #ef7777; }
-  [hidden] { display: none !important; }
-  @media (max-width: 60rem) { .draft-page { width: calc(100% - 2rem); } .workspace { grid-template-columns: 1fr; } aside { position: static; grid-row: 1; min-height: auto; max-height: none; padding: 0.35rem; border-left: 0; } }
+  .draft-page {
+    width: min(72rem, calc(100% - 4rem));
+    margin-inline: auto;
+    padding-block: 1rem 5rem;
+  }
+  .back-link {
+    display: inline-flex;
+    gap: 0.45rem;
+    margin-bottom: 0.8rem;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition:
+      color 160ms ease,
+      transform 160ms ease;
+  }
+  .back-link:hover {
+    color: var(--color-accent);
+    transform: translateX(-0.15rem);
+  }
+  header p {
+    margin: 0;
+    color: var(--color-accent);
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.1em;
+  }
+  h1 {
+    margin: 0.35rem 0 1.6rem;
+    font-size: clamp(1.9rem, 4vw, 2.65rem);
+    letter-spacing: -0.035em;
+  }
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 48rem) 14rem;
+    justify-content: center;
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+  aside {
+    position: sticky;
+    top: 0;
+    display: grid;
+    min-height: 100vh;
+    max-height: 100vh;
+    align-self: start;
+    align-content: start;
+    gap: 1.1rem;
+    overflow-y: auto;
+    padding: 2rem 0.35rem 1rem 1rem;
+    border-left: 1px solid var(--color-border);
+  }
+  .aside-title {
+    color: var(--color-accent);
+  }
+  aside section {
+    display: grid;
+    gap: 0.4rem;
+  }
+  aside p {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 0.72rem;
+    font-weight: 780;
+    letter-spacing: 0.07em;
+  }
+  aside section + section {
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--color-border);
+  }
+  [data-draft-list] {
+    display: grid;
+    gap: 0.25rem;
+  }
+  [data-draft-list] button {
+    width: 100%;
+    padding: 0.58rem 0.65rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition:
+      background 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+  [data-draft-list] button:hover {
+    background: var(--color-surface);
+    color: var(--color-text);
+    transform: translateX(0.15rem);
+  }
+  .create-menu {
+    position: relative;
+    width: fit-content;
+  }
+  .create-menu > summary {
+    list-style: none;
+  }
+  .create-menu > summary::-webkit-details-marker {
+    display: none;
+  }
+  .read-button {
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.55rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 0.76rem;
+    font-weight: 650;
+    transition:
+      background 160ms ease,
+      color 160ms ease;
+  }
+  .read-button:hover,
+  .create-menu[open] .read-button {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+  .create-menu-popover {
+    position: absolute;
+    z-index: 4;
+    top: calc(100% + 0.45rem);
+    right: 0;
+    display: grid;
+    width: 12rem;
+    padding: 0.45rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    background: var(--color-page);
+    box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 15%, transparent);
+  }
+  .create-menu-popover button,
+  .create-menu-popover label {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 650;
+    text-align: left;
+    transition:
+      background 150ms ease,
+      color 150ms ease;
+  }
+  .create-menu-popover button:hover,
+  .create-menu-popover label:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+  .create-menu-popover svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+  }
+  form {
+    display: grid;
+    gap: 1rem;
+  }
+  label {
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--color-surface) 55%, var(--color-page));
+    font: inherit;
+    transition:
+      border-color 160ms ease,
+      background 160ms ease,
+      box-shadow 160ms ease;
+  }
+  input:hover,
+  textarea:hover,
+  select:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--color-accent) 55%,
+      var(--color-border)
+    );
+  }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--color-accent);
+    background: var(--color-page);
+    box-shadow: 0 0 0 0.2rem
+      color-mix(in srgb, var(--color-accent) 12%, transparent);
+    outline: 0;
+  }
+  .category-select {
+    position: relative;
+    width: clamp(7rem, 20%, 9rem);
+  }
+  .category-select > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.72rem 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 500;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+  .category-select > summary::-webkit-details-marker {
+    display: none;
+  }
+  .category-select > summary:hover,
+  .category-select[open] > summary {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 0.2rem
+      color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+  .category-select svg {
+    width: 0.9rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+  .category-select > div {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 0.4rem);
+    left: 0;
+    display: grid;
+    width: 9rem;
+    padding: 0.4rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.8rem;
+    background: var(--color-page);
+    box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 13%, transparent);
+  }
+  .category-select button {
+    padding: 0.58rem 0.65rem;
+    border: 0;
+    border-radius: 0.55rem;
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    text-align: left;
+  }
+  .category-select button:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+  .content-field {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .content-field-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .markdown-editor {
+    min-height: 23rem;
+    padding: 1rem;
+    font-family:
+      'Maple Mono', 'Maple Mono NF', 'Maple Mono CN', 'Cascadia Code',
+      ui-monospace, monospace;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    resize: vertical;
+    tab-size: 2;
+  }
+  .rich-editor {
+    min-height: 23rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    line-height: 1.8;
+    outline: 0;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+  .rich-editor:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 0.2rem
+      color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+  .rich-editor:empty::before {
+    color: var(--color-text-muted);
+    content: attr(data-placeholder);
+  }
+  .rich-editor :global(em),
+  .rich-editor :global(i) {
+    display: inline-block;
+    margin-right: 0.24em;
+    padding-right: 0.08em;
+    font-style: oblique 9deg;
+  }
+  .rich-editor :global(img),
+  .rich-editor :global(video) {
+    display: block;
+    width: 100%;
+    max-height: 28rem;
+    object-fit: contain;
+    border-radius: 0.75rem;
+  }
+  .rich-editor :global(pre) {
+    overflow: auto;
+    padding: 0.8rem;
+    border-radius: 0.6rem;
+    background: transparent;
+    color: var(--color-text);
+    font-family:
+      'Maple Mono', 'Maple Mono NF', 'Maple Mono CN', 'Cascadia Code',
+      ui-monospace, monospace;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+  .rich-editor :global(.editor-atomic) {
+    position: relative;
+    margin: 1rem 0;
+    padding: 0.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.9rem;
+  }
+  .rich-editor :global(.editor-atomic--media) {
+    width: min(36rem, 100%);
+    margin-inline: auto;
+    border: 0;
+  }
+  .rich-editor :global(.editor-atomic--media img),
+  .rich-editor :global(.editor-atomic--media video) {
+    width: 100%;
+    margin: 0;
+  }
+  .rich-editor :global(figcaption) {
+    min-height: 1.7rem;
+    padding: 0.55rem 0.5rem 0;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    text-align: center;
+    outline: 0;
+  }
+  .rich-editor :global(figcaption:empty::before) {
+    content: attr(data-placeholder);
+  }
+  .rich-editor :global(.editor-atomic--code) {
+    padding-top: 2rem;
+    border-color: color-mix(
+      in srgb,
+      var(--color-text) 24%,
+      var(--color-border)
+    );
+    background: color-mix(in srgb, var(--color-text) 9%, var(--color-page));
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--color-text) 7%, transparent);
+  }
+  .rich-editor :global(.editor-atomic--code > span) {
+    position: absolute;
+    top: 0.45rem;
+    left: 0.7rem;
+    color: var(--color-text-muted);
+    font-size: 0.68rem;
+  }
+  .rich-editor :global(.editor-atomic--code pre) {
+    margin: 0;
+    padding: 0.5rem;
+    outline: 0;
+  }
+  .rich-editor :global(.editor-atomic--divider) {
+    padding: 0.9rem 2.4rem 0.9rem 0.7rem;
+  }
+  .rich-editor :global([data-delete-atomic]) {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    display: grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, #000 58%, transparent);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    line-height: 1;
+  }
+  .format-tools {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+  .format-tools button,
+  .toolbar-upload {
+    display: flex;
+    width: 100%;
+    min-height: 2.35rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.42rem 0.5rem;
+    border: 0;
+    border-radius: 0.55rem;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-family: Inter, ui-sans-serif, system-ui, 'Microsoft YaHei', sans-serif;
+    font-size: 0.72rem;
+    font-style: normal;
+    font-weight: 560;
+    line-height: 1;
+    transition:
+      background 150ms ease,
+      color 150ms ease,
+      transform 150ms ease;
+  }
+  .format-tools svg {
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+  }
+  .format-tools button:hover,
+  .toolbar-upload:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
+    transform: translateY(-0.08rem);
+  }
+  .editor-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .button {
+    width: auto;
+    padding: 0.62rem 0.9rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 680;
+    transition:
+      background 160ms ease,
+      color 160ms ease,
+      border-color 160ms ease,
+      transform 160ms ease;
+  }
+  .button:hover {
+    transform: translateY(-0.1rem);
+  }
+  .button--quiet {
+    border-color: var(--color-border);
+    background: transparent;
+  }
+  .button--quiet:hover {
+    border-color: var(--color-text-muted);
+  }
+  .button--primary {
+    background: var(--color-text);
+    color: var(--color-page);
+  }
+  .button--primary:hover {
+    background: var(--color-accent);
+  }
+  .button--danger {
+    border-color: color-mix(in srgb, #c23b3b 35%, var(--color-border));
+    background: transparent;
+    color: #c23b3b;
+  }
+  .button--danger:hover {
+    background: color-mix(in srgb, #c23b3b 9%, transparent);
+  }
+  .editor-toast {
+    position: fixed;
+    z-index: 120;
+    right: 1.4rem;
+    bottom: 1.4rem;
+    max-width: min(22rem, calc(100vw - 2rem));
+    margin: 0;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-nav);
+    color: var(--color-nav-text);
+    box-shadow: 0 0.8rem 2rem color-mix(in srgb, #000 20%, transparent);
+    font-size: 0.78rem;
+  }
+  .editor-toast[data-error='true'] {
+    border-color: color-mix(in srgb, #d95656 55%, var(--color-border));
+    color: #ef7777;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  @media (max-width: 60rem) {
+    .draft-page {
+      width: calc(100% - 2rem);
+    }
+    .workspace {
+      grid-template-columns: 1fr;
+    }
+    aside {
+      position: static;
+      grid-row: 1;
+      min-height: auto;
+      max-height: none;
+      padding: 0.35rem;
+      border-left: 0;
+    }
+  }
 </style>

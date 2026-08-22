@@ -4,16 +4,36 @@ import { withBase } from '../../utils/paths';
 ---
 
 <BaseLayout title="申请管理员权限 | 文档" description="提交管理员权限申请。">
-  <main class="apply-page" data-page data-login={withBase('/login/')} data-articles={withBase('/articles/')}>
-    <header><p>ACCESS REQUEST</p><h1>申请管理员权限</h1><span>管理员可以创建、编辑并直接发布文档。</span></header>
+  <main
+    class="apply-page"
+    data-page
+    data-login={withBase('/login/')}
+    data-articles={withBase('/articles/')}
+  >
+    <header>
+      <p>ACCESS REQUEST</p><h1>申请管理员权限</h1><span
+        >管理员可以创建、编辑并直接发布文档。</span
+      >
+    </header>
     <section class="request-card" data-request-card hidden>
       <form data-form>
-        <label>申请说明<textarea name="reason" maxlength="300" rows="5" required placeholder="简单说明申请管理员权限的用途"></textarea></label>
-        <div><small data-count>0/300</small><button type="submit">提交申请</button></div>
+        <label
+          >申请说明<textarea
+            name="reason"
+            maxlength="300"
+            rows="5"
+            required
+            placeholder="简单说明申请管理员权限的用途"></textarea></label
+        >
+        <div>
+          <small data-count>0/300</small><button type="submit">提交申请</button>
+        </div>
       </form>
       <div class="request-state" data-state hidden></div>
     </section>
-    <div class="loader" data-loader aria-label="加载中"><i></i><i></i><i></i></div>
+    <div class="loader" data-loader aria-label="加载中">
+      <i></i><i></i><i></i>
+    </div>
     <p class="toast" data-toast hidden></p>
   </main>
 </BaseLayout>
@@ -25,43 +45,204 @@ import { withBase } from '../../utils/paths';
   const loader = document.querySelector<HTMLElement>('[data-loader]');
   const form = document.querySelector<HTMLFormElement>('[data-form]');
   const state = document.querySelector<HTMLElement>('[data-state]');
-  const textarea = document.querySelector<HTMLTextAreaElement>('textarea[name="reason"]');
+  const textarea = document.querySelector<HTMLTextAreaElement>(
+    'textarea[name="reason"]',
+  );
   const count = document.querySelector<HTMLElement>('[data-count]');
   const toast = document.querySelector<HTMLElement>('[data-toast]');
   const session = (await supabase?.auth.getSession())?.data.session;
   if (!session) window.location.replace(page?.dataset.login ?? '/');
-  const showToast = (message: string, error = false) => { if (!toast) return; toast.textContent = message; toast.dataset.error = String(error); toast.hidden = false; window.setTimeout(() => { toast.hidden = true; }, error ? 4000 : 2200); };
+  const showToast = (message: string, error = false) => {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.dataset.error = String(error);
+    toast.hidden = false;
+    window.setTimeout(
+      () => {
+        toast.hidden = true;
+      },
+      error ? 4000 : 2200,
+    );
+  };
   const showStatus = (status: string) => {
     if (!form || !state) return;
-    form.hidden = true; state.hidden = false;
-    state.innerHTML = status === 'pending' ? '<strong>申请处理中</strong><p>管理员处理后，权限会在下次打开个人菜单时更新。</p>' : status === 'approved' ? '<strong>申请已通过</strong><p>你现在可以使用文档编辑与发布功能。</p>' : '<strong>申请未通过</strong><p>如有需要，请联系现有管理员。</p>';
+    form.hidden = true;
+    state.hidden = false;
+    state.innerHTML =
+      status === 'pending'
+        ? '<strong>申请处理中</strong><p>管理员处理后，权限会在下次打开个人菜单时更新。</p>'
+        : status === 'approved'
+          ? '<strong>申请已通过</strong><p>你现在可以使用文档编辑与发布功能。</p>'
+          : '<strong>申请未通过</strong><p>如有需要，请联系现有管理员。</p>';
   };
   if (session && supabase) {
     const client = supabase;
-    const profile = await client.from('profiles').select('display_name,role').eq('user_id', session.user.id).single();
-    if (profile.data?.role === 'admin') window.location.replace(page?.dataset.articles ?? '/articles/');
-    const existing = await client.from('admin_requests').select('status').eq('user_id', session.user.id).maybeSingle();
-    loader?.remove(); if (card) card.hidden = false;
+    const profile = await client
+      .from('profiles')
+      .select('display_name,role')
+      .eq('user_id', session.user.id)
+      .single();
+    if (profile.data?.role === 'admin')
+      window.location.replace(page?.dataset.articles ?? '/articles/');
+    const existing = await client
+      .from('admin_requests')
+      .select('status')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+    loader?.remove();
+    if (card) card.hidden = false;
     if (existing.data) showStatus(existing.data.status);
     form?.addEventListener('submit', async (event) => {
-      event.preventDefault(); if (!(textarea instanceof HTMLTextAreaElement)) return;
-      const reason = textarea.value.trim(); if (!reason) return;
-      const result = await client.from('admin_requests').insert({ user_id: session.user.id, display_name: String(profile.data?.display_name || '未设置昵称'), reason });
+      event.preventDefault();
+      if (!(textarea instanceof HTMLTextAreaElement)) return;
+      const reason = textarea.value.trim();
+      if (!reason) return;
+      const result = await client.from('admin_requests').insert({
+        user_id: session.user.id,
+        display_name: String(profile.data?.display_name || '未设置昵称'),
+        reason,
+      });
       if (result.error) return showToast(result.error.message, true);
-      showStatus('pending'); showToast('申请已提交。');
+      showStatus('pending');
+      showToast('申请已提交。');
     });
   }
-  textarea?.addEventListener('input', () => { if (count && textarea instanceof HTMLTextAreaElement) count.textContent = `${Array.from(textarea.value).length}/300`; });
+  textarea?.addEventListener('input', () => {
+    if (count && textarea instanceof HTMLTextAreaElement)
+      count.textContent = `${Array.from(textarea.value).length}/300`;
+  });
 </script>
 
 <style>
-  .apply-page { width: min(44rem, calc(100% - 4rem)); margin-left: clamp(2rem, 5vw, 4.5rem); padding-block: 1.9rem 5rem; }
-  header p { margin: 0; color: var(--color-accent); font-size: .68rem; font-weight: 750; letter-spacing: .1em; } h1 { margin: .3rem 0 .4rem; font-size: clamp(2rem, 4vw, 2.8rem); } header > span { color: var(--color-text-muted); font-size: .82rem; }
-  .request-card { margin-top: 1.8rem; padding: 1.2rem; border: 1px solid var(--color-border); border-radius: 1.1rem; background: var(--color-surface); }
-  form, label { display: grid; gap: .65rem; } label { font-size: .8rem; font-weight: 700; } textarea { width: 100%; padding: .85rem; border: 1px solid var(--color-border); border-radius: .8rem; background: var(--color-page); color: var(--color-text); font: inherit; line-height: 1.7; resize: vertical; } textarea:focus { border-color: var(--color-accent); outline: 0; box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--color-accent) 12%, transparent); }
-  form > div { display: flex; align-items: center; justify-content: space-between; } small { color: var(--color-text-muted); } button { padding: .58rem .9rem; border: 0; border-radius: .65rem; background: var(--color-text); color: var(--color-page); cursor: pointer; font: inherit; font-size: .78rem; }
-  .request-state strong { font-size: 1rem; } .request-state p { margin: .35rem 0 0; color: var(--color-text-muted); font-size: .8rem; }
-  .loader { display: flex; gap: .35rem; margin-top: 2rem; } .loader i { width: .42rem; height: .42rem; border-radius: 50%; background: var(--color-accent); animation: pulse 1s infinite ease-in-out; } .loader i:nth-child(2) { animation-delay: .12s; } .loader i:nth-child(3) { animation-delay: .24s; } @keyframes pulse { 0%,100% { opacity: .18; transform: translateY(0); } 50% { opacity: .8; transform: translateY(-.2rem); } }
-  .toast { position: fixed; right: 1.4rem; bottom: 1.4rem; padding: .7rem .9rem; border-radius: .75rem; background: var(--color-nav); color: var(--color-nav-text); font-size: .78rem; box-shadow: 0 .8rem 2rem #0003; } .toast[data-error='true'] { color: #ef7777; } [hidden] { display: none !important; }
-  @media (max-width: 38rem) { .apply-page { width: calc(100% - 2rem); margin-inline: 1rem; } }
+  .apply-page {
+    width: min(44rem, calc(100% - 4rem));
+    margin-left: clamp(2rem, 5vw, 4.5rem);
+    padding-block: 1.9rem 5rem;
+  }
+  header p {
+    margin: 0;
+    color: var(--color-accent);
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.1em;
+  }
+  h1 {
+    margin: 0.3rem 0 0.4rem;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+  }
+  header > span {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+  }
+  .request-card {
+    margin-top: 1.8rem;
+    padding: 1.2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 1.1rem;
+    background: var(--color-surface);
+  }
+  form,
+  label {
+    display: grid;
+    gap: 0.65rem;
+  }
+  label {
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  textarea {
+    width: 100%;
+    padding: 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.8rem;
+    background: var(--color-page);
+    color: var(--color-text);
+    font: inherit;
+    line-height: 1.7;
+    resize: vertical;
+  }
+  textarea:focus {
+    border-color: var(--color-accent);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem
+      color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+  form > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  small {
+    color: var(--color-text-muted);
+  }
+  button {
+    padding: 0.58rem 0.9rem;
+    border: 0;
+    border-radius: 0.65rem;
+    background: var(--color-text);
+    color: var(--color-page);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+  }
+  .request-state strong {
+    font-size: 1rem;
+  }
+  .request-state p {
+    margin: 0.35rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+  }
+  .loader {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 2rem;
+  }
+  .loader i {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+    animation: pulse 1s infinite ease-in-out;
+  }
+  .loader i:nth-child(2) {
+    animation-delay: 0.12s;
+  }
+  .loader i:nth-child(3) {
+    animation-delay: 0.24s;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 0.18;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 0.8;
+      transform: translateY(-0.2rem);
+    }
+  }
+  .toast {
+    position: fixed;
+    right: 1.4rem;
+    bottom: 1.4rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.75rem;
+    background: var(--color-nav);
+    color: var(--color-nav-text);
+    font-size: 0.78rem;
+    box-shadow: 0 0.8rem 2rem #0003;
+  }
+  .toast[data-error='true'] {
+    color: #ef7777;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  @media (max-width: 38rem) {
+    .apply-page {
+      width: calc(100% - 2rem);
+      margin-inline: 1rem;
+    }
+  }
 </style>

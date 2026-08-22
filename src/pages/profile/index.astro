@@ -3,16 +3,28 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
 
-const historicalPublications = (await getCollection('docs', ({ data }) =>
-  data.kind === 'document' && !data.draft,
-))
+const historicalPublications = (
+  await getCollection(
+    'docs',
+    ({ data }) => data.kind === 'document' && !data.draft,
+  )
+)
   .sort((a, b) => b.data.updatedAt.getTime() - a.data.updatedAt.getTime())
   .map((article) => ({
     title: article.data.title,
     summary: article.data.description,
     category: article.data.category,
-    publishedAt: (article.data.publishedAt ?? article.data.updatedAt).toISOString(),
-    url: withBase('/articles/' + (article.id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? article.id) + '/'),
+    publishedAt: (
+      article.data.publishedAt ?? article.data.updatedAt
+    ).toISOString(),
+    url: withBase(
+      '/articles/' +
+        (article.id
+          .split('/')
+          .at(-1)
+          ?.replace(/\.mdx?$/, '') ?? article.id) +
+        '/',
+    ),
   }));
 ---
 
@@ -87,7 +99,9 @@ const historicalPublications = (await getCollection('docs', ({ data }) =>
     <section class="profile-section">
       <header><p>PUBLICATIONS</p><h2>我发布的文档</h2></header>
       <div class="publication-list" data-publications aria-busy="true">
-        <div class="publication-skeleton" aria-hidden="true"><i></i><b></b></div>
+        <div class="publication-skeleton" aria-hidden="true">
+          <i></i><b></b>
+        </div>
       </div>
     </section>
   </main>
@@ -104,8 +118,12 @@ const historicalPublications = (await getCollection('docs', ({ data }) =>
   const avatarElement = document.querySelector<HTMLElement>('[data-avatar]');
   const coverElement = document.querySelector<HTMLElement>('[data-cover]');
   const note = document.querySelector<HTMLElement>('[data-profile-note]');
-  const roleElement = document.querySelector<HTMLElement>('[data-profile-role]');
-  const publications = document.querySelector<HTMLElement>('[data-publications]');
+  const roleElement = document.querySelector<HTMLElement>(
+    '[data-profile-role]',
+  );
+  const publications = document.querySelector<HTMLElement>(
+    '[data-publications]',
+  );
   const avatarInput = document.querySelector<HTMLInputElement>(
     '[data-avatar-input]',
   );
@@ -133,9 +151,7 @@ const historicalPublications = (await getCollection('docs', ({ data }) =>
 
   const applyProfile = (profile: Record<string, unknown>) => {
     currentProfile = { ...currentProfile, ...profile };
-    const displayName = Array.from(
-      String(profile.display_name || '未设置昵称'),
-    )
+    const displayName = Array.from(String(profile.display_name || '未设置昵称'))
       .slice(0, NAME_MAX_LENGTH)
       .join('');
     const bio = Array.from(
@@ -199,30 +215,38 @@ const historicalPublications = (await getCollection('docs', ({ data }) =>
       .order('published_at', { ascending: false });
     publications.ariaBusy = 'false';
     if (publicationError) {
-      publications.innerHTML = '<p class="publication-empty">暂时无法读取已发布文档。</p>';
+      publications.innerHTML =
+        '<p class="publication-empty">暂时无法读取已发布文档。</p>';
     } else if (!published?.length && !isAdministrator) {
-      publications.innerHTML = '<p class="publication-empty">还没有发布文档。</p>';
+      publications.innerHTML =
+        '<p class="publication-empty">还没有发布文档。</p>';
     } else {
       const readUrl = page?.dataset.readUrl ?? '/articles/read/';
       const historical = isAdministrator
-        ? JSON.parse(page?.dataset.historicalPublications ?? '[]') as Array<{
+        ? (JSON.parse(page?.dataset.historicalPublications ?? '[]') as Array<{
             title: string;
             summary: string;
             category: string;
             publishedAt: string;
             url: string;
-          }>
+          }>)
         : [];
       const publicationCards = (published ?? []).map((publication) => {
         const link = document.createElement('a');
         link.className = 'publication-card';
         link.href = `${readUrl}?id=${encodeURIComponent(publication.id)}`;
-        const category = document.createElement('span'); category.textContent = publication.category;
-        const title = document.createElement('h3'); title.textContent = publication.title || '未命名文档';
-        const summary = document.createElement('p'); summary.textContent = publication.summary || '暂无摘要';
+        const category = document.createElement('span');
+        category.textContent = publication.category;
+        const title = document.createElement('h3');
+        title.textContent = publication.title || '未命名文档';
+        const summary = document.createElement('p');
+        summary.textContent = publication.summary || '暂无摘要';
         const time = document.createElement('time');
-        const date = publication.published_at ? new Date(publication.published_at) : new Date();
-        time.dateTime = date.toISOString(); time.textContent = `发布时间：${date.toLocaleDateString('zh-CN')}`;
+        const date = publication.published_at
+          ? new Date(publication.published_at)
+          : new Date();
+        time.dateTime = date.toISOString();
+        time.textContent = `发布时间：${date.toLocaleDateString('zh-CN')}`;
         link.append(category, title, summary, time);
         return link;
       });
@@ -230,12 +254,16 @@ const historicalPublications = (await getCollection('docs', ({ data }) =>
         const link = document.createElement('a');
         link.className = 'publication-card';
         link.href = publication.url;
-        const category = document.createElement('span'); category.textContent = publication.category;
-        const title = document.createElement('h3'); title.textContent = publication.title;
-        const summary = document.createElement('p'); summary.textContent = publication.summary;
+        const category = document.createElement('span');
+        category.textContent = publication.category;
+        const title = document.createElement('h3');
+        title.textContent = publication.title;
+        const summary = document.createElement('p');
+        summary.textContent = publication.summary;
         const time = document.createElement('time');
         const date = new Date(publication.publishedAt);
-        time.dateTime = date.toISOString(); time.textContent = '发布时间：' + date.toLocaleDateString('zh-CN');
+        time.dateTime = date.toISOString();
+        time.textContent = '发布时间：' + date.toLocaleDateString('zh-CN');
         link.append(category, title, summary, time);
         return link;
       });
@@ -318,7 +346,10 @@ const historicalPublications = (await getCollection('docs', ({ data }) =>
         countCharacters(control.value) - selectionLength + incomingLength >
         maximum
       ) {
-        setNote(`${field === 'bio' ? '个性签名' : '昵称'}最多 ${maximum} 个字符。`, true);
+        setNote(
+          `${field === 'bio' ? '个性签名' : '昵称'}最多 ${maximum} 个字符。`,
+          true,
+        );
       }
     });
     control.addEventListener('paste', (event) => {
@@ -341,7 +372,10 @@ const historicalPublications = (await getCollection('docs', ({ data }) =>
       }
       counter.textContent = formatCount(control.value, maximum);
       if (characters.length >= maximum) {
-        setNote(`${field === 'bio' ? '个性签名' : '昵称'}最多 ${maximum} 个字符。`, true);
+        setNote(
+          `${field === 'bio' ? '个性签名' : '昵称'}最多 ${maximum} 个字符。`,
+          true,
+        );
       } else if (note?.dataset.error === 'true') {
         setNote('');
       }
@@ -639,14 +673,69 @@ const historicalPublications = (await getCollection('docs', ({ data }) =>
     gap: 0.7rem;
     margin-top: 1.2rem;
   }
-  .publication-list :global(.publication-card) { display: grid; gap: .3rem; padding: 1rem 1.1rem; border: 1px solid var(--color-border); border-radius: 1rem; background: color-mix(in srgb, var(--color-surface) 65%, var(--color-page)); color: var(--color-text); text-decoration: none; transition: border-color 180ms ease, transform 180ms ease; }
-  .publication-list :global(.publication-card:hover) { border-color: var(--color-accent); transform: translateY(-.12rem); }
-  .publication-list :global(.publication-card > span) { width: fit-content; color: var(--color-accent); font-size: .66rem; font-weight: 720; }
-  .publication-list :global(h3) { margin: 0; font-size: 1.05rem; }
-  .publication-list :global(p), .publication-list :global(time), .publication-list :global(.publication-empty) { margin: 0; color: var(--color-text-muted); font-size: .78rem; }
-  .publication-skeleton { display: grid; gap: .55rem; padding: 1.2rem; border: 1px solid var(--color-border); border-radius: 1rem; }
-  .publication-skeleton > * { display: block; width: 52%; height: .7rem; border-radius: 999px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-text) 9%, transparent), transparent); background-size: 220% 100%; animation: publication-loading 1.3s infinite; } .publication-skeleton b { width: 72%; }
-  @keyframes publication-loading { to { background-position: -220% 0; } }
+  .publication-list :global(.publication-card) {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--color-surface) 65%, var(--color-page));
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      border-color 180ms ease,
+      transform 180ms ease;
+  }
+  .publication-list :global(.publication-card:hover) {
+    border-color: var(--color-accent);
+    transform: translateY(-0.12rem);
+  }
+  .publication-list :global(.publication-card > span) {
+    width: fit-content;
+    color: var(--color-accent);
+    font-size: 0.66rem;
+    font-weight: 720;
+  }
+  .publication-list :global(h3) {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .publication-list :global(p),
+  .publication-list :global(time),
+  .publication-list :global(.publication-empty) {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+  .publication-skeleton {
+    display: grid;
+    gap: 0.55rem;
+    padding: 1.2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+  }
+  .publication-skeleton > * {
+    display: block;
+    width: 52%;
+    height: 0.7rem;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-text) 9%, transparent),
+      transparent
+    );
+    background-size: 220% 100%;
+    animation: publication-loading 1.3s infinite;
+  }
+  .publication-skeleton b {
+    width: 72%;
+  }
+  @keyframes publication-loading {
+    to {
+      background-position: -220% 0;
+    }
+  }
   .profile-note {
     min-height: 1.2em;
     margin: 0.65rem 0 0;

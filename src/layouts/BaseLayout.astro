@@ -42,9 +42,12 @@ const { title, description } = Astro.props;
         pre.dataset.copyReady = 'true';
         pre.classList.add('has-code-copy');
 
-        const copyIcon = '<svg aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="10" height="10" rx="2"></rect><path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path></svg>';
-        const successIcon = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg>';
-        const errorIcon = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"></path></svg>';
+        const copyIcon =
+          '<svg aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="10" height="10" rx="2"></rect><path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path></svg>';
+        const successIcon =
+          '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg>';
+        const errorIcon =
+          '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"></path></svg>';
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'code-copy-button';
@@ -76,8 +79,14 @@ const { title, description } = Astro.props;
       };
 
       const decorateArticleCodeBlocks = (root: ParentNode) => {
-        if (root instanceof HTMLPreElement && root.matches('.docs-content pre, .content pre')) decorateCodeBlock(root);
-        root.querySelectorAll<HTMLPreElement>('.docs-content pre, .content pre').forEach(decorateCodeBlock);
+        if (
+          root instanceof HTMLPreElement &&
+          root.matches('.docs-content pre, .content pre')
+        )
+          decorateCodeBlock(root);
+        root
+          .querySelectorAll<HTMLPreElement>('.docs-content pre, .content pre')
+          .forEach(decorateCodeBlock);
       };
 
       decorateArticleCodeBlocks(document);

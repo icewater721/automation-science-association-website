@@ -6,22 +6,43 @@ import { withBase } from '../../utils/paths';
 
 export const getStaticPaths = (async () => {
   const slugFor = (id: string) =>
-    id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? id;
-  const entries = await getCollection('docs', ({ data }) => data.kind === 'document' && !data.draft);
-  return entries.map((entry) => ({ params: { slug: slugFor(entry.id) }, props: { entry } }));
+    id
+      .split('/')
+      .at(-1)
+      ?.replace(/\.mdx?$/, '') ?? id;
+  const entries = await getCollection(
+    'docs',
+    ({ data }) => data.kind === 'document' && !data.draft,
+  );
+  return entries.map((entry) => ({
+    params: { slug: slugFor(entry.id) },
+    props: { entry },
+  }));
 }) satisfies GetStaticPaths;
 
 const { entry } = Astro.props;
-const slugFor = (id: string) => id.split('/').at(-1)?.replace(/\.mdx?$/, '') ?? id;
+const slugFor = (id: string) =>
+  id
+    .split('/')
+    .at(-1)
+    ?.replace(/\.mdx?$/, '') ?? id;
 const { Content, headings } = await render(entry);
-const entries = (await getCollection('docs', ({ data }) => data.kind === 'document' && !data.draft))
+const entries = (
+  await getCollection(
+    'docs',
+    ({ data }) => data.kind === 'document' && !data.draft,
+  )
+)
   .filter((item) => item.data.category === entry.data.category)
   .sort((a, b) => a.data.order - b.data.order);
 const currentIndex = entries.findIndex((item) => item.id === entry.id);
-const navigationItem = (item: (typeof entries)[number] | undefined) => item ? {
-  title: item.data.title,
-  href: withBase(`/articles/${slugFor(item.id)}/`),
-} : undefined;
+const navigationItem = (item: (typeof entries)[number] | undefined) =>
+  item
+    ? {
+        title: item.data.title,
+        href: withBase(`/articles/${slugFor(item.id)}/`),
+      }
+    : undefined;
 ---
 
 <DocsLayout

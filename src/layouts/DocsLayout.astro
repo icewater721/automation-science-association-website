@@ -35,7 +35,13 @@ const visibleHeadings = headings.filter(
 >
   <main class="docs-shell">
     <article class="docs-article">
-      {backHref && <a class="back-link" href={backHref} aria-label="返回文档列表">← <span>返回</span></a>}
+      {
+        backHref && (
+          <a class="back-link" href={backHref} aria-label="返回文档列表">
+            ← <span>返回</span>
+          </a>
+        )
+      }
       {
         breadcrumbs.length > 0 && (
           <nav class="breadcrumbs" aria-label="面包屑导航">
@@ -83,7 +89,15 @@ const visibleHeadings = headings.filter(
     </article>
 
     <aside class="page-outline" aria-label="本页跳转">
-      <div class="outline-heading"><p>文档目录</p><button class="back-to-top" type="button" data-back-to-top title="回到顶部" aria-label="回到顶部">↑</button></div>
+      <div class="outline-heading">
+        <p>文档目录</p><button
+          class="back-to-top"
+          type="button"
+          data-back-to-top
+          title="回到顶部"
+          aria-label="回到顶部">↑</button
+        >
+      </div>
       {
         visibleHeadings.length > 0 ? (
           <nav>
@@ -107,21 +121,30 @@ const visibleHeadings = headings.filter(
   if (supabase) {
     const contributorResult = await supabase.rpc('get_site_contributor');
     const contributor = contributorResult.data?.[0];
-    const contributorElement = document.querySelector<HTMLElement>('[data-historical-contributor]');
+    const contributorElement = document.querySelector<HTMLElement>(
+      '[data-historical-contributor]',
+    );
     if (!contributorResult.error && contributor && contributorElement) {
       const image = contributorElement.querySelector<HTMLImageElement>('img');
-      if (image && contributor.avatar_url) image.src = String(contributor.avatar_url);
+      if (image && contributor.avatar_url)
+        image.src = String(contributor.avatar_url);
     }
   }
 
-  const outlineLinks = [...document.querySelectorAll<HTMLAnchorElement>('.page-outline a')];
+  const outlineLinks = [
+    ...document.querySelectorAll<HTMLAnchorElement>('.page-outline a'),
+  ];
   const sections = outlineLinks
-    .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+    .map((link) =>
+      document.getElementById(decodeURIComponent(link.hash.slice(1))),
+    )
     .filter((section): section is HTMLElement => Boolean(section));
   const updateActiveOutline = () => {
     if (!sections.length) return;
     const marker = Math.min(window.innerHeight * 0.3, 180);
-    const atPageBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+    const atPageBottom =
+      window.scrollY + window.innerHeight >=
+      document.documentElement.scrollHeight - 2;
     let active = atPageBottom ? sections.at(-1)! : sections[0];
     if (!atPageBottom) {
       for (const section of sections) {
@@ -138,7 +161,11 @@ const visibleHeadings = headings.filter(
   };
   updateActiveOutline();
   window.addEventListener('scroll', updateActiveOutline, { passive: true });
-  document.querySelector('[data-back-to-top]')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  document
+    .querySelector('[data-back-to-top]')
+    ?.addEventListener('click', () =>
+      window.scrollTo({ top: 0, behavior: 'smooth' }),
+    );
 </script>
 
 <style>
@@ -170,10 +197,15 @@ const visibleHeadings = headings.filter(
     color: var(--color-text-muted);
     font-size: 0.8rem;
     text-decoration: none;
-    transition: color 160ms ease, transform 160ms ease;
+    transition:
+      color 160ms ease,
+      transform 160ms ease;
   }
 
-  .back-link:hover { color: var(--color-accent); transform: translateX(-0.15rem); }
+  .back-link:hover {
+    color: var(--color-accent);
+    transform: translateX(-0.15rem);
+  }
 
   .page-outline {
     grid-column: 2;
@@ -188,15 +220,36 @@ const visibleHeadings = headings.filter(
     letter-spacing: 0.08em;
   }
 
-  .outline-heading { display: flex; align-items: center; justify-content: space-between; }
+  .outline-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 
   .page-outline nav {
     display: grid;
     gap: 0.2rem;
   }
 
-  .back-to-top { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; margin: 0 0 0.9rem; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: 0.9rem; }
-  .back-to-top:hover { background: var(--color-surface); color: var(--color-accent); }
+  .back-to-top {
+    display: grid;
+    width: 1.8rem;
+    height: 1.8rem;
+    place-items: center;
+    margin: 0 0 0.9rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+  }
+  .back-to-top:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
 
   .page-outline a {
     padding: 0.42rem 0 0.42rem 0.7rem;
@@ -288,7 +341,9 @@ const visibleHeadings = headings.filter(
     object-fit: cover;
   }
 
-  .contributor span { color: var(--color-text-muted); }
+  .contributor span {
+    color: var(--color-text-muted);
+  }
 
   .description {
     max-width: 42rem;
@@ -319,12 +374,15 @@ const visibleHeadings = headings.filter(
     color: var(--color-accent);
   }
 
-  .docs-content :global(code) { font-family: inherit; }
+  .docs-content :global(code) {
+    font-family: inherit;
+  }
 
   .docs-content :global(pre) {
     overflow: auto;
     padding: 1rem;
-    border: 1px solid color-mix(in srgb, var(--color-text) 24%, var(--color-border));
+    border: 1px solid
+      color-mix(in srgb, var(--color-text) 24%, var(--color-border));
     border-radius: 0.8rem;
     background: color-mix(in srgb, var(--color-text) 9%, var(--color-page));
     color: var(--color-text);
@@ -333,7 +391,9 @@ const visibleHeadings = headings.filter(
     line-height: 1.7;
   }
 
-  .docs-content :global(pre code) { font-family: inherit; }
+  .docs-content :global(pre code) {
+    font-family: inherit;
+  }
 
   .article-navigation {
     display: grid;
