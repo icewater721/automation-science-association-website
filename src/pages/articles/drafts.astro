@@ -9,8 +9,11 @@ import { withBase } from '../../utils/paths';
     data-draft-page
     data-login-url={withBase('/login/')}
     data-articles-url={withBase('/articles/')}
+    data-workspace-url={withBase('/articles/mine/')}
   >
-    <a class="back-link" href={withBase('/articles/')}>← <span>返回</span></a>
+    <a class="back-link" href={withBase('/articles/mine/')}
+      >← <span>返回创作中心</span></a
+    >
     <header><p>DOCUMENT WORKSPACE</p><h1>编辑文档</h1></header>
     <div class="workspace" data-workspace hidden>
       <form data-draft-form>
@@ -244,6 +247,7 @@ import { withBase } from '../../utils/paths';
   if (workspace) workspace.hidden = false;
 
   let noteTimer: number | undefined;
+  let currentStatus: 'draft' | 'published' = 'draft';
   const setNote = (message: string, error = false) => {
     if (!note) return;
     window.clearTimeout(noteTimer);
@@ -273,6 +277,7 @@ import { withBase } from '../../utils/paths';
   };
   const fillForm = (draft: Record<string, unknown>) => {
     if (!form) return;
+    currentStatus = draft.status === 'published' ? 'published' : 'draft';
     for (const [key, value] of Object.entries(draft)) {
       const field = form.elements.namedItem(key);
       if (
@@ -294,7 +299,14 @@ import { withBase } from '../../utils/paths';
     );
     if (categoryValue) categoryValue.textContent = normalizedCategory;
     const publishButton = document.querySelector<HTMLElement>('[data-publish]');
-    if (publishButton) publishButton.hidden = role !== 'admin';
+    if (publishButton) {
+      publishButton.hidden = role !== 'admin' || currentStatus === 'published';
+      publishButton.textContent = '发布';
+    }
+    const saveButton = document.querySelector<HTMLElement>('[data-save-draft]');
+    if (saveButton)
+      saveButton.textContent =
+        currentStatus === 'published' ? '保存并更新' : '保存草稿';
   };
   const loadDrafts = async () => {
     if (!supabase || !session || !draftList) return;
@@ -332,8 +344,14 @@ import { withBase } from '../../utils/paths';
     const id = form?.elements.namedItem('id');
     if (id instanceof HTMLInputElement) id.value = '';
     if (richEditor) richEditor.innerHTML = '';
+    currentStatus = 'draft';
+    const saveButton = document.querySelector<HTMLElement>('[data-save-draft]');
+    if (saveButton) saveButton.textContent = '保存草稿';
     const publishButton = document.querySelector<HTMLElement>('[data-publish]');
-    if (publishButton) publishButton.hidden = role !== 'admin';
+    if (publishButton) {
+      publishButton.hidden = role !== 'admin';
+      publishButton.textContent = '发布';
+    }
     closeCreateMenu();
   });
   const insertHtmlAtCaret = (html: string) => {
@@ -521,7 +539,7 @@ import { withBase } from '../../utils/paths';
       category: String(values.category),
       summary: String(values.summary),
       content_markdown: String(values.content_markdown),
-      status: 'draft',
+      status: currentStatus,
       updated_at: new Date().toISOString(),
     };
     const result = id
@@ -539,7 +557,9 @@ import { withBase } from '../../utils/paths';
     if (result.error) return setNote(result.error.message, true);
     const idField = form.elements.namedItem('id');
     if (idField instanceof HTMLInputElement) idField.value = result.data.id;
-    setNote('草稿已保存。');
+    setNote(
+      currentStatus === 'published' ? '线上文档已更新。' : '草稿已保存。',
+    );
     void loadDrafts();
   });
   const publishDraft = async () => {

@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
 ---
 
-<BaseLayout title="我的文档 | 文档" description="管理草稿和已发布文档。">
+<BaseLayout title="创作中心 | 文档" description="统一管理草稿和已发布文档。">
   <main
     class="manage-page"
     data-page
@@ -12,7 +12,17 @@ import { withBase } from '../../utils/paths';
     data-edit={withBase('/articles/drafts/')}
     data-read={withBase('/articles/read/')}
   >
-    <header><p>DOCUMENT WORKSPACE</p><h1>我的文档</h1></header>
+    <header class="workspace-header">
+      <div><p>DOCUMENT WORKSPACE</p><h1>创作中心</h1></div>
+      <a class="new-article" href={withBase('/articles/drafts/')}>+ 新建文章</a>
+    </header>
+    <nav class="filters" aria-label="内容筛选" data-filters>
+      <button type="button" data-filter="draft">草稿</button>
+      <button type="button" data-filter="published">已发布</button>
+      <button type="button" data-filter="mine">我创建的</button>
+      <button class="is-active" type="button" data-filter="all">全部文章</button
+      >
+    </nav>
     <div class="list is-loading" data-list aria-busy="true">
       {
         Array.from({ length: 3 }, () => (
@@ -32,9 +42,20 @@ import { withBase } from '../../utils/paths';
 
 <script>
   import { supabase } from '../../lib/supabase';
+
+  interface ManagedArticle {
+    id: string;
+    author_id: string;
+    title: string;
+    category: string;
+    status: 'draft' | 'published';
+    updated_at: string;
+  }
+
   const page = document.querySelector<HTMLElement>('[data-page]');
   const list = document.querySelector<HTMLElement>('[data-list]');
   const toast = document.querySelector<HTMLElement>('[data-toast]');
+  const filters = document.querySelector<HTMLElement>('[data-filters]');
   const session = (await supabase?.auth.getSession())?.data.session;
   if (!session) window.location.replace(page?.dataset.login ?? '/');
   const profile =
@@ -47,92 +68,129 @@ import { withBase } from '../../utils/paths';
       : null;
   if (profile?.data?.role !== 'admin')
     window.location.replace(page?.dataset.articles ?? '/articles/');
+
+  let articles: ManagedArticle[] = [];
+  let activeFilter = 'all';
+
   const showToast = (message: string, error = false) => {
     if (!toast) return;
     toast.textContent = message;
     toast.dataset.error = String(error);
     toast.hidden = false;
-    window.setTimeout(
-      () => {
-        toast.hidden = true;
-      },
-      error ? 4000 : 2200,
-    );
+    window.setTimeout(() => (toast.hidden = true), error ? 4000 : 2200);
   };
-  const load = async () => {
-    if (!supabase || !session || !list) return;
-    const client = supabase;
+
+  const visibleArticles = () =>
+    articles.filter((article) => {
+      if (activeFilter === 'draft') return article.status === 'draft';
+      if (activeFilter === 'published') return article.status === 'published';
+      if (activeFilter === 'mine')
+        return article.author_id === session?.user.id;
+      return true;
+    });
+
+  const render = () => {
+    if (!list) return;
+    const visible = visibleArticles();
+    if (!visible.length) {
+      list.innerHTML = '<p class="empty">这个分类下还没有内容。</p>';
+      return;
+    }
     const editUrl = page?.dataset.edit ?? '/articles/drafts/';
     const readUrl = page?.dataset.read ?? '/articles/read/';
-    const { data, error } = await client
-      .from('articles')
-      .select('id,title,category,status,updated_at')
-      .eq('author_id', session.user.id)
-      .in('status', ['draft', 'published'])
-      .order('updated_at', { ascending: false });
-    list.classList.remove('is-loading');
-    list.ariaBusy = 'false';
-    if (error) {
-      list.innerHTML = '<p class="empty">文档加载失败。</p>';
-      return;
-    }
-    if (!data?.length) {
-      list.innerHTML = '<p class="empty">还没有文档。</p>';
-      return;
-    }
     list.replaceChildren(
-      ...data.map((draft) => {
+      ...visible.map((article) => {
         const card = document.createElement('article');
-        const published = draft.status === 'published';
-        card.innerHTML = `<div class="card-content"><h2></h2><p>${draft.category}</p></div><div class="actions"><a>${published ? '查看' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<button class="delete" type="button">删除</button></div>`;
+        const published = article.status === 'published';
+        const mine = article.author_id === session?.user.id;
+        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作">···</summary><button class="delete" type="button">删除</button></details></div>`;
         card.querySelector('h2')!.textContent =
-          draft.title || (published ? '未命名文档' : '未命名草稿');
+          article.title || (published ? '未命名文档' : '未命名草稿');
+        card.querySelector('.card-content > p')!.textContent = article.category;
+        card.querySelector<HTMLElement>('.status')!.textContent = published
+          ? '已发布'
+          : '草稿';
+        card.querySelector<HTMLElement>('.ownership')!.textContent = mine
+          ? '我创建的'
+          : '其他管理员创建';
         card
-          .querySelector('a')!
+          .querySelector<HTMLAnchorElement>('.view')
+          ?.setAttribute(
+            'href',
+            `${readUrl}?id=${encodeURIComponent(article.id)}`,
+          );
+        card
+          .querySelector<HTMLAnchorElement>('.edit')!
           .setAttribute(
             'href',
-            `${published ? readUrl : editUrl}?id=${encodeURIComponent(draft.id)}`,
+            `${editUrl}?id=${encodeURIComponent(article.id)}`,
           );
         card
           .querySelector<HTMLButtonElement>('.publish')
           ?.addEventListener('click', async () => {
             const now = new Date().toISOString();
-            const result = await client
+            const result = await supabase!
               .from('articles')
               .update({
                 status: 'published',
                 published_at: now,
                 updated_at: now,
               })
-              .eq('id', draft.id);
+              .eq('id', article.id);
             if (result.error) return showToast(result.error.message, true);
-            card.remove();
+            article.status = 'published';
+            article.updated_at = now;
             showToast('文档已发布。');
-            if (!list.children.length)
-              list.innerHTML = '<p class="empty">还没有文档。</p>';
+            render();
           });
         card
           .querySelector<HTMLButtonElement>('.delete')!
           .addEventListener('click', async () => {
-            if (
-              !window.confirm(
-                `确定删除“${draft.title || (published ? '未命名文档' : '未命名草稿')}”吗？此操作无法撤销。`,
-              )
-            )
+            const title =
+              article.title || (published ? '未命名文档' : '未命名草稿');
+            if (!window.confirm(`确定删除“${title}”吗？此操作无法撤销。`))
               return;
-            const result = await client
+            const result = await supabase!
               .from('articles')
               .delete()
-              .eq('id', draft.id);
+              .eq('id', article.id);
             if (result.error) return showToast(result.error.message, true);
-            card.remove();
+            articles = articles.filter((item) => item.id !== article.id);
             showToast(published ? '文档已删除。' : '草稿已删除。');
-            if (!list.children.length)
-              list.innerHTML = '<p class="empty">还没有文档。</p>';
+            render();
           });
         return card;
       }),
     );
+  };
+
+  filters?.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>(
+      '[data-filter]',
+    );
+    if (!button) return;
+    activeFilter = button.dataset.filter ?? 'all';
+    filters
+      .querySelectorAll('button')
+      .forEach((item) => item.classList.toggle('is-active', item === button));
+    render();
+  });
+
+  const load = async () => {
+    if (!supabase || !list) return;
+    const { data, error } = await supabase
+      .from('articles')
+      .select('id,author_id,title,category,status,updated_at')
+      .in('status', ['draft', 'published'])
+      .order('updated_at', { ascending: false });
+    list.classList.remove('is-loading');
+    list.ariaBusy = 'false';
+    if (error) {
+      list.innerHTML = '<p class="empty">内容加载失败。</p>';
+      return;
+    }
+    articles = (data ?? []) as ManagedArticle[];
+    render();
   };
   void load();
 </script>
@@ -156,6 +214,75 @@ import { withBase } from '../../utils/paths';
   h1 {
     margin: 0.28rem 0 0;
     font-size: clamp(1.9rem, 4vw, 2.7rem);
+  }
+  .workspace-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .new-article {
+    padding: 0.65rem 0.9rem;
+    border-radius: 0.7rem;
+    background: var(--color-text);
+    color: var(--color-page);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .filters {
+    display: flex;
+    gap: 0.35rem;
+    margin: 0.35rem 0 1.2rem;
+    overflow-x: auto;
+  }
+  .filters button {
+    flex: none;
+    padding: 0.48rem 0.72rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.76rem;
+  }
+  .filters button:hover,
+  .filters button.is-active {
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+  .card-meta {
+    display: flex;
+    gap: 0.45rem;
+    color: var(--color-text-muted);
+    font-size: 0.66rem;
+  }
+  .card-meta .status {
+    color: var(--color-accent);
+  }
+  .actions details {
+    position: relative;
+  }
+  .actions summary {
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.65rem;
+    cursor: pointer;
+    font-size: 0.74rem;
+    list-style: none;
+  }
+  .actions summary::-webkit-details-marker {
+    display: none;
+  }
+  .actions details button {
+    position: absolute;
+    z-index: 2;
+    top: calc(100% + 0.3rem);
+    right: 0;
+    min-width: 5rem;
+    background: var(--color-page);
+    box-shadow: 0 0.5rem 1.4rem #0002;
   }
   .list {
     display: grid;

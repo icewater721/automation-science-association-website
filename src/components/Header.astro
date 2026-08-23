@@ -8,8 +8,7 @@ const homePath = withBase();
 const articlesPath = withBase('/articles/');
 const loginPath = withBase('/login/');
 const profilePath = withBase('/profile/');
-const draftsPath = withBase('/articles/drafts/');
-const myDraftsPath = withBase('/articles/mine/');
+const workspacePath = withBase('/articles/mine/');
 const adminPath = withBase('/admin/');
 const isHomePage = pathname === homePath;
 const isArticlesPage = pathname.startsWith(articlesPath);
@@ -64,7 +63,7 @@ const isArticlesPage = pathname.startsWith(articlesPath);
         class="member-menu"
         data-member-menu
         data-login-url={loginPath}
-        data-drafts-url={draftsPath}
+        data-workspace-url={workspacePath}
       >
         <button
           class="tool-link login-link"
@@ -101,8 +100,7 @@ const isArticlesPage = pathname.startsWith(articlesPath);
           <a href={profilePath} role="menuitem">个人主页</a>
           <a href={adminPath} role="menuitem">权限入口</a>
           <div class="editor-menu" data-editor-menu hidden>
-            <a href={draftsPath} role="menuitem">草稿箱</a>
-            <a href={myDraftsPath} role="menuitem">我的文档</a>
+            <a href={workspacePath} role="menuitem">创作中心</a>
           </div>
           <button type="button" data-menu-sign-out role="menuitem"
             >退出登录</button

@@ -36,6 +36,7 @@ const historicalPublications = (
     aria-busy="true"
     data-login-url={withBase('/login/')}
     data-read-url={withBase('/articles/read/')}
+    data-workspace-url={withBase('/articles/mine/')}
     data-historical-publications={JSON.stringify(historicalPublications)}
   >
     <section class="identity-card">
@@ -70,6 +71,12 @@ const historicalPublications = (
             </svg>
             <span>更换头像</span>
           </div>
+          <a
+            class="workspace-link"
+            href={withBase('/articles/mine/')}
+            data-workspace-link
+            hidden>进入创作中心</a
+          >
         </div>
         <div class="identity-copy">
           <p class="role" data-profile-role>REGISTERED MEMBER</p>
@@ -121,6 +128,9 @@ const historicalPublications = (
   const roleElement = document.querySelector<HTMLElement>(
     '[data-profile-role]',
   );
+  const workspaceLink = document.querySelector<HTMLElement>(
+    '[data-workspace-link]',
+  );
   const publications = document.querySelector<HTMLElement>(
     '[data-publications]',
   );
@@ -163,6 +173,7 @@ const historicalPublications = (
     currentProfile.display_name = displayName;
     const role = profile.role === 'admin' ? 'admin' : '';
     isAdministrator = role === 'admin';
+    if (workspaceLink) workspaceLink.hidden = !isAdministrator;
     if (nameElement) nameElement.textContent = displayName;
     if (bioElement) bioElement.textContent = bio;
     if (roleElement)
@@ -520,6 +531,20 @@ const historicalPublications = (
   }
   .identity-content {
     padding: 0 1.75rem 2rem;
+  }
+  .workspace-link {
+    margin-top: 1rem;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-text);
+    font-size: 0.74rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+  .workspace-link:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
   }
   .profile-actions {
     display: flex;
