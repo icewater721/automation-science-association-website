@@ -78,47 +78,35 @@ const repositoryDocuments = (
     contributors?: string[];
   }
 
-  const page = document.querySelector<HTMLElement>('[data-page]');
-  const list = document.querySelector<HTMLElement>('[data-list]');
-  const toast = document.querySelector<HTMLElement>('[data-toast]');
-  const filters = document.querySelector<HTMLElement>('[data-filters]');
-  const session = (await supabase?.auth.getSession())?.data.session;
-  if (!session) window.location.replace(page?.dataset.login ?? '/');
-  const profile =
-    session && supabase
-      ? await supabase
-          .from('profiles')
-          .select('role,display_name')
-          .eq('user_id', session.user.id)
-          .single()
-      : null;
-  if (profile?.data?.role !== 'admin')
-    window.location.replace(page?.dataset.articles ?? '/articles/');
-
-  const contributorResult =
-    session && supabase ? await supabase.rpc('get_site_contributor') : null;
-  const siteContributor = contributorResult?.data?.[0] as
-    { user_id?: string; display_name?: string } | undefined;
-  const currentDisplayName = String(profile?.data?.display_name ?? '');
-  const repositoryDocuments = JSON.parse(
-    page?.dataset.repositoryDocuments ?? '[]',
-  ) as Array<{
+  interface RepositoryDocument {
     id: string;
     title: string;
     category: string;
     updatedAt: string;
     contributors: string[];
     url: string;
-  }>;
-  const ownsRepositoryDocuments = siteContributor?.user_id
-    ? siteContributor.user_id === session?.user.id
-    : Boolean(
-        currentDisplayName &&
-        siteContributor?.display_name === currentDisplayName,
-      );
+  }
 
-  let articles: ManagedArticle[] = [];
+  const page = document.querySelector<HTMLElement>('[data-page]');
+  const list = document.querySelector<HTMLElement>('[data-list]');
+  const toast = document.querySelector<HTMLElement>('[data-toast]');
+  const filters = document.querySelector<HTMLElement>('[data-filters]');
+  const repositoryDocuments = JSON.parse(
+    page?.dataset.repositoryDocuments ?? '[]',
+  ) as RepositoryDocument[];
+  let currentUserId = '';
   let activeFilter = 'all';
+  let articles: ManagedArticle[] = repositoryDocuments.map((document) => ({
+    id: document.id,
+    author_id: 'repository',
+    title: document.title,
+    category: document.category,
+    status: 'published',
+    updated_at: document.updatedAt,
+    repository: true,
+    static_url: document.url,
+    contributors: document.contributors,
+  }));
 
   const showToast = (message: string, error = false) => {
     if (!toast) return;
@@ -132,13 +120,14 @@ const repositoryDocuments = (
     articles.filter((article) => {
       if (activeFilter === 'draft') return article.status === 'draft';
       if (activeFilter === 'published') return article.status === 'published';
-      if (activeFilter === 'mine')
-        return article.author_id === session?.user.id;
+      if (activeFilter === 'mine') return article.author_id === currentUserId;
       return true;
     });
 
   const render = () => {
     if (!list) return;
+    list.classList.remove('is-loading');
+    list.ariaBusy = 'false';
     const visible = visibleArticles();
     if (!visible.length) {
       list.innerHTML = '<p class="empty">这个分类下还没有内容。</p>';
@@ -150,7 +139,7 @@ const repositoryDocuments = (
       ...visible.map((article) => {
         const card = document.createElement('article');
         const published = article.status === 'published';
-        const mine = article.author_id === session?.user.id;
+        const mine = article.author_id === currentUserId;
         card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作">···</summary><button class="delete" type="button">删除</button></details>`}</div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
@@ -196,8 +185,8 @@ const repositoryDocuments = (
             render();
           });
         card
-          .querySelector<HTMLButtonElement>('.delete')!
-          .addEventListener('click', async () => {
+          .querySelector<HTMLButtonElement>('.delete')
+          ?.addEventListener('click', async () => {
             const title =
               article.title || (published ? '未命名文档' : '未命名草稿');
             if (!window.confirm(`确定删除“${title}”吗？此操作无法撤销。`))
@@ -228,41 +217,60 @@ const repositoryDocuments = (
     render();
   });
 
-  const load = async () => {
-    if (!supabase || !list) return;
-    const { data, error } = await supabase
+  render();
+
+  const initialize = async () => {
+    const session = (await supabase?.auth.getSession())?.data.session;
+    if (!session) {
+      window.location.replace(page?.dataset.login ?? '/');
+      return;
+    }
+    currentUserId = session.user.id;
+    const [profileResult, contributorResult] = await Promise.all([
+      supabase!
+        .from('profiles')
+        .select('role,display_name')
+        .eq('user_id', currentUserId)
+        .single(),
+      supabase!.rpc('get_site_contributor'),
+    ]);
+    if (profileResult.data?.role !== 'admin') {
+      window.location.replace(page?.dataset.articles ?? '/articles/');
+      return;
+    }
+    const siteContributor = contributorResult.data?.[0] as
+      { user_id?: string; display_name?: string } | undefined;
+    const currentDisplayName = String(profileResult.data.display_name ?? '');
+    const ownsRepositoryDocuments = siteContributor?.user_id
+      ? siteContributor.user_id === currentUserId
+      : Boolean(
+          currentDisplayName &&
+          siteContributor?.display_name === currentDisplayName,
+        );
+    if (ownsRepositoryDocuments) {
+      articles.forEach((article) => {
+        if (article.repository) article.author_id = currentUserId;
+      });
+      render();
+    }
+
+    const { data, error } = await supabase!
       .from('articles')
       .select('id,author_id,title,category,status,updated_at')
       .in('status', ['draft', 'published'])
       .order('updated_at', { ascending: false });
-    list.classList.remove('is-loading');
-    list.ariaBusy = 'false';
     if (error) {
-      list.innerHTML = '<p class="empty">内容加载失败。</p>';
+      showToast('数据库文章暂时无法加载，已显示仓库文档。', true);
       return;
     }
-    const dynamicArticles = (data ?? []) as ManagedArticle[];
-    const staticArticles: ManagedArticle[] = repositoryDocuments.map(
-      (document) => ({
-        id: document.id,
-        author_id: ownsRepositoryDocuments
-          ? (session?.user.id ?? '')
-          : 'repository',
-        title: document.title,
-        category: document.category,
-        status: 'published',
-        updated_at: document.updatedAt,
-        repository: true,
-        static_url: document.url,
-        contributors: document.contributors,
-      }),
-    );
-    articles = [...dynamicArticles, ...staticArticles].sort(
-      (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
-    );
+    const repositoryArticles = articles.filter((article) => article.repository);
+    articles = [
+      ...((data ?? []) as ManagedArticle[]),
+      ...repositoryArticles,
+    ].sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at));
     render();
   };
-  void load();
+  void initialize();
 </script>
 
 <style>
