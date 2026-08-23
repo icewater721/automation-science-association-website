@@ -4,11 +4,21 @@ import { withBase } from '../../utils/paths';
 ---
 
 <BaseLayout title="文档 | 人工智能学院科协" description="阅读科协文档。">
-  <main class="reader" data-reader data-list-url={withBase('/articles/')}>
+  <main
+    class="reader"
+    data-reader
+    data-list-url={withBase('/articles/')}
+    data-fallback-avatar={withBase('/images/brand/asaw-logo.png')}
+  >
     <article data-document hidden>
       <a class="back-link" href={withBase('/articles/')}>← <span>返回</span></a>
       <header>
-        <p data-category-label></p><h1 data-title></h1><p data-summary></p>
+        <p data-category-label></p><h1 data-title></h1><div
+          class="contributors"
+          data-contributors
+          aria-label="文章贡献者"
+        >
+        </div><p data-summary></p>
       </header>
       <div class="content" data-content></div>
     </article>
@@ -36,12 +46,16 @@ import { withBase } from '../../utils/paths';
   if (!id || !supabase) {
     if (note) note.textContent = '文档链接无效。';
   } else {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('title,summary,category,content_markdown')
-      .eq('id', id)
-      .eq('status', 'published')
-      .single();
+    const [articleResult, contributorResult] = await Promise.all([
+      supabase
+        .from('articles')
+        .select('title,summary,category,content_markdown')
+        .eq('id', id)
+        .eq('status', 'published')
+        .single(),
+      supabase.rpc('get_article_contributors', { target_article_id: id }),
+    ]);
+    const { data, error } = articleResult;
     if (error || !data) {
       if (note) note.textContent = '文档不存在或尚未发布。';
     } else {
@@ -53,6 +67,29 @@ import { withBase } from '../../utils/paths';
       const content = document.querySelector<HTMLElement>('[data-content]');
       if (title) title.textContent = data.title;
       if (summary) summary.textContent = data.summary;
+      const contributorElement = document.querySelector<HTMLElement>(
+        '[data-contributors]',
+      );
+      if (contributorElement && !contributorResult.error) {
+        contributorElement.replaceChildren(
+          ...(
+            (contributorResult.data ?? []) as Array<{
+              avatar_url: string | null;
+              display_name: string;
+            }>
+          ).map((contributor) => {
+            const image = document.createElement('img');
+            image.src =
+              String(contributor.avatar_url || '') ||
+              (document.querySelector<HTMLElement>('[data-reader]')?.dataset
+                .fallbackAvatar ??
+                '');
+            image.alt = String(contributor.display_name || '科协成员');
+            image.title = String(contributor.display_name || '科协成员');
+            return image;
+          }),
+        );
+      }
       if (content) {
         content.innerHTML = renderMarkdown(data.content_markdown);
         const headings = [...content.querySelectorAll<HTMLElement>('h1,h2,h3')];
@@ -169,6 +206,24 @@ import { withBase } from '../../utils/paths';
     margin: 0;
     font-size: clamp(2.3rem, 5vw, 4rem);
     letter-spacing: -0.045em;
+  }
+  .contributors {
+    display: flex;
+    min-height: 2rem;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  .contributors :global(img) {
+    width: 2rem;
+    height: 2rem;
+    margin-left: -0.35rem;
+    border: 2px solid var(--color-page);
+    border-radius: 50%;
+    background: var(--color-surface);
+    object-fit: cover;
+  }
+  .contributors :global(img:first-child) {
+    margin-left: 0;
   }
   [data-summary] {
     max-width: 48rem;

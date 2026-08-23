@@ -41,8 +41,8 @@ const repositoryDocuments = (
     </header>
     <nav class="filters" aria-label="内容筛选" data-filters>
       <button type="button" data-filter="draft">草稿</button>
-      <button type="button" data-filter="published">已发布</button>
-      <button type="button" data-filter="mine">我创建的</button>
+
+      <button type="button" data-filter="mine">我贡献的</button>
       <button class="is-active" type="button" data-filter="all">全部文章</button
       >
     </nav>
@@ -95,6 +95,7 @@ const repositoryDocuments = (
     page?.dataset.repositoryDocuments ?? '[]',
   ) as RepositoryDocument[];
   let currentUserId = '';
+  let contributedArticleIds = new Set<string>();
   let activeFilter = 'all';
   let articles: ManagedArticle[] = repositoryDocuments.map((document) => ({
     id: document.id,
@@ -119,8 +120,11 @@ const repositoryDocuments = (
   const visibleArticles = () =>
     articles.filter((article) => {
       if (activeFilter === 'draft') return article.status === 'draft';
-      if (activeFilter === 'published') return article.status === 'published';
-      if (activeFilter === 'mine') return article.author_id === currentUserId;
+      if (activeFilter === 'mine')
+        return (
+          article.author_id === currentUserId ||
+          contributedArticleIds.has(article.id)
+        );
       return true;
     });
 
@@ -139,7 +143,6 @@ const repositoryDocuments = (
       ...visible.map((article) => {
         const card = document.createElement('article');
         const published = article.status === 'published';
-        const mine = article.author_id === currentUserId;
         card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作">···</summary><button class="delete" type="button">删除</button></details>`}</div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
@@ -150,9 +153,10 @@ const repositoryDocuments = (
         card.querySelector<HTMLElement>('.ownership')!.textContent =
           article.repository
             ? `仓库文档 · ${(article.contributors ?? []).join('、')}`
-            : mine
-              ? '我创建的'
-              : '其他管理员创建';
+            : contributedArticleIds.has(article.id) ||
+                article.author_id === currentUserId
+              ? '我参与贡献'
+              : '站内文章';
         card
           .querySelector<HTMLAnchorElement>('.view')
           ?.setAttribute(
@@ -254,15 +258,25 @@ const repositoryDocuments = (
       render();
     }
 
-    const { data, error } = await supabase!
-      .from('articles')
-      .select('id,author_id,title,category,status,updated_at')
-      .in('status', ['draft', 'published'])
-      .order('updated_at', { ascending: false });
-    if (error) {
+    const [articleResult, contributionResult] = await Promise.all([
+      supabase!
+        .from('articles')
+        .select('id,author_id,title,category,status,updated_at')
+        .in('status', ['draft', 'published'])
+        .order('updated_at', { ascending: false }),
+      supabase!
+        .from('article_contributors')
+        .select('article_id')
+        .eq('user_id', currentUserId),
+    ]);
+    if (articleResult.error) {
       showToast('数据库文章暂时无法加载，已显示仓库文档。', true);
       return;
     }
+    contributedArticleIds = new Set(
+      (contributionResult.data ?? []).map((item) => String(item.article_id)),
+    );
+    const { data } = articleResult;
     const repositoryArticles = articles.filter((article) => article.repository);
     articles = [
       ...((data ?? []) as ManagedArticle[]),
@@ -511,6 +525,56 @@ const repositoryDocuments = (
   }
   [hidden] {
     display: none !important;
+  }
+  .manage-page {
+    width: min(52rem, calc(100% - 4rem));
+  }
+  .list {
+    gap: 0.65rem;
+  }
+  .list :global(article) {
+    padding: 1.15rem 1.2rem;
+    border-radius: 0.8rem;
+    background: var(--color-page);
+    box-shadow: none;
+    font-family: var(--font-body);
+  }
+  .list :global(article::before) {
+    display: none;
+  }
+  .list :global(article:hover) {
+    border-color: color-mix(
+      in srgb,
+      var(--color-accent) 45%,
+      var(--color-border)
+    );
+    box-shadow: 0 0.55rem 1.6rem color-mix(in srgb, #000 6%, transparent);
+    transform: translateY(-0.08rem);
+  }
+  .list :global(article h2) {
+    margin: 0.42rem 0 0.18rem;
+    font-family: var(--font-body);
+    font-size: 1.12rem;
+    font-weight: 680;
+    letter-spacing: -0.015em;
+  }
+  .card-meta {
+    align-items: center;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+  }
+  .card-meta .status {
+    padding: 0.16rem 0.42rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+  .list :global(.actions a),
+  .list :global(.actions button),
+  .actions summary {
+    border-color: transparent;
+    background: var(--color-surface);
+    font-family: var(--font-body);
+    font-weight: 600;
   }
   @media (max-width: 38rem) {
     .manage-page {
