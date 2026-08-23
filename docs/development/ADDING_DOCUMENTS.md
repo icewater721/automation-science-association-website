@@ -26,6 +26,8 @@ updatedAt: 2026-08-22
 keywords:
   - 搜索关键词
 draft: false
+contributors:
+  - 贡献者昵称
 ---
 ```
 

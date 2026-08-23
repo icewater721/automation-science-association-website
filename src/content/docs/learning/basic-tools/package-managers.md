@@ -15,6 +15,8 @@ keywords:
   - pip
   - vcpkg
 draft: false
+contributors:
+  - 冰水
 sourceUrl: https://vcpkg.io/en/docs/README.html
 ---
 

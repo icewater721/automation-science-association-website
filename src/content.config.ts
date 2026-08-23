@@ -16,6 +16,7 @@ const docs = defineCollection({
     keywords: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
     sourceUrl: z.url().optional(),
+    contributors: z.array(z.string()).default([]),
   }),
 });
 

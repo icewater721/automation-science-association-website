@@ -12,6 +12,8 @@ keywords:
   - C++
   - 构建系统
 draft: false
+contributors:
+  - 冰水
 sourceUrl: https://cmake.org/cmake/help/latest/guide/tutorial/index.html
 ---
 

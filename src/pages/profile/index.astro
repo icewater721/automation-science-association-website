@@ -218,6 +218,15 @@ const historicalPublications = (
     note.dataset.error = 'true';
   }
   if (supabase && userId && publications) {
+    const contributorResult = await supabase.rpc('get_site_contributor');
+    const siteContributor = contributorResult.data?.[0] as
+      { user_id?: string; display_name?: string } | undefined;
+    const ownsHistoricalDocuments = siteContributor?.user_id
+      ? siteContributor.user_id === userId
+      : Boolean(
+          siteContributor?.display_name &&
+          siteContributor.display_name === currentProfile.display_name,
+        );
     const { data: published, error: publicationError } = await supabase
       .from('articles')
       .select('id,title,summary,category,published_at')
@@ -228,12 +237,12 @@ const historicalPublications = (
     if (publicationError) {
       publications.innerHTML =
         '<p class="publication-empty">暂时无法读取已发布文档。</p>';
-    } else if (!published?.length && !isAdministrator) {
+    } else if (!published?.length && !ownsHistoricalDocuments) {
       publications.innerHTML =
         '<p class="publication-empty">还没有发布文档。</p>';
     } else {
       const readUrl = page?.dataset.readUrl ?? '/articles/read/';
-      const historical = isAdministrator
+      const historical = ownsHistoricalDocuments
         ? (JSON.parse(page?.dataset.historicalPublications ?? '[]') as Array<{
             title: string;
             summary: string;
@@ -538,8 +547,10 @@ const historicalPublications = (
     border: 1px solid var(--color-border);
     border-radius: 999px;
     color: var(--color-text);
-    font-size: 0.74rem;
+    font-family: var(--font-body);
+    font-size: 0.76rem;
     font-weight: 650;
+    letter-spacing: 0.01em;
     text-decoration: none;
   }
   .workspace-link:hover {

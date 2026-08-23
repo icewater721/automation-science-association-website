@@ -10,12 +10,17 @@ import { withBase } from '../../utils/paths';
     data-login-url={withBase('/login/')}
     data-articles-url={withBase('/articles/')}
     data-workspace-url={withBase('/articles/mine/')}
+    data-loading="true"
+    aria-busy="true"
   >
     <a class="back-link" href={withBase('/articles/mine/')}
       >← <span>返回创作中心</span></a
     >
     <header><p>DOCUMENT WORKSPACE</p><h1>编辑文档</h1></header>
-    <div class="workspace" data-workspace hidden>
+    <div class="editor-loading" data-editor-loading aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="workspace" data-workspace>
       <form data-draft-form>
         <input type="hidden" name="id" />
         <label>标题 <input name="title" maxlength="60" required /></label>
@@ -106,7 +111,6 @@ import { withBase } from '../../utils/paths';
 <script>
   import { supabase } from '../../lib/supabase';
   const page = document.querySelector<HTMLElement>('[data-draft-page]');
-  const workspace = document.querySelector<HTMLElement>('[data-workspace]');
   const form = document.querySelector<HTMLFormElement>('[data-draft-form]');
   const draftList = document.querySelector<HTMLElement>('[data-draft-list]');
   const note = document.querySelector<HTMLElement>('[data-draft-note]');
@@ -244,7 +248,11 @@ import { withBase } from '../../utils/paths';
   }
   if (role !== 'admin')
     window.location.replace(page?.dataset.articlesUrl ?? '/articles/');
-  if (workspace) workspace.hidden = false;
+  window.requestAnimationFrame(() => {
+    if (!page) return;
+    page.dataset.loading = 'false';
+    page.setAttribute('aria-busy', 'false');
+  });
 
   let noteTimer: number | undefined;
   let currentStatus: 'draft' | 'published' = 'draft';
@@ -627,6 +635,46 @@ import { withBase } from '../../utils/paths';
     margin: 0.35rem 0 1.6rem;
     font-size: clamp(1.9rem, 4vw, 2.65rem);
     letter-spacing: -0.035em;
+  }
+  .editor-loading {
+    display: none;
+  }
+  .draft-page[data-loading='true'] .workspace {
+    visibility: hidden;
+    opacity: 0;
+  }
+  .draft-page[data-loading='true'] .editor-loading {
+    display: grid;
+    gap: 0.75rem;
+    width: min(42rem, 100%);
+    padding-top: 1.25rem;
+  }
+  .editor-loading span {
+    display: block;
+    height: 3.1rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-text) 4%, transparent) 20%,
+      color-mix(in srgb, var(--color-text) 9%, transparent) 50%,
+      color-mix(in srgb, var(--color-text) 4%, transparent) 80%
+    );
+    background-size: 220% 100%;
+    animation: editor-shimmer 1.25s ease-in-out infinite;
+  }
+  .editor-loading span:nth-child(2) {
+    height: 6rem;
+  }
+  .editor-loading span:nth-child(3) {
+    height: 22rem;
+  }
+  @keyframes editor-shimmer {
+    to {
+      background-position: -220% 0;
+    }
+  }
+  .workspace {
+    transition: opacity 180ms ease;
   }
   .workspace {
     display: grid;
@@ -1129,6 +1177,7 @@ import { withBase } from '../../utils/paths';
     .draft-page {
       width: calc(100% - 2rem);
     }
+
     .workspace {
       grid-template-columns: 1fr;
     }

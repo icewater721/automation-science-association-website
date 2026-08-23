@@ -13,6 +13,8 @@ keywords:
   - 版本控制
   - 协作
 draft: false
+contributors:
+  - 冰水
 sourceUrl: https://docs.github.com/zh/get-started/start-your-journey/git-and-github-learning-resources
 ---
 

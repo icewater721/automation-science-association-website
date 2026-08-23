@@ -14,6 +14,8 @@ keywords:
   - 扩展
   - 终端
 draft: false
+contributors:
+  - 冰水
 sourceUrl: https://code.visualstudio.com/docs/
 ---
 

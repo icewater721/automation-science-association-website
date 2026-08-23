@@ -1,6 +1,28 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
+
+const repositoryDocuments = (
+  await getCollection(
+    'docs',
+    ({ data }) => data.kind === 'document' && !data.draft,
+  )
+).map((entry) => ({
+  id: `repository:${entry.id}`,
+  title: entry.data.title,
+  category: entry.data.category,
+  updatedAt: entry.data.updatedAt.toISOString(),
+  contributors: entry.data.contributors,
+  url: withBase(
+    `/articles/${
+      entry.id
+        .split('/')
+        .at(-1)
+        ?.replace(/\.mdx?$/, '') ?? entry.id
+    }/`,
+  ),
+}));
 ---
 
 <BaseLayout title="创作中心 | 文档" description="统一管理草稿和已发布文档。">
@@ -11,6 +33,7 @@ import { withBase } from '../../utils/paths';
     data-articles={withBase('/articles/')}
     data-edit={withBase('/articles/drafts/')}
     data-read={withBase('/articles/read/')}
+    data-repository-documents={JSON.stringify(repositoryDocuments)}
   >
     <header class="workspace-header">
       <div><p>DOCUMENT WORKSPACE</p><h1>创作中心</h1></div>
@@ -50,6 +73,9 @@ import { withBase } from '../../utils/paths';
     category: string;
     status: 'draft' | 'published';
     updated_at: string;
+    repository?: boolean;
+    static_url?: string;
+    contributors?: string[];
   }
 
   const page = document.querySelector<HTMLElement>('[data-page]');
@@ -62,12 +88,34 @@ import { withBase } from '../../utils/paths';
     session && supabase
       ? await supabase
           .from('profiles')
-          .select('role')
+          .select('role,display_name')
           .eq('user_id', session.user.id)
           .single()
       : null;
   if (profile?.data?.role !== 'admin')
     window.location.replace(page?.dataset.articles ?? '/articles/');
+
+  const contributorResult =
+    session && supabase ? await supabase.rpc('get_site_contributor') : null;
+  const siteContributor = contributorResult?.data?.[0] as
+    { user_id?: string; display_name?: string } | undefined;
+  const currentDisplayName = String(profile?.data?.display_name ?? '');
+  const repositoryDocuments = JSON.parse(
+    page?.dataset.repositoryDocuments ?? '[]',
+  ) as Array<{
+    id: string;
+    title: string;
+    category: string;
+    updatedAt: string;
+    contributors: string[];
+    url: string;
+  }>;
+  const ownsRepositoryDocuments = siteContributor?.user_id
+    ? siteContributor.user_id === session?.user.id
+    : Boolean(
+        currentDisplayName &&
+        siteContributor?.display_name === currentDisplayName,
+      );
 
   let articles: ManagedArticle[] = [];
   let activeFilter = 'all';
@@ -103,25 +151,29 @@ import { withBase } from '../../utils/paths';
         const card = document.createElement('article');
         const published = article.status === 'published';
         const mine = article.author_id === session?.user.id;
-        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作">···</summary><button class="delete" type="button">删除</button></details></div>`;
+        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作">···</summary><button class="delete" type="button">删除</button></details>`}</div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
         card.querySelector('.card-content > p')!.textContent = article.category;
         card.querySelector<HTMLElement>('.status')!.textContent = published
           ? '已发布'
           : '草稿';
-        card.querySelector<HTMLElement>('.ownership')!.textContent = mine
-          ? '我创建的'
-          : '其他管理员创建';
+        card.querySelector<HTMLElement>('.ownership')!.textContent =
+          article.repository
+            ? `仓库文档 · ${(article.contributors ?? []).join('、')}`
+            : mine
+              ? '我创建的'
+              : '其他管理员创建';
         card
           .querySelector<HTMLAnchorElement>('.view')
           ?.setAttribute(
             'href',
-            `${readUrl}?id=${encodeURIComponent(article.id)}`,
+            article.static_url ??
+              `${readUrl}?id=${encodeURIComponent(article.id)}`,
           );
         card
-          .querySelector<HTMLAnchorElement>('.edit')!
-          .setAttribute(
+          .querySelector<HTMLAnchorElement>('.edit')
+          ?.setAttribute(
             'href',
             `${editUrl}?id=${encodeURIComponent(article.id)}`,
           );
@@ -189,7 +241,25 @@ import { withBase } from '../../utils/paths';
       list.innerHTML = '<p class="empty">内容加载失败。</p>';
       return;
     }
-    articles = (data ?? []) as ManagedArticle[];
+    const dynamicArticles = (data ?? []) as ManagedArticle[];
+    const staticArticles: ManagedArticle[] = repositoryDocuments.map(
+      (document) => ({
+        id: document.id,
+        author_id: ownsRepositoryDocuments
+          ? (session?.user.id ?? '')
+          : 'repository',
+        title: document.title,
+        category: document.category,
+        status: 'published',
+        updated_at: document.updatedAt,
+        repository: true,
+        static_url: document.url,
+        contributors: document.contributors,
+      }),
+    );
+    articles = [...dynamicArticles, ...staticArticles].sort(
+      (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
+    );
     render();
   };
   void load();
