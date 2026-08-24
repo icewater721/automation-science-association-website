@@ -1,14 +1,6 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
-
-const articles = (
-  await getCollection(
-    'docs',
-    ({ data }) => data.kind === 'document' && !data.draft,
-  )
-).sort((a, b) => b.data.updatedAt.getTime() - a.data.updatedAt.getTime());
 const categories = [
   '技术分享',
   '工具使用',
@@ -18,11 +10,6 @@ const categories = [
   '公告',
   '未分类',
 ];
-const slugFor = (id: string) =>
-  id
-    .split('/')
-    .at(-1)
-    ?.replace(/\.mdx?$/, '') ?? id;
 ---
 
 <BaseLayout title="文档 | 人工智能学院科协" description="科协文档与学习资料。">
@@ -33,53 +20,6 @@ const slugFor = (id: string) =>
     data-default-avatar={withBase('/images/brand/asaw-logo.png')}
   >
     <section class="article-list" aria-live="polite">
-      {
-        articles.map((article, index) => (
-          <a
-            class="article-card"
-            href={withBase(`/articles/${slugFor(article.id)}/`)}
-            data-article-card
-            data-category={article.data.category}
-            style={`--post-index: ${index}`}
-          >
-            <>
-              <span>{article.data.category}</span>
-              <h2>{article.data.title}</h2>
-            </>
-            <p>{article.data.description}</p>
-            <div class="article-dates">
-              <span
-                class="contributor"
-                data-historical-contributor
-                data-loading="true"
-              >
-                <>
-                  <img src={withBase('/images/brand/asaw-logo.png')} alt="" />
-                  <b>科协成员</b>
-                </>
-              </span>
-              <time
-                datetime={(
-                  article.data.publishedAt ?? article.data.updatedAt
-                ).toISOString()}
-              >
-                发布时间：
-                {(
-                  article.data.publishedAt ?? article.data.updatedAt
-                ).toLocaleDateString('zh-CN')}
-              </time>
-              {article.data.publishedAt &&
-                article.data.updatedAt.getTime() >
-                  article.data.publishedAt.getTime() && (
-                  <time datetime={article.data.updatedAt.toISOString()}>
-                    更新时间：
-                    {article.data.updatedAt.toLocaleDateString('zh-CN')}
-                  </time>
-                )}
-            </div>
-          </a>
-        ))
-      }
       <p class="empty-filter" data-empty-filter hidden>该栏目暂时没有文档。</p>
     </section>
     <aside class="article-tools" aria-label="文档功能">
@@ -164,28 +104,7 @@ const slugFor = (id: string) =>
     .forEach((button) =>
       button.addEventListener('click', () => filterByCategory(button)),
     );
-  const revealHistoricalContributors = (contributor?: {
-    avatar_url?: string | null;
-    display_name?: string | null;
-  }) => {
-    document
-      .querySelectorAll<HTMLElement>('[data-historical-contributor]')
-      .forEach((element) => {
-        const image = element.querySelector<HTMLImageElement>('img');
-        const name = element.querySelector<HTMLElement>('b');
-        if (image && contributor?.avatar_url)
-          image.src = String(contributor.avatar_url);
-        if (name)
-          name.textContent = String(contributor?.display_name || '科协成员');
-        requestAnimationFrame(() => (element.dataset.loading = 'false'));
-      });
-  };
   if (supabase) {
-    const historical = await supabase.rpc('get_site_contributor');
-    const siteContributor = historical.data?.[0];
-    revealHistoricalContributors(
-      !historical.error ? siteContributor : undefined,
-    );
     const feed = await supabase.rpc('get_published_article_feed');
     const fallback = feed.error
       ? await supabase
@@ -255,7 +174,7 @@ const slugFor = (id: string) =>
         document.querySelector('.category-menu')?.append(button);
       }
     }
-  } else revealHistoricalContributors();
+  }
 </script>
 
 <style>

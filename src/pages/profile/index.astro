@@ -1,31 +1,6 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
-
-const historicalPublications = (
-  await getCollection(
-    'docs',
-    ({ data }) => data.kind === 'document' && !data.draft,
-  )
-)
-  .sort((a, b) => b.data.updatedAt.getTime() - a.data.updatedAt.getTime())
-  .map((article) => ({
-    title: article.data.title,
-    summary: article.data.description,
-    category: article.data.category,
-    publishedAt: (
-      article.data.publishedAt ?? article.data.updatedAt
-    ).toISOString(),
-    url: withBase(
-      '/articles/' +
-        (article.id
-          .split('/')
-          .at(-1)
-          ?.replace(/\.mdx?$/, '') ?? article.id) +
-        '/',
-    ),
-  }));
 ---
 
 <BaseLayout title="个人页 | 人工智能学院科协" description="科协成员个人空间。">
@@ -37,7 +12,6 @@ const historicalPublications = (
     data-login-url={withBase('/login/')}
     data-read-url={withBase('/articles/read/')}
     data-workspace-url={withBase('/articles/mine/')}
-    data-historical-publications={JSON.stringify(historicalPublications)}
   >
     <section class="identity-card">
       <div
@@ -218,15 +192,6 @@ const historicalPublications = (
     note.dataset.error = 'true';
   }
   if (supabase && userId && publications) {
-    const contributorResult = await supabase.rpc('get_site_contributor');
-    const siteContributor = contributorResult.data?.[0] as
-      { user_id?: string; display_name?: string } | undefined;
-    const ownsHistoricalDocuments = siteContributor?.user_id
-      ? siteContributor.user_id === userId
-      : Boolean(
-          siteContributor?.display_name &&
-          siteContributor.display_name === currentProfile.display_name,
-        );
     const { data: published, error: publicationError } = await supabase
       .from('articles')
       .select('id,title,summary,category,published_at')
@@ -237,20 +202,11 @@ const historicalPublications = (
     if (publicationError) {
       publications.innerHTML =
         '<p class="publication-empty">暂时无法读取已发布文档。</p>';
-    } else if (!published?.length && !ownsHistoricalDocuments) {
+    } else if (!published?.length) {
       publications.innerHTML =
         '<p class="publication-empty">还没有发布文档。</p>';
     } else {
       const readUrl = page?.dataset.readUrl ?? '/articles/read/';
-      const historical = ownsHistoricalDocuments
-        ? (JSON.parse(page?.dataset.historicalPublications ?? '[]') as Array<{
-            title: string;
-            summary: string;
-            category: string;
-            publishedAt: string;
-            url: string;
-          }>)
-        : [];
       const publicationCards = (published ?? []).map((publication) => {
         const link = document.createElement('a');
         link.className = 'publication-card';
@@ -270,24 +226,7 @@ const historicalPublications = (
         link.append(category, title, summary, time);
         return link;
       });
-      const historicalCards = historical.map((publication) => {
-        const link = document.createElement('a');
-        link.className = 'publication-card';
-        link.href = publication.url;
-        const category = document.createElement('span');
-        category.textContent = publication.category;
-        const title = document.createElement('h3');
-        title.textContent = publication.title;
-        const summary = document.createElement('p');
-        summary.textContent = publication.summary;
-        const time = document.createElement('time');
-        const date = new Date(publication.publishedAt);
-        time.dateTime = date.toISOString();
-        time.textContent = '发布时间：' + date.toLocaleDateString('zh-CN');
-        link.append(category, title, summary, time);
-        return link;
-      });
-      publications.replaceChildren(...publicationCards, ...historicalCards);
+      publications.replaceChildren(...publicationCards);
     }
   }
   window.requestAnimationFrame(() => {

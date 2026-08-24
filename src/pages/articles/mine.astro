@@ -1,31 +1,6 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../utils/paths';
-
-const repositoryDocuments = (
-  await getCollection(
-    'docs',
-    ({ data }) => data.kind === 'document' && !data.draft,
-  )
-).map((entry) => ({
-  id: `repository:${entry.id}`,
-  title: entry.data.title,
-  category: entry.data.category,
-  updatedAt: entry.data.updatedAt.toISOString(),
-  editUrl: `https://github.com/icewater721/automation-science-association-website/edit/sprint-5/src/content/docs/${entry.id
-    .split('/')
-    .map(encodeURIComponent)
-    .join('/')}.md`,
-  url: withBase(
-    `/articles/${
-      entry.id
-        .split('/')
-        .at(-1)
-        ?.replace(/\.mdx?$/, '') ?? entry.id
-    }/`,
-  ),
-}));
 ---
 
 <BaseLayout
@@ -39,7 +14,6 @@ const repositoryDocuments = (
     data-articles={withBase('/articles/')}
     data-edit={withBase('/articles/drafts/')}
     data-read={withBase('/articles/read/')}
-    data-repository-documents={JSON.stringify(repositoryDocuments)}
   >
     <header class="workspace-header">
       <div><p>CONTENT WORKSPACE</p><h1>创作中心</h1></div>
@@ -79,41 +53,16 @@ const repositoryDocuments = (
     category: string;
     status: 'draft' | 'published';
     updated_at: string;
-    repository?: boolean;
-    static_url?: string;
-    repository_edit_url?: string;
-  }
-
-  interface RepositoryDocument {
-    id: string;
-    title: string;
-    category: string;
-    updatedAt: string;
-    url: string;
-    editUrl: string;
   }
 
   const page = document.querySelector<HTMLElement>('[data-page]');
   const list = document.querySelector<HTMLElement>('[data-list]');
   const toast = document.querySelector<HTMLElement>('[data-toast]');
   const filters = document.querySelector<HTMLElement>('[data-filters]');
-  const repositoryDocuments = JSON.parse(
-    page?.dataset.repositoryDocuments ?? '[]',
-  ) as RepositoryDocument[];
   let currentUserId = '';
   let contributedArticleIds = new Set<string>();
   let activeFilter = 'all';
-  let articles: ManagedArticle[] = repositoryDocuments.map((document) => ({
-    id: document.id,
-    author_id: 'repository',
-    title: document.title,
-    category: document.category,
-    status: 'published',
-    updated_at: document.updatedAt,
-    repository: true,
-    static_url: document.url,
-    repository_edit_url: document.editUrl,
-  }));
+  let articles: ManagedArticle[] = [];
 
   const showToast = (message: string, error = false) => {
     if (!toast) return;
@@ -150,7 +99,7 @@ const repositoryDocuments = (
         const card = document.createElement('article');
         const published = article.status === 'published';
         card.dataset.status = article.status;
-        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view" aria-label="查看" title="查看"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M2.5 10s2.7-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.7 4.5-7.5 4.5S2.5 10 2.5 10Z"/><circle cx="10" cy="10" r="2"/></svg></a>' : ''}<a class="edit" aria-label="编辑" title="编辑"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="m4 13.8-.7 2.9 2.9-.7L15 7.2 12.8 5 4 13.8Z"/><path d="m11.8 6 2.2 2.2"/></svg></a>${article.repository ? '' : `${published ? '' : '<button class="publish" type="button" aria-label="发布" title="发布"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 14.5v-10m-3.6 3.6L10 4.5l3.6 3.6M4 15.5v1h12v-1"/></svg></button>'}<button class="delete" type="button" aria-label="删除" title="删除"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.25 6.5v8.1m3.75-8.1v8.1m3.75-8.1v8.1M4.5 4.5h11M7.2 4.5l.65-1.6h4.3l.65 1.6m1.55 0-.55 12.1H6.2L5.65 4.5"/></svg></button>`}</div>`;
+        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view" aria-label="查看" title="查看"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M2.5 10s2.7-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.7 4.5-7.5 4.5S2.5 10 2.5 10Z"/><circle cx="10" cy="10" r="2"/></svg></a>' : ''}<a class="edit" aria-label="编辑" title="编辑"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="m4 13.8-.7 2.9 2.9-.7L15 7.2 12.8 5 4 13.8Z"/><path d="m11.8 6 2.2 2.2"/></svg></a>${published ? '' : '<button class="publish" type="button" aria-label="发布" title="发布"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 14.5v-10m-3.6 3.6L10 4.5l3.6 3.6M4 15.5v1h12v-1"/></svg></button>'}<button class="delete" type="button" aria-label="删除" title="删除"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.25 6.5v8.1m3.75-8.1v8.1m3.75-8.1v8.1M4.5 4.5h11M7.2 4.5l.65-1.6h4.3l.65 1.6m1.55 0-.55 12.1H6.2L5.65 4.5"/></svg></button></div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
         card.querySelector('.card-content > p')!.textContent = article.category;
@@ -161,15 +110,13 @@ const repositoryDocuments = (
           .querySelector<HTMLAnchorElement>('.view')
           ?.setAttribute(
             'href',
-            article.static_url ??
-              `${readUrl}?id=${encodeURIComponent(article.id)}`,
+            `${readUrl}?id=${encodeURIComponent(article.id)}`,
           );
         card
           .querySelector<HTMLAnchorElement>('.edit')
           ?.setAttribute(
             'href',
-            article.repository_edit_url ??
-              `${editUrl}?id=${encodeURIComponent(article.id)}`,
+            `${editUrl}?id=${encodeURIComponent(article.id)}`,
           );
         card
           .querySelector<HTMLButtonElement>('.publish')
@@ -230,33 +177,15 @@ const repositoryDocuments = (
       return;
     }
     currentUserId = session.user.id;
-    const [profileResult, contributorResult] = await Promise.all([
-      supabase!
-        .from('profiles')
-        .select('role,display_name')
-        .eq('user_id', currentUserId)
-        .single(),
-      supabase!.rpc('get_site_contributor'),
-    ]);
+    const profileResult = await supabase!
+      .from('profiles')
+      .select('role')
+      .eq('user_id', currentUserId)
+      .single();
     if (profileResult.data?.role !== 'admin') {
       window.location.replace(page?.dataset.articles ?? '/articles/');
       return;
     }
-    const siteContributor = contributorResult.data?.[0] as
-      { user_id?: string; display_name?: string } | undefined;
-    const currentDisplayName = String(profileResult.data.display_name ?? '');
-    const ownsRepositoryDocuments = siteContributor?.user_id
-      ? siteContributor.user_id === currentUserId
-      : Boolean(
-          currentDisplayName &&
-          siteContributor?.display_name === currentDisplayName,
-        );
-    if (ownsRepositoryDocuments) {
-      articles.forEach((article) => {
-        if (article.repository) article.author_id = currentUserId;
-      });
-    }
-
     const [articleResult, contributionResult] = await Promise.all([
       supabase!
         .from('articles')
@@ -269,19 +198,16 @@ const repositoryDocuments = (
         .eq('user_id', currentUserId),
     ]);
     if (articleResult.error) {
-      showToast('数据库文章暂时无法加载，已显示仓库文档。', true);
+      showToast('内容暂时无法加载，请稍后重试。', true);
       render();
       return;
     }
     contributedArticleIds = new Set(
       (contributionResult.data ?? []).map((item) => String(item.article_id)),
     );
-    const { data } = articleResult;
-    const repositoryArticles = articles.filter((article) => article.repository);
-    articles = [
-      ...((data ?? []) as ManagedArticle[]),
-      ...repositoryArticles,
-    ].sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at));
+    articles = ((articleResult.data ?? []) as ManagedArticle[]).sort(
+      (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
+    );
     render();
   };
   void initialize();
