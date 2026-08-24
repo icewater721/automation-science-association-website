@@ -627,42 +627,6 @@ const repositoryDocuments = (
     );
     color: #ffffff;
   }
-  :global(html[data-theme='dark']) .list {
-    --workspace-cyan: #63cfc0;
-    --workspace-teal: #8bdc65;
-    --workspace-sun: #c7e97c;
-  }
-  :global(html[data-theme='dark']) .list :global(article) {
-    border-color: color-mix(
-      in srgb,
-      var(--workspace-teal) 26%,
-      var(--color-border)
-    );
-    background:
-      radial-gradient(
-        circle at 96% -35%,
-        color-mix(in srgb, var(--workspace-teal) 12%, transparent),
-        transparent 48%
-      ),
-      linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--color-surface) 88%, transparent),
-        color-mix(in srgb, var(--color-page) 72%, transparent)
-      );
-    box-shadow:
-      0 0.8rem 2rem color-mix(in srgb, var(--workspace-teal) 7%, transparent),
-      inset 0 1px 0 color-mix(in srgb, var(--workspace-teal) 8%, transparent);
-  }
-  :global(html[data-theme='dark']) .list :global(article:hover) {
-    border-color: color-mix(
-      in srgb,
-      var(--workspace-teal) 44%,
-      var(--color-border)
-    );
-    box-shadow:
-      0 0.9rem 2.4rem color-mix(in srgb, var(--workspace-teal) 11%, transparent),
-      inset 0 1px 0 color-mix(in srgb, var(--workspace-teal) 10%, transparent);
-  }
   @media (max-width: 38rem) {
     .manage-page {
       width: calc(100% - 2rem);
