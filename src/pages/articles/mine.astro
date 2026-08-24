@@ -13,7 +13,10 @@ const repositoryDocuments = (
   title: entry.data.title,
   category: entry.data.category,
   updatedAt: entry.data.updatedAt.toISOString(),
-  contributors: entry.data.contributors,
+  editUrl: `https://github.com/icewater721/automation-science-association-website/edit/sprint-5/src/content/docs/${entry.id
+    .split('/')
+    .map(encodeURIComponent)
+    .join('/')}.md`,
   url: withBase(
     `/articles/${
       entry.id
@@ -25,7 +28,10 @@ const repositoryDocuments = (
 }));
 ---
 
-<BaseLayout title="创作中心 | 文档" description="统一管理草稿和已发布文档。">
+<BaseLayout
+  title="创作中心 | 人工智能学院科协"
+  description="统一管理草稿和已发布内容。"
+>
   <main
     class="manage-page"
     data-page
@@ -36,14 +42,14 @@ const repositoryDocuments = (
     data-repository-documents={JSON.stringify(repositoryDocuments)}
   >
     <header class="workspace-header">
-      <div><p>DOCUMENT WORKSPACE</p><h1>创作中心</h1></div>
-      <a class="new-article" href={withBase('/articles/drafts/')}>+ 新建文章</a>
+      <div><p>CONTENT WORKSPACE</p><h1>创作中心</h1></div>
+      <a class="new-article" href={withBase('/articles/drafts/')}>+ 新建内容</a>
     </header>
     <nav class="filters" aria-label="内容筛选" data-filters>
       <button type="button" data-filter="draft">草稿</button>
 
       <button type="button" data-filter="mine">我贡献的</button>
-      <button class="is-active" type="button" data-filter="all">全部文章</button
+      <button class="is-active" type="button" data-filter="all">全部内容</button
       >
     </nav>
     <div class="list is-loading" data-list aria-busy="true">
@@ -75,7 +81,7 @@ const repositoryDocuments = (
     updated_at: string;
     repository?: boolean;
     static_url?: string;
-    contributors?: string[];
+    repository_edit_url?: string;
   }
 
   interface RepositoryDocument {
@@ -83,8 +89,8 @@ const repositoryDocuments = (
     title: string;
     category: string;
     updatedAt: string;
-    contributors: string[];
     url: string;
+    editUrl: string;
   }
 
   const page = document.querySelector<HTMLElement>('[data-page]');
@@ -106,7 +112,7 @@ const repositoryDocuments = (
     updated_at: document.updatedAt,
     repository: true,
     static_url: document.url,
-    contributors: document.contributors,
+    repository_edit_url: document.editUrl,
   }));
 
   const showToast = (message: string, error = false) => {
@@ -144,20 +150,13 @@ const repositoryDocuments = (
         const card = document.createElement('article');
         const published = article.status === 'published';
         card.dataset.status = article.status;
-        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view" aria-label="查看" title="查看"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M2.5 10s2.7-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.7 4.5-7.5 4.5S2.5 10 2.5 10Z"/><circle cx="10" cy="10" r="2"/></svg></a>' : ''}${article.repository ? '' : `<a class="edit" aria-label="编辑" title="编辑"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="m4 13.8-.7 2.9 2.9-.7L15 7.2 12.8 5 4 13.8Z"/><path d="m11.8 6 2.2 2.2"/></svg></a>${published ? '' : '<button class="publish" type="button" aria-label="发布" title="发布"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 14.5v-10m-3.6 3.6L10 4.5l3.6 3.6M4 15.5v1h12v-1"/></svg></button>'}<button class="delete" type="button" aria-label="删除" title="删除"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.25 6.5v8.1m3.75-8.1v8.1m3.75-8.1v8.1M4.5 4.5h11M7.2 4.5l.65-1.6h4.3l.65 1.6m1.55 0-.55 12.1H6.2L5.65 4.5"/></svg></button>`}</div>`;
+        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view" aria-label="查看" title="查看"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M2.5 10s2.7-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.7 4.5-7.5 4.5S2.5 10 2.5 10Z"/><circle cx="10" cy="10" r="2"/></svg></a>' : ''}<a class="edit" aria-label="编辑" title="编辑"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="m4 13.8-.7 2.9 2.9-.7L15 7.2 12.8 5 4 13.8Z"/><path d="m11.8 6 2.2 2.2"/></svg></a>${article.repository ? '' : `${published ? '' : '<button class="publish" type="button" aria-label="发布" title="发布"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 14.5v-10m-3.6 3.6L10 4.5l3.6 3.6M4 15.5v1h12v-1"/></svg></button>'}<button class="delete" type="button" aria-label="删除" title="删除"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.25 6.5v8.1m3.75-8.1v8.1m3.75-8.1v8.1M4.5 4.5h11M7.2 4.5l.65-1.6h4.3l.65 1.6m1.55 0-.55 12.1H6.2L5.65 4.5"/></svg></button>`}</div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
         card.querySelector('.card-content > p')!.textContent = article.category;
         card.querySelector<HTMLElement>('.status')!.textContent = published
           ? '已发布'
           : '草稿';
-        card.querySelector<HTMLElement>('.ownership')!.textContent =
-          article.repository
-            ? `仓库文档 · ${(article.contributors ?? []).join('、')}`
-            : contributedArticleIds.has(article.id) ||
-                article.author_id === currentUserId
-              ? '我参与贡献'
-              : '站内文章';
         card
           .querySelector<HTMLAnchorElement>('.view')
           ?.setAttribute(
@@ -169,7 +168,8 @@ const repositoryDocuments = (
           .querySelector<HTMLAnchorElement>('.edit')
           ?.setAttribute(
             'href',
-            `${editUrl}?id=${encodeURIComponent(article.id)}`,
+            article.repository_edit_url ??
+              `${editUrl}?id=${encodeURIComponent(article.id)}`,
           );
         card
           .querySelector<HTMLButtonElement>('.publish')
@@ -549,8 +549,8 @@ const repositoryDocuments = (
     background:
       radial-gradient(
         circle at 96% -40%,
-        color-mix(in srgb, var(--workspace-teal) 16%, transparent),
-        transparent 44%
+        color-mix(in srgb, var(--workspace-teal) 22%, transparent),
+        transparent 58%
       ),
       linear-gradient(
         135deg,
@@ -558,7 +558,7 @@ const repositoryDocuments = (
         color-mix(in srgb, var(--color-page) 76%, transparent)
       );
     box-shadow:
-      0 0.7rem 1.8rem color-mix(in srgb, var(--workspace-teal) 11%, transparent),
+      0 0.75rem 2rem color-mix(in srgb, var(--workspace-teal) 15%, transparent),
       inset 0 1px 0 color-mix(in srgb, #fff 62%, transparent);
     backdrop-filter: blur(16px) saturate(125%);
     font-family: var(--font-body);
