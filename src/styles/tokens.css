@@ -9,11 +9,6 @@
   --color-nav: #f3f3f3;
   --color-nav-text: #111111;
   --color-accent: #168ce8;
-  --color-edge: #0b9788;
-  --color-macaron-mint: #e7f5ef;
-  --color-macaron-peach: #faeee9;
-  --color-macaron-cream: #faf4dd;
-  --color-macaron-lilac: #f0ecf8;
 }
 
 :root[data-theme='dark'] {
@@ -25,11 +20,6 @@
   --color-border: #292929;
   --color-nav: #111111;
   --color-nav-text: #ffffff;
-  --color-edge: #3cc7b2;
-  --color-macaron-mint: #10231f;
-  --color-macaron-peach: #241a18;
-  --color-macaron-cream: #252216;
-  --color-macaron-lilac: #201c28;
 }
 
 :root[data-theme='light'] {
