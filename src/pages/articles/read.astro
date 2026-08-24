@@ -34,7 +34,9 @@ import { withBase } from '../../utils/paths';
       <nav data-outline-nav></nav>
       <span data-outline-empty hidden>本页暂无小节</span>
     </aside>
-    <p data-reader-note>正在加载文档……</p>
+    <div class="reader-loader" data-reader-note aria-label="正在加载文档">
+      <i></i><b></b><span></span><span></span><span></span>
+    </div>
   </main>
 </BaseLayout>
 
@@ -78,6 +80,8 @@ import { withBase } from '../../utils/paths';
               display_name: string;
             }>
           ).map((contributor) => {
+            const person = document.createElement('span');
+            person.className = 'contributor-person';
             const image = document.createElement('img');
             image.src =
               String(contributor.avatar_url || '') ||
@@ -86,7 +90,10 @@ import { withBase } from '../../utils/paths';
                 '');
             image.alt = String(contributor.display_name || '科协成员');
             image.title = String(contributor.display_name || '科协成员');
-            return image;
+            const name = document.createElement('b');
+            name.textContent = String(contributor.display_name || '科协成员');
+            person.append(image, name);
+            return person;
           }),
         );
       }
@@ -151,8 +158,14 @@ import { withBase } from '../../utils/paths';
       }
       const documentElement =
         document.querySelector<HTMLElement>('[data-document]');
-      if (documentElement) documentElement.hidden = false;
-      if (note) note.hidden = true;
+      if (documentElement) {
+        documentElement.hidden = false;
+        requestAnimationFrame(() => documentElement.classList.add('is-ready'));
+      }
+      if (note) {
+        note.classList.add('is-hidden');
+        window.setTimeout(() => (note.hidden = true), 360);
+      }
       document.title = `${data.title} | 文档`;
     }
   }
@@ -175,6 +188,15 @@ import { withBase } from '../../utils/paths';
   article {
     min-width: 0;
     grid-column: 1;
+    opacity: 0;
+    transform: translateY(0.45rem);
+    transition:
+      opacity 480ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  article.is-ready {
+    opacity: 1;
+    transform: none;
   }
   .back-link {
     display: inline-flex;
@@ -211,19 +233,83 @@ import { withBase } from '../../utils/paths';
     display: flex;
     min-height: 2rem;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
     margin-top: 1rem;
+  }
+  .contributors :global(.contributor-person) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--color-text-muted);
+    font-size: 0.76rem;
+    animation: contributor-in 420ms both cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .contributors :global(.contributor-person b) {
+    font: inherit;
+    font-weight: 520;
   }
   .contributors :global(img) {
     width: 2rem;
     height: 2rem;
-    margin-left: -0.35rem;
     border: 2px solid var(--color-page);
     border-radius: 50%;
     background: var(--color-surface);
     object-fit: cover;
   }
-  .contributors :global(img:first-child) {
-    margin-left: 0;
+  .reader-loader {
+    grid-column: 1;
+    display: grid;
+    gap: 0.8rem;
+    padding-top: 4.5rem;
+    transition:
+      opacity 320ms ease,
+      transform 380ms ease;
+  }
+  .reader-loader > * {
+    display: block;
+    height: 0.8rem;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-text) 4%, transparent),
+      color-mix(in srgb, var(--color-text) 10%, transparent),
+      color-mix(in srgb, var(--color-text) 4%, transparent)
+    );
+    background-size: 220% 100%;
+    animation: reader-loading 1.25s ease-in-out infinite;
+  }
+  .reader-loader i {
+    width: 18%;
+  }
+  .reader-loader b {
+    width: 62%;
+    height: 2.8rem;
+  }
+  .reader-loader span {
+    width: 86%;
+  }
+  .reader-loader span:nth-last-child(1) {
+    width: 68%;
+  }
+  .reader-loader.is-hidden {
+    opacity: 0;
+    transform: translateY(-0.2rem);
+  }
+  @keyframes reader-loading {
+    to {
+      background-position: -220% 0;
+    }
+  }
+  @keyframes contributor-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.2rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
   [data-summary] {
     max-width: 48rem;

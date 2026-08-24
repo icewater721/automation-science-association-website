@@ -210,6 +210,7 @@ const repositoryDocuments = (
   };
 
   filters?.addEventListener('click', (event) => {
+    if (list?.classList.contains('is-loading')) return;
     const button = (event.target as Element).closest<HTMLButtonElement>(
       '[data-filter]',
     );
@@ -220,8 +221,6 @@ const repositoryDocuments = (
       .forEach((item) => item.classList.toggle('is-active', item === button));
     render();
   });
-
-  render();
 
   const initialize = async () => {
     const session = (await supabase?.auth.getSession())?.data.session;
@@ -255,7 +254,6 @@ const repositoryDocuments = (
       articles.forEach((article) => {
         if (article.repository) article.author_id = currentUserId;
       });
-      render();
     }
 
     const [articleResult, contributionResult] = await Promise.all([
@@ -271,6 +269,7 @@ const repositoryDocuments = (
     ]);
     if (articleResult.error) {
       showToast('数据库文章暂时无法加载，已显示仓库文档。', true);
+      render();
       return;
     }
     contributedArticleIds = new Set(

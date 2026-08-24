@@ -47,8 +47,13 @@ const slugFor = (id: string) =>
             </>
             <p>{article.data.description}</p>
             <div class="article-dates">
-              <span class="contributor" data-historical-contributor>
+              <span
+                class="contributor"
+                data-historical-contributor
+                data-loading="true"
+              >
                 <>
+                  <i aria-hidden="true" />
                   <img src={withBase('/images/brand/asaw-logo.png')} alt="" />
                   <b>科协成员</b>
                 </>
@@ -159,23 +164,28 @@ const slugFor = (id: string) =>
     .forEach((button) =>
       button.addEventListener('click', () => filterByCategory(button)),
     );
+  const revealHistoricalContributors = (contributor?: {
+    avatar_url?: string | null;
+    display_name?: string | null;
+  }) => {
+    document
+      .querySelectorAll<HTMLElement>('[data-historical-contributor]')
+      .forEach((element) => {
+        const image = element.querySelector<HTMLImageElement>('img');
+        const name = element.querySelector<HTMLElement>('b');
+        if (image && contributor?.avatar_url)
+          image.src = String(contributor.avatar_url);
+        if (name)
+          name.textContent = String(contributor?.display_name || '科协成员');
+        requestAnimationFrame(() => (element.dataset.loading = 'false'));
+      });
+  };
   if (supabase) {
     const historical = await supabase.rpc('get_site_contributor');
     const siteContributor = historical.data?.[0];
-    if (!historical.error && siteContributor) {
-      document
-        .querySelectorAll<HTMLElement>('[data-historical-contributor]')
-        .forEach((element) => {
-          const image = element.querySelector<HTMLImageElement>('img');
-          const name = element.querySelector<HTMLElement>('b');
-          if (image && siteContributor.avatar_url)
-            image.src = String(siteContributor.avatar_url);
-          if (name)
-            name.textContent = String(
-              siteContributor.display_name || '科协成员',
-            );
-        });
-    }
+    revealHistoricalContributors(
+      !historical.error ? siteContributor : undefined,
+    );
     const feed = await supabase.rpc('get_published_article_feed');
     const fallback = feed.error
       ? await supabase
@@ -245,7 +255,7 @@ const slugFor = (id: string) =>
         document.querySelector('.category-menu')?.append(button);
       }
     }
-  }
+  } else revealHistoricalContributors();
 </script>
 
 <style>
@@ -426,9 +436,31 @@ const slugFor = (id: string) =>
     align-items: center;
     gap: 0.32rem;
   }
+  :global(.contributor i) {
+    width: 5.8rem;
+    height: 1rem;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-text) 5%, transparent),
+      color-mix(in srgb, var(--color-text) 11%, transparent),
+      color-mix(in srgb, var(--color-text) 5%, transparent)
+    );
+    background-size: 220% 100%;
+    animation: contributor-loading 1.2s ease-in-out infinite;
+  }
+  :global(.contributor[data-loading='true'] img),
+  :global(.contributor[data-loading='true'] b) {
+    position: absolute;
+    opacity: 0;
+  }
+  :global(.contributor[data-loading='false'] i) {
+    display: none;
+  }
   :global(.contributor b) {
     font: inherit;
     font-weight: 500;
+    transition: opacity 320ms ease;
   }
   :global(.contributor img) {
     width: 1.15rem;
@@ -436,6 +468,9 @@ const slugFor = (id: string) =>
     border: 1px solid var(--color-border);
     border-radius: 50%;
     object-fit: cover;
+    transition:
+      opacity 320ms ease,
+      transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   :global(.article-card:hover) {
     border-color: color-mix(
@@ -461,6 +496,11 @@ const slugFor = (id: string) =>
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+  @keyframes contributor-loading {
+    to {
+      background-position: -220% 0;
     }
   }
   .empty-filter {
