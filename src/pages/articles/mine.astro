@@ -140,20 +140,13 @@ const repositoryDocuments = (
     const editUrl = page?.dataset.edit ?? '/articles/drafts/';
     const readUrl = page?.dataset.read ?? '/articles/read/';
     list.replaceChildren(
-      ...visible.map((article, index) => {
+      ...visible.map((article) => {
         const card = document.createElement('article');
         const published = article.status === 'published';
-        card.dataset.status = article.status;
-        card.style.setProperty('--card-index', String(index));
-        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><div class="card-details"><span class="category"></span><time></time></div></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作">···</summary><button class="delete" type="button">删除</button></details>`}</div>`;
+        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作">···</summary><button class="delete" type="button">删除</button></details>`}</div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
-        card.querySelector<HTMLElement>('.category')!.textContent =
-          article.category;
-        const updatedAt = new Date(article.updated_at);
-        const updatedTime = card.querySelector<HTMLTimeElement>('time')!;
-        updatedTime.dateTime = updatedAt.toISOString();
-        updatedTime.textContent = `更新于 ${updatedAt.toLocaleDateString('zh-CN')}`;
+        card.querySelector('.card-content > p')!.textContent = article.category;
         card.querySelector<HTMLElement>('.status')!.textContent = published
           ? '已发布'
           : '草稿';
@@ -350,19 +343,19 @@ const repositoryDocuments = (
     background: var(--color-surface);
     color: var(--color-text);
   }
-  .list :global(.card-meta) {
+  .card-meta {
     display: flex;
     gap: 0.45rem;
     color: var(--color-text-muted);
     font-size: 0.66rem;
   }
-  .list :global(.card-meta .status) {
+  .card-meta .status {
     color: var(--color-accent);
   }
-  .list :global(.actions details) {
+  .actions details {
     position: relative;
   }
-  .list :global(.actions summary) {
+  .actions summary {
     padding: 0.5rem 0.7rem;
     border: 1px solid var(--color-border);
     border-radius: 0.65rem;
@@ -370,10 +363,10 @@ const repositoryDocuments = (
     font-size: 0.74rem;
     list-style: none;
   }
-  .list :global(.actions summary::-webkit-details-marker) {
+  .actions summary::-webkit-details-marker {
     display: none;
   }
-  .list :global(.actions details button) {
+  .actions details button {
     position: absolute;
     z-index: 2;
     top: calc(100% + 0.3rem);
@@ -533,34 +526,20 @@ const repositoryDocuments = (
     display: none !important;
   }
   .manage-page {
-    width: min(56rem, calc(100% - 4rem));
+    width: min(52rem, calc(100% - 4rem));
   }
   .list {
-    gap: 0.55rem;
+    gap: 0.65rem;
   }
   .list :global(article) {
-    min-height: 7.15rem;
-    padding: 1.15rem 1.15rem 1.15rem 1.4rem;
-    overflow: visible;
-    border-color: color-mix(in srgb, var(--color-border) 78%, transparent);
-    border-radius: 0.9rem;
-    background: color-mix(in srgb, var(--color-surface) 42%, var(--color-page));
+    padding: 1.15rem 1.2rem;
+    border-radius: 0.8rem;
+    background: var(--color-page);
     box-shadow: none;
     font-family: var(--font-body);
-    animation-delay: calc(var(--card-index) * 42ms);
   }
   .list :global(article::before) {
-    display: block;
-    top: 1.25rem;
-    bottom: 1.25rem;
-    left: 0;
-    width: 3px;
-    background: var(--color-accent);
-    opacity: 0.75;
-  }
-  .list :global(article[data-status='draft']::before) {
-    background: var(--color-text-muted);
-    opacity: 0.45;
+    display: none;
   }
   .list :global(article:hover) {
     border-color: color-mix(
@@ -568,86 +547,33 @@ const repositoryDocuments = (
       var(--color-accent) 45%,
       var(--color-border)
     );
-    background: color-mix(in srgb, var(--color-surface) 70%, var(--color-page));
-    box-shadow: 0 0.7rem 1.8rem color-mix(in srgb, #000 7%, transparent);
-    transform: translateY(-0.14rem);
+    box-shadow: 0 0.55rem 1.6rem color-mix(in srgb, #000 6%, transparent);
+    transform: translateY(-0.08rem);
   }
   .list :global(article h2) {
-    margin: 0.55rem 0 0.52rem;
+    margin: 0.42rem 0 0.18rem;
     font-family: var(--font-body);
-    font-size: clamp(1.08rem, 2vw, 1.25rem);
-    font-weight: 690;
-    letter-spacing: -0.025em;
-    line-height: 1.3;
+    font-size: 1.12rem;
+    font-weight: 680;
+    letter-spacing: -0.015em;
   }
-  .list :global(.card-content) {
-    min-width: 0;
-  }
-  .list :global(.card-meta) {
+  .card-meta {
     align-items: center;
-    gap: 0.55rem;
     font-family: var(--font-body);
-    font-size: 0.67rem;
+    font-size: 0.68rem;
   }
-  .list :global(.card-meta .status) {
-    padding: 0.2rem 0.48rem;
+  .card-meta .status {
+    padding: 0.16rem 0.42rem;
     border-radius: 999px;
     background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-    font-weight: 680;
-    letter-spacing: 0.03em;
-  }
-  .list :global(article[data-status='draft'] .status) {
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-  }
-  .list :global(.ownership) {
-    opacity: 0.82;
-  }
-  .list :global(.card-details) {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    color: var(--color-text-muted);
-    font-size: 0.7rem;
-  }
-  .list :global(.card-details .category) {
-    color: color-mix(in srgb, var(--color-text) 72%, transparent);
-  }
-  .list :global(.card-details time::before) {
-    margin-right: 0.55rem;
-    color: var(--color-border);
-    content: '•';
-  }
-  .list :global(.actions) {
-    align-items: center;
-    opacity: 0.72;
-    transition: opacity 220ms ease;
-  }
-  .list :global(article:hover .actions),
-  .list :global(article:focus-within .actions) {
-    opacity: 1;
   }
   .list :global(.actions a),
   .list :global(.actions button),
-  .list :global(.actions summary) {
+  .actions summary {
     border-color: transparent;
-    background: transparent;
-    font-family: var(--font-body);
-    font-weight: 620;
-  }
-  .list :global(.actions a:hover),
-  .list :global(.actions button:hover),
-  .list :global(.actions summary:hover) {
     background: var(--color-surface);
-  }
-  .list :global(.actions .publish) {
-    background: var(--color-text);
-    color: var(--color-page);
-  }
-  .list :global(.actions .publish:hover) {
-    border-color: var(--color-text);
-    background: var(--color-text);
-    color: var(--color-page);
+    font-family: var(--font-body);
+    font-weight: 600;
   }
   @media (max-width: 38rem) {
     .manage-page {
