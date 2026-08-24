@@ -144,7 +144,7 @@ const repositoryDocuments = (
         const card = document.createElement('article');
         const published = article.status === 'published';
         card.dataset.status = article.status;
-        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作" title="更多操作"><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="4" cy="10" r="1.35"/><circle cx="10" cy="10" r="1.35"/><circle cx="16" cy="10" r="1.35"/></svg></summary><button class="delete" type="button">删除</button></details>`}</div>`;
+        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作" title="更多操作"><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="4" cy="10" r="1.35"/><circle cx="10" cy="10" r="1.35"/><circle cx="16" cy="10" r="1.35"/></svg></summary><button class="delete" type="button"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.25 6.5v8.1m3.75-8.1v8.1m3.75-8.1v8.1M4.5 4.5h11M7.2 4.5l.65-1.6h4.3l.65 1.6m1.55 0-.55 12.1H6.2L5.65 4.5"/></svg><span>删除文章</span></button></details>`}</div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
         card.querySelector('.card-content > p')!.textContent = article.category;
@@ -674,16 +674,47 @@ const repositoryDocuments = (
     z-index: 6;
     top: calc(100% + 0.45rem);
     right: 0;
-    min-width: 5.4rem;
+    display: flex;
+    width: max-content;
+    min-width: 7rem;
+    min-height: 0;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: 0.62rem 0.72rem;
     border-color: var(--color-border);
+    border-radius: 0.72rem;
     background: color-mix(in srgb, var(--color-page) 94%, transparent);
     color: #d35f65;
+    font-size: 0.72rem;
+    font-weight: 560;
     box-shadow: 0 0.7rem 1.8rem color-mix(in srgb, #000 16%, transparent);
     backdrop-filter: blur(16px);
+    transform-origin: top right;
+    animation: action-menu-in 160ms ease-out both;
   }
   .list :global(.actions details .delete:hover) {
     border-color: color-mix(in srgb, #d35f65 46%, var(--color-border));
     color: #d35f65;
+  }
+  .list :global(.actions details .delete svg) {
+    width: 0.95rem;
+    height: 0.95rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.4;
+  }
+  @keyframes action-menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-0.2rem) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
   @media (max-width: 38rem) {
     .manage-page {
