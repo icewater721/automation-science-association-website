@@ -168,3 +168,161 @@ input {
 .code-copy-button[data-state='error'] {
   color: #d64b4b;
 }
+
+/* Light theme: a visible but controlled macaron palette across the site. */
+html[data-theme='light'] ::selection {
+  background: var(--color-macaron-sky);
+  color: var(--color-text);
+}
+
+html[data-theme='light'] .site-sidebar {
+  border-right-color: color-mix(in srgb, var(--color-edge) 24%, transparent);
+  background: linear-gradient(180deg, #e5f7f0 0%, #eef8f5 58%, #f5f0fb 100%);
+}
+
+html[data-theme='light'] .nav-link--current,
+html[data-theme='light'] .nav-link--current:hover {
+  background: var(--color-edge);
+  color: #ffffff;
+  box-shadow: 0 0.45rem 1.15rem
+    color-mix(in srgb, var(--color-edge) 18%, transparent);
+}
+
+html[data-theme='light'] .brand:hover,
+html[data-theme='light'] .nav-link:not(.nav-link--current):hover {
+  background: var(--color-macaron-cream);
+}
+
+html[data-theme='light'] .tool-link:hover {
+  background: var(--color-macaron-lilac);
+}
+
+html[data-theme='light'] .search-trigger {
+  border-color: color-mix(in srgb, #e2a43c 28%, var(--color-border));
+  background: color-mix(in srgb, var(--color-macaron-cream) 72%, #ffffff);
+}
+
+html[data-theme='light'] .search-dialog {
+  border-color: color-mix(in srgb, var(--color-edge) 34%, var(--color-border));
+  background: linear-gradient(145deg, #fffdfa 0%, #f4fbf8 58%, #f4effc 100%);
+  box-shadow: 0 1.6rem 4rem color-mix(in srgb, #44665f 18%, transparent);
+}
+
+html[data-theme='light'] .search-results a.is-active {
+  background: var(--color-macaron-sky);
+}
+
+html[data-theme='light'] .departments {
+  background: linear-gradient(135deg, #fffaf6 0%, #f2fbf7 48%, #eef6ff 100%);
+}
+
+html[data-theme='light']
+  .department-tabs
+  button:nth-child(1)[aria-selected='true'] {
+  color: #087f74;
+}
+
+html[data-theme='light']
+  .department-tabs
+  button:nth-child(2)[aria-selected='true'] {
+  color: #c86f5c;
+}
+
+html[data-theme='light']
+  .department-tabs
+  button:nth-child(3)[aria-selected='true'] {
+  color: #7657a6;
+}
+
+html[data-theme='light']
+  .department-tabs
+  button:nth-child(1)[aria-selected='true']::before {
+  background: var(--color-edge);
+}
+
+html[data-theme='light']
+  .department-tabs
+  button:nth-child(2)[aria-selected='true']::before {
+  background: #df8975;
+}
+
+html[data-theme='light']
+  .department-tabs
+  button:nth-child(3)[aria-selected='true']::before {
+  background: #9276bd;
+}
+
+html[data-theme='light'] .department-panel {
+  margin-top: 0.9rem;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+  border: 1px solid
+    color-mix(in srgb, var(--color-edge) 15%, var(--color-border));
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-macaron-mint) 52%, transparent);
+}
+
+html[data-theme='light'] .join-contact {
+  background: linear-gradient(180deg, #fffaf6 0%, #fff6ef 100%);
+}
+
+html[data-theme='light'] .action-grid article:first-child {
+  border-color: color-mix(in srgb, #dc8c78 28%, var(--color-border));
+  background: var(--color-macaron-peach);
+}
+
+html[data-theme='light'] .action-grid article:last-child {
+  border-color: color-mix(in srgb, #8668ad 24%, var(--color-border));
+  background: var(--color-macaron-lilac);
+}
+
+html[data-theme='light'] .article-card:nth-child(5n + 1) {
+  border-color: color-mix(in srgb, var(--color-edge) 34%, var(--color-border));
+  background: linear-gradient(110deg, #f8fffc, var(--color-macaron-mint));
+}
+
+html[data-theme='light'] .article-card:nth-child(5n + 2) {
+  border-color: color-mix(in srgb, #dc8c78 30%, var(--color-border));
+  background: linear-gradient(110deg, #fffaf8, var(--color-macaron-peach));
+}
+
+html[data-theme='light'] .article-card:nth-child(5n + 3) {
+  border-color: color-mix(in srgb, #d6a443 30%, var(--color-border));
+  background: linear-gradient(110deg, #fffdf7, var(--color-macaron-cream));
+}
+
+html[data-theme='light'] .article-card:nth-child(5n + 4) {
+  border-color: color-mix(in srgb, #8668ad 28%, var(--color-border));
+  background: linear-gradient(110deg, #fcfaff, var(--color-macaron-lilac));
+}
+
+html[data-theme='light'] .article-card:nth-child(5n + 5) {
+  border-color: color-mix(in srgb, #4a91c7 28%, var(--color-border));
+  background: linear-gradient(110deg, #f9fcff, var(--color-macaron-sky));
+}
+
+html[data-theme='light'] .category-menu button[aria-pressed='true'],
+html[data-theme='light'] .page-outline a.is-active {
+  background: var(--color-macaron-sky);
+}
+
+html[data-theme='light'] .identity-card,
+html[data-theme='light'] .profile-section {
+  border-color: color-mix(in srgb, var(--color-edge) 18%, var(--color-border));
+  background: color-mix(
+    in srgb,
+    var(--color-macaron-mint) 36%,
+    var(--color-page)
+  );
+}
+
+html[data-theme='light'] .new-article {
+  background: var(--color-edge);
+  color: #ffffff;
+  box-shadow: 0 0.5rem 1.1rem
+    color-mix(in srgb, var(--color-edge) 18%, transparent);
+}
+
+html[data-theme='light'] .site-footer {
+  border-top-color: color-mix(in srgb, #8668ad 20%, var(--color-border));
+  background: linear-gradient(110deg, #f2faf6 0%, #f4eefb 100%);
+}
