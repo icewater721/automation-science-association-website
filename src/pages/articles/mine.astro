@@ -144,7 +144,7 @@ const repositoryDocuments = (
         const card = document.createElement('article');
         const published = article.status === 'published';
         card.dataset.status = article.status;
-        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M2.5 10s2.7-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.7 4.5-7.5 4.5S2.5 10 2.5 10Z"/><circle cx="10" cy="10" r="2"/></svg><span>查看</span></a>' : ''}${article.repository ? '' : `<a class="edit"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="m4 13.8-.7 2.9 2.9-.7L15 7.2 12.8 5 4 13.8Z"/><path d="m11.8 6 2.2 2.2"/></svg><span>编辑</span></a>${published ? '' : '<button class="publish" type="button"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 14.5v-10m-3.6 3.6L10 4.5l3.6 3.6M4 15.5v1h12v-1"/></svg><span>发布</span></button>'}<button class="delete" type="button"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.25 6.5v8.1m3.75-8.1v8.1m3.75-8.1v8.1M4.5 4.5h11M7.2 4.5l.65-1.6h4.3l.65 1.6m1.55 0-.55 12.1H6.2L5.65 4.5"/></svg><span>删除</span></button>`}</div>`;
+        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view" aria-label="查看" title="查看"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M2.5 10s2.7-4.5 7.5-4.5 7.5 4.5 7.5 4.5-2.7 4.5-7.5 4.5S2.5 10 2.5 10Z"/><circle cx="10" cy="10" r="2"/></svg></a>' : ''}${article.repository ? '' : `<a class="edit" aria-label="编辑" title="编辑"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="m4 13.8-.7 2.9 2.9-.7L15 7.2 12.8 5 4 13.8Z"/><path d="m11.8 6 2.2 2.2"/></svg></a>${published ? '' : '<button class="publish" type="button" aria-label="发布" title="发布"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 14.5v-10m-3.6 3.6L10 4.5l3.6 3.6M4 15.5v1h12v-1"/></svg></button>'}<button class="delete" type="button" aria-label="删除" title="删除"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.25 6.5v8.1m3.75-8.1v8.1m3.75-8.1v8.1M4.5 4.5h11M7.2 4.5l.65-1.6h4.3l.65 1.6m1.55 0-.55 12.1H6.2L5.65 4.5"/></svg></button>`}</div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
         card.querySelector('.card-content > p')!.textContent = article.category;
@@ -549,7 +549,7 @@ const repositoryDocuments = (
     background:
       radial-gradient(
         circle at 96% -40%,
-        color-mix(in srgb, var(--workspace-teal) 10%, transparent),
+        color-mix(in srgb, var(--workspace-teal) 16%, transparent),
         transparent 44%
       ),
       linear-gradient(
@@ -558,7 +558,7 @@ const repositoryDocuments = (
         color-mix(in srgb, var(--color-page) 76%, transparent)
       );
     box-shadow:
-      0 0.7rem 1.8rem color-mix(in srgb, var(--workspace-teal) 8%, transparent),
+      0 0.7rem 1.8rem color-mix(in srgb, var(--workspace-teal) 11%, transparent),
       inset 0 1px 0 color-mix(in srgb, #fff 62%, transparent);
     backdrop-filter: blur(16px) saturate(125%);
     font-family: var(--font-body);
@@ -608,15 +608,16 @@ const repositoryDocuments = (
     color: color-mix(in srgb, var(--workspace-teal) 82%, var(--color-text));
   }
   .list :global(.actions a),
-  .list :global(.actions button),
-  .list :global(.actions summary) {
+  .list :global(.actions button) {
     display: inline-grid;
-    min-height: 2.35rem;
-    padding: 0.55rem 0.82rem;
+    width: 2.35rem;
+    height: 2.35rem;
+    min-height: 0;
+    padding: 0;
     place-items: center;
-    border: 1px solid color-mix(in srgb, var(--color-border) 74%, transparent);
-    border-radius: 0.72rem;
-    background: color-mix(in srgb, var(--color-page) 58%, transparent);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
     color: var(--color-text);
     cursor: pointer;
     backdrop-filter: blur(10px);
@@ -628,39 +629,25 @@ const repositoryDocuments = (
     text-decoration: none;
   }
   .list :global(.actions a:hover),
-  .list :global(.actions button:hover),
-  .list :global(.actions summary:hover) {
-    border-color: color-mix(in srgb, var(--workspace-teal) 48%, transparent);
+  .list :global(.actions button:hover) {
+    background: color-mix(in srgb, var(--workspace-teal) 9%, transparent);
     color: color-mix(in srgb, var(--workspace-teal) 82%, var(--color-text));
   }
   .list :global(.actions .publish) {
-    border-color: transparent;
-    background: linear-gradient(
-      135deg,
-      var(--workspace-cyan),
-      var(--workspace-teal)
-    );
-    color: #ffffff;
-    box-shadow: 0 0.35rem 0.9rem
-      color-mix(in srgb, var(--workspace-teal) 16%, transparent);
-    font-weight: 650;
+    background: transparent;
+    color: var(--color-text);
   }
   .list :global(.actions .delete) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-color: var(--color-border);
-    background: color-mix(in srgb, var(--color-page) 94%, transparent);
+    background: transparent;
     color: #d35f65;
   }
   .list :global(.actions .delete:hover) {
-    border-color: color-mix(in srgb, #d35f65 46%, var(--color-border));
+    background: color-mix(in srgb, #d35f65 9%, transparent);
     color: #d35f65;
   }
   .list :global(.actions svg) {
-    width: 0.95rem;
-    height: 0.95rem;
+    width: 1.15rem;
+    height: 1.15rem;
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
