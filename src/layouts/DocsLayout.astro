@@ -63,7 +63,6 @@ const visibleHeadings = headings.filter(
           data-loading="true"
         >
           <span>贡献者</span>
-          <i aria-hidden="true"></i>
           <img src={withBase('/images/brand/asaw-logo.png')} alt="贡献者头像" />
           <strong>科协成员</strong>
         </div>
@@ -343,6 +342,11 @@ const visibleHeadings = headings.filter(
     margin-top: 0.9rem;
     color: var(--color-text-muted);
     font-size: 0.78rem;
+    opacity: 0;
+    transform: translateY(0.25rem);
+    transition:
+      opacity 420ms ease,
+      transform 480ms cubic-bezier(0.2, 0.82, 0.22, 1);
   }
 
   .contributor img {
@@ -366,35 +370,9 @@ const visibleHeadings = headings.filter(
     transition: opacity 360ms ease;
   }
 
-  .contributor i {
-    width: 6.5rem;
-    height: 1.25rem;
-    border-radius: 999px;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-text) 5%, transparent),
-      color-mix(in srgb, var(--color-text) 11%, transparent),
-      color-mix(in srgb, var(--color-text) 5%, transparent)
-    );
-    background-size: 220% 100%;
-    animation: contributor-loading 1.2s ease-in-out infinite;
-  }
-
-  .contributor[data-loading='true'] img,
-  .contributor[data-loading='true'] strong {
-    position: absolute;
-    opacity: 0;
-    transform: translateY(0.2rem);
-  }
-
-  .contributor[data-loading='false'] i {
-    display: none;
-  }
-
-  @keyframes contributor-loading {
-    to {
-      background-position: -220% 0;
-    }
+  .contributor[data-loading='false'] {
+    opacity: 1;
+    transform: none;
   }
 
   .description {

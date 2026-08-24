@@ -24,6 +24,7 @@ const { title, description } = Astro.props;
     />
     <title>{title}</title>
     <script is:inline>
+      document.documentElement.classList.add('has-js');
       const savedTheme = localStorage.getItem('asaw-theme');
       const availableThemes = ['light', 'dark'];
       document.documentElement.dataset.theme = availableThemes.includes(
@@ -36,6 +37,77 @@ const { title, description } = Astro.props;
   <body>
     <Header />
     <slot />
+    <script>
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+
+      const revealPage = () => {
+        if (reduceMotion) {
+          document.body.classList.add('route-ready');
+          return;
+        }
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() =>
+            document.body.classList.add('route-ready'),
+          ),
+        );
+      };
+
+      const revealItems = [
+        ...document.querySelectorAll<HTMLElement>(
+          'main > section, .docs-content > h2, .docs-content > h3, .docs-content > p, .docs-content > ul, .docs-content > ol, .docs-content > pre, .docs-content > blockquote, .content > h1, .content > h2, .content > h3, .content > p, .content > ul, .content > ol, .content > pre, .content > blockquote',
+        ),
+      ];
+      revealItems.forEach((element, index) => {
+        element.classList.add('reveal-item');
+        element.style.setProperty(
+          '--reveal-delay',
+          `${Math.min(index, 12) * 34}ms`,
+        );
+      });
+
+      if (reduceMotion || !('IntersectionObserver' in window)) {
+        revealItems.forEach((element) => element.classList.add('is-revealed'));
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add('is-revealed');
+              observer.unobserve(entry.target);
+            });
+          },
+          { rootMargin: '0px 0px -7% 0px', threshold: 0.1 },
+        );
+        revealItems.forEach((element) => observer.observe(element));
+      }
+
+      document.addEventListener('click', (event) => {
+        if (reduceMotion || event.defaultPrevented || event.button !== 0)
+          return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+          return;
+        const link = (event.target as Element).closest<HTMLAnchorElement>('a');
+        if (!link || link.target || link.hasAttribute('download')) return;
+        const destination = new URL(link.href, window.location.href);
+        if (destination.origin !== window.location.origin) return;
+        if (
+          destination.pathname === window.location.pathname &&
+          destination.search === window.location.search
+        )
+          return;
+        event.preventDefault();
+        document.body.classList.add('route-leaving');
+        window.setTimeout(() => window.location.assign(destination.href), 190);
+      });
+
+      revealPage();
+      window.addEventListener('pageshow', () => {
+        document.body.classList.remove('route-leaving');
+        revealPage();
+      });
+    </script>
     <script>
       const decorateCodeBlock = (pre: HTMLPreElement) => {
         if (pre.dataset.copyReady === 'true') return;

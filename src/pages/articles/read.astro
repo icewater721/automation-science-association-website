@@ -34,9 +34,7 @@ import { withBase } from '../../utils/paths';
       <nav data-outline-nav></nav>
       <span data-outline-empty hidden>本页暂无小节</span>
     </aside>
-    <div class="reader-loader" data-reader-note aria-label="正在加载文档">
-      <i></i><b></b><span></span><span></span><span></span>
-    </div>
+    <div class="reader-loader" data-reader-note aria-label="正在载入文档"></div>
   </main>
 </BaseLayout>
 
@@ -259,47 +257,14 @@ import { withBase } from '../../utils/paths';
   }
   .reader-loader {
     grid-column: 1;
-    display: grid;
-    gap: 0.8rem;
-    padding-top: 4.5rem;
+    min-height: 55vh;
     transition:
       opacity 320ms ease,
       transform 380ms ease;
   }
-  .reader-loader > * {
-    display: block;
-    height: 0.8rem;
-    border-radius: 999px;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-text) 4%, transparent),
-      color-mix(in srgb, var(--color-text) 10%, transparent),
-      color-mix(in srgb, var(--color-text) 4%, transparent)
-    );
-    background-size: 220% 100%;
-    animation: reader-loading 1.25s ease-in-out infinite;
-  }
-  .reader-loader i {
-    width: 18%;
-  }
-  .reader-loader b {
-    width: 62%;
-    height: 2.8rem;
-  }
-  .reader-loader span {
-    width: 86%;
-  }
-  .reader-loader span:nth-last-child(1) {
-    width: 68%;
-  }
   .reader-loader.is-hidden {
     opacity: 0;
     transform: translateY(-0.2rem);
-  }
-  @keyframes reader-loading {
-    to {
-      background-position: -220% 0;
-    }
   }
   @keyframes contributor-in {
     from {
