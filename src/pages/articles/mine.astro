@@ -530,6 +530,7 @@ const repositoryDocuments = (
     width: min(52rem, calc(100% - 4rem));
   }
   .list {
+    width: min(34rem, 100%);
     gap: 0.65rem;
     --workspace-cyan: #2397d4;
     --workspace-teal: #18a88f;
@@ -547,19 +548,14 @@ const repositoryDocuments = (
     overflow: hidden;
     background:
       radial-gradient(
-        circle at 92% -45%,
-        color-mix(in srgb, var(--workspace-cyan) 18%, transparent),
-        transparent 48%
-      ),
-      radial-gradient(
-        circle at 72% 155%,
-        color-mix(in srgb, var(--workspace-sun) 12%, transparent),
-        transparent 42%
+        circle at 96% -40%,
+        color-mix(in srgb, var(--workspace-teal) 10%, transparent),
+        transparent 44%
       ),
       linear-gradient(
-        112deg,
-        color-mix(in srgb, var(--color-surface) 78%, transparent),
-        color-mix(in srgb, var(--color-page) 70%, transparent)
+        135deg,
+        color-mix(in srgb, var(--color-surface) 84%, transparent),
+        color-mix(in srgb, var(--color-page) 76%, transparent)
       );
     box-shadow:
       0 0.7rem 1.8rem color-mix(in srgb, var(--workspace-teal) 8%, transparent),
