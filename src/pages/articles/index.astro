@@ -80,8 +80,8 @@ const slugFor = (id: string) =>
           </a>
         ))
       }
+      <p class="empty-filter" data-empty-filter hidden>该栏目暂时没有文档。</p>
     </section>
-    <p class="empty-filter" data-empty-filter hidden>该栏目暂时没有文档。</p>
     <aside class="article-tools" aria-label="文档功能">
       <details class="tool-item category-filter" data-category-filter>
         <summary>
@@ -488,7 +488,12 @@ const slugFor = (id: string) =>
     }
   }
   .empty-filter {
+    display: grid;
+    min-height: clamp(18rem, 56vh, 34rem);
+    margin: 0;
+    place-items: center;
     color: var(--color-text-muted);
+    text-align: center;
   }
   [hidden] {
     display: none !important;
