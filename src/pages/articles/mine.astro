@@ -144,7 +144,7 @@ const repositoryDocuments = (
         const card = document.createElement('article');
         const published = article.status === 'published';
         card.dataset.status = article.status;
-        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作">···</summary><button class="delete" type="button">删除</button></details>`}</div>`;
+        card.innerHTML = `<div class="card-content"><div class="card-meta"><span class="status"></span><span class="ownership"></span></div><h2></h2><p></p></div><div class="actions">${published ? '<a class="view">查看</a>' : ''}${article.repository ? '' : `<a class="edit">${published ? '编辑' : '继续编辑'}</a>${published ? '' : '<button class="publish" type="button">发布</button>'}<details><summary aria-label="更多操作" title="更多操作"><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="4" cy="10" r="1.35"/><circle cx="10" cy="10" r="1.35"/><circle cx="16" cy="10" r="1.35"/></svg></summary><button class="delete" type="button">删除</button></details>`}</div>`;
         card.querySelector('h2')!.textContent =
           article.title || (published ? '未命名文档' : '未命名草稿');
         card.querySelector('.card-content > p')!.textContent = article.category;
@@ -468,7 +468,7 @@ const repositoryDocuments = (
     padding: 0.95rem 1rem;
     border: 1px solid var(--color-border);
     border-radius: 1.05rem;
-    overflow: hidden;
+    overflow: visible;
   }
   .skeleton > * {
     display: block;
@@ -610,11 +610,22 @@ const repositoryDocuments = (
   .list :global(.actions a),
   .list :global(.actions button),
   .list :global(.actions summary) {
-    border-color: transparent;
+    display: inline-grid;
+    min-height: 2.35rem;
+    padding: 0.55rem 0.82rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--color-border) 74%, transparent);
+    border-radius: 0.72rem;
     background: color-mix(in srgb, var(--color-page) 58%, transparent);
+    color: var(--color-text);
+    cursor: pointer;
     backdrop-filter: blur(10px);
     font-family: var(--font-body);
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 540;
+    line-height: 1;
+    letter-spacing: 0.015em;
+    text-decoration: none;
   }
   .list :global(.actions a:hover),
   .list :global(.actions button:hover),
@@ -623,12 +634,56 @@ const repositoryDocuments = (
     color: color-mix(in srgb, var(--workspace-teal) 82%, var(--color-text));
   }
   .list :global(.actions .publish) {
+    border-color: transparent;
     background: linear-gradient(
       135deg,
       var(--workspace-cyan),
       var(--workspace-teal)
     );
     color: #ffffff;
+    box-shadow: 0 0.35rem 0.9rem
+      color-mix(in srgb, var(--workspace-teal) 16%, transparent);
+    font-weight: 650;
+  }
+  .list :global(.actions details) {
+    position: relative;
+  }
+  .list :global(.actions details[open]) {
+    z-index: 5;
+  }
+  .list :global(.actions summary) {
+    width: 2.35rem;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    appearance: none;
+    list-style: none;
+  }
+  .list :global(.actions summary::marker),
+  .list :global(.actions summary::-webkit-details-marker) {
+    display: none;
+    content: '';
+  }
+  .list :global(.actions summary svg) {
+    width: 1.08rem;
+    height: 1.08rem;
+    fill: currentColor;
+  }
+  .list :global(.actions details .delete) {
+    position: absolute;
+    z-index: 6;
+    top: calc(100% + 0.45rem);
+    right: 0;
+    min-width: 5.4rem;
+    border-color: var(--color-border);
+    background: color-mix(in srgb, var(--color-page) 94%, transparent);
+    color: #d35f65;
+    box-shadow: 0 0.7rem 1.8rem color-mix(in srgb, #000 16%, transparent);
+    backdrop-filter: blur(16px);
+  }
+  .list :global(.actions details .delete:hover) {
+    border-color: color-mix(in srgb, #d35f65 46%, var(--color-border));
+    color: #d35f65;
   }
   @media (max-width: 38rem) {
     .manage-page {
