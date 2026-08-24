@@ -531,36 +531,64 @@ const repositoryDocuments = (
   }
   .list {
     gap: 0.65rem;
+    --workspace-cyan: #2397d4;
+    --workspace-teal: #18a88f;
+    --workspace-sun: #e8b84a;
   }
   .list :global(article) {
     min-height: 5.25rem;
     padding: 0.72rem 1rem;
     border-color: color-mix(
       in srgb,
-      var(--color-edge) 28%,
+      var(--workspace-teal) 30%,
       var(--color-border)
     );
-    border-right: 4px solid var(--color-edge);
-    border-radius: 0.75rem;
-    background: linear-gradient(
-      to left,
-      color-mix(in srgb, var(--color-edge) 11%, var(--color-page)),
-      color-mix(in srgb, var(--color-surface) 52%, var(--color-page)) 52%
-    );
-    box-shadow: 0.3rem 0.22rem 0.9rem color-mix(in srgb, #000 5%, transparent);
+    border-radius: 1rem;
+    overflow: hidden;
+    background:
+      radial-gradient(
+        circle at 92% -45%,
+        color-mix(in srgb, var(--workspace-cyan) 18%, transparent),
+        transparent 48%
+      ),
+      radial-gradient(
+        circle at 72% 155%,
+        color-mix(in srgb, var(--workspace-sun) 12%, transparent),
+        transparent 42%
+      ),
+      linear-gradient(
+        112deg,
+        color-mix(in srgb, var(--color-surface) 78%, transparent),
+        color-mix(in srgb, var(--color-page) 70%, transparent)
+      );
+    box-shadow:
+      0 0.7rem 1.8rem color-mix(in srgb, var(--workspace-teal) 8%, transparent),
+      inset 0 1px 0 color-mix(in srgb, #fff 62%, transparent);
+    backdrop-filter: blur(16px) saturate(125%);
     font-family: var(--font-body);
   }
   .list :global(article::before) {
-    display: none;
+    top: 0.8rem;
+    bottom: 0.8rem;
+    left: 0.55rem;
+    display: block;
+    width: 3px;
+    background: linear-gradient(
+      to bottom,
+      var(--workspace-cyan),
+      var(--workspace-teal) 68%,
+      var(--workspace-sun)
+    );
   }
   .list :global(article:hover) {
     border-color: color-mix(
       in srgb,
-      var(--color-edge) 62%,
+      var(--workspace-teal) 58%,
       var(--color-border)
     );
-    box-shadow: 0.5rem 0.35rem 1.15rem color-mix(in srgb, #000 9%, transparent);
-    transform: translateX(0.2rem);
+    box-shadow: 0 0.9rem 2.2rem
+      color-mix(in srgb, var(--workspace-teal) 14%, transparent);
+    transform: translateY(-0.12rem);
   }
   .list :global(article h2) {
     margin: 0.26rem 0 0.12rem;
@@ -577,25 +605,30 @@ const repositoryDocuments = (
   .list :global(.card-meta .status) {
     padding: 0.16rem 0.42rem;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--color-edge) 14%, transparent);
-    color: var(--color-edge);
+    background: color-mix(in srgb, var(--workspace-teal) 13%, transparent);
+    color: color-mix(in srgb, var(--workspace-teal) 82%, var(--color-text));
   }
   .list :global(.actions a),
   .list :global(.actions button),
   .list :global(.actions summary) {
     border-color: transparent;
-    background: var(--color-surface);
+    background: color-mix(in srgb, var(--color-page) 58%, transparent);
+    backdrop-filter: blur(10px);
     font-family: var(--font-body);
     font-weight: 600;
   }
   .list :global(.actions a:hover),
   .list :global(.actions button:hover),
   .list :global(.actions summary:hover) {
-    border-color: color-mix(in srgb, var(--color-edge) 48%, transparent);
-    color: var(--color-edge);
+    border-color: color-mix(in srgb, var(--workspace-teal) 48%, transparent);
+    color: color-mix(in srgb, var(--workspace-teal) 82%, var(--color-text));
   }
   .list :global(.actions .publish) {
-    background: var(--color-edge);
+    background: linear-gradient(
+      135deg,
+      var(--workspace-cyan),
+      var(--workspace-teal)
+    );
     color: #ffffff;
   }
   @media (max-width: 38rem) {
